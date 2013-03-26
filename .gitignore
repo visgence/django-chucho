@@ -1,0 +1,29 @@
+# Compiled Source #
+###################
+*.pyc
+
+# Logs and Databases #
+######################
+*.db
+*.log
+
+# Editor backup files #
+#######################
+
+.*.swp
+.*.swo
+hardcopy.*
+.project
+.pydevproject
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
+screenlog.*
