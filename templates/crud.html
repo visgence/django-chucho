@@ -1,0 +1,28 @@
+
+<input type="hidden" id="model_name" value="{{model_name}}">
+<input type="hidden" id="app_name" value="{{app_name}}">
+<div id="{{model_name}}_grid" class="grid"></div>
+
+<div id="error_dialog" style="display:none" title="An Error has Occurred">
+    <div class="ui-state-error ui-conrner-all">
+        <span class="ui-icon ui-icon-alert">&nbsp;</span>
+        <p>
+            <span id="error_msg">&nbsp</span>
+        </p>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var myGrid = new DataGrid();
+</script>
+
+<div id="delete_confirm" title="Confirm Deletion" style="display:none">
+    <div class="ui-state-highlight ui-conrner-all">
+        <span class="ui-icon ui-icon-alert">&nbsp;</span>
+        <p>
+            Deleting a {{model_name|title}} may remove any related objects.  This operation cannot be
+            undone.
+            </p>
+        <p>Do you still want to proceed?</p>
+    </div>
+</div>
