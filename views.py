@@ -1,5 +1,5 @@
 """
-" trafficMonitor/views/crud.py
+" chucho/views.py
 " Contributing Authors:
 "    Evan Salazar   (Visgence, Inc)
 "    Jeremiah Davis (Visgence, Inc)
@@ -21,10 +21,10 @@ AuthUser = settings.get_permission_obj()
 
 def model_grid(request, app_name, model_name):
     '''
-    ' View to return the html that will hold a models crud.
+    ' View to return the html that will hold a models chucho.
     '''
 
-    t = loader.get_template('crud.html')
+    t = loader.get_template('chucho.html')
     c = RequestContext(request, {'model_name': model_name, 'app_name': app_name})
     return HttpResponse(t.render(c), mimetype="text/html")
 

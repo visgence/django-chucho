@@ -1,7 +1,7 @@
 from django.conf.urls import patterns, include, url
 
 urlpatterns = patterns(
-    'crud.views',
+    'chucho.views',
     url(r'(?i)model_editor/(?P<app_name>.+)/(?P<model_name>.+)/$',
-        'model_grid', name='crud-model-editor')
+        'model_grid', name='chucho-model-editor')
 )

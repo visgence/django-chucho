@@ -1,5 +1,5 @@
 /**
- * crud/static/js/crud.js
+ * chucho/static/js/chucho.js
  *
  * Contributing Authors:
  *    Evan Salazar   (Visgence, Inc.)
@@ -8,7 +8,7 @@
  *
  * Copyright 2013, Visgence, Inc.
  *
- * This is the javascript that drives our crud interface.  It defines the DataGrid object, which will
+ * This is the javascript that drives our chucho interface.  It defines the DataGrid object, which will
  * be instantiated for each different type of grid that is created.
  */
 
@@ -99,7 +99,7 @@
         this.refresh = function() {
             self = this;
             this.clear_row_selection();
-            Dajaxice.crud.read_source(
+            Dajaxice.chucho.read_source(
                 function(resp) {
                     if ( 'errors' in resp ) {
                         self.error(resp.errors);
@@ -213,7 +213,7 @@
          */
         this.save_row = function(i, row, update) {
             
-            Dajaxice.crud.update(this.save_callback(i, update), {
+            Dajaxice.chucho.update(this.save_callback(i, update), {
                 'app_name': this.app_name,
                 'model_name': this.model_name, 
                 'data': row
@@ -245,7 +245,7 @@
             if ('pk' in row) {
                 self = this;
                 var delete_func = function() {
-                    Dajaxice.crud.destroy(
+                    Dajaxice.chucho.destroy(
                         function(resp) {
                             if ('errors' in resp) {
                                 self.error(resp.errors);
@@ -310,7 +310,7 @@
             this.model_name = $('#model_name').val();
             this.app_name = $('#app_name').val();
             self = this;
-            Dajaxice.crud.get_columns(
+            Dajaxice.chucho.get_columns(
                 function(resp) { 
                     self.columns = resp;
 
@@ -505,7 +505,7 @@
     /** Creates a hidden div structure filled with various input fields to be shown by a dialog.
      * 
      *  The divs inputs are determined by the columns that are passed in.  These columns should be
-     *  the cruds current columns so that the div can be built dynamically.
+     *  the chuchos current columns so that the div can be built dynamically.
      *
      *  Keyword Args
      *      id      - The id of the dom element to append the div after.
@@ -723,7 +723,7 @@
         var input = $("<select></select>").attr({'class': cls});
        
         //Get all objects that the user can select from
-        Dajaxice.crud.read_source( function(resp) {
+        Dajaxice.chucho.read_source( function(resp) {
 
             $(resp.data).each(function(i, obj) {
                 var option = $("<option></option>")
@@ -760,7 +760,7 @@
         div.append(ul);
 
         //Get all objects that the user can select from
-        Dajaxice.crud.read_source( function(resp) {
+        Dajaxice.chucho.read_source( function(resp) {
 
             $(resp.data).each(function(i, obj) { 
                 
