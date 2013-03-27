@@ -18,12 +18,14 @@ import datetime
 # Local Imports
 from settings import get_permission_obj, DT_FORMAT, D_FORMAT
 AuthUser = get_permission_obj()
+from check_access import check_access
 
 def model_grid(request, app_name, model_name):
     '''
     ' View to return the html that will hold a models chucho.
     '''
-
+    if check_access(request) is None:
+        return HttpResponse('User not authenticated.')
     t = loader.get_template('chucho.html')
     c = RequestContext(request, {'model_name': model_name, 'app_name': app_name})
     return HttpResponse(t.render(c), mimetype="text/html")

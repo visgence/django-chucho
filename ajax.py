@@ -28,8 +28,7 @@ from sys import stderr
 from settings import get_permission_obj, DT_FORMAT, D_FORMAT
 AuthUser = get_permission_obj()
 from views import genColumns
-#from check_access import check_access
-
+from check_access import check_access
 
 @dajaxice_register
 def read_source(request, app_name, model_name, get_editable):
@@ -39,16 +38,20 @@ def read_source(request, app_name, model_name, get_editable):
     ' Keyword Args:
     '    model_name - The model name to get serialized data from
     '''
+    user = check_access()
+    if user is None:
+        errors = 'User is not logged in properly.'
+        return json.dumps({'errors':errors})
 
     cls = models.loading.get_model(app_name, model_name)
 
     read_only = False
     try:
         #Only get the objects that can be edited by the user logged in
-        if get_editable and cls.objects.can_edit(request.user):
-            objs = cls.objects.get_editable(request.user)
+        if get_editable and cls.objects.can_edit(user):
+            objs = cls.objects.get_editable(user)
         else:
-            objs = cls.objects.get_viewable(request.user)
+            objs = cls.objects.get_viewable(user)
             read_only = True
     except Exception as e:
         stderr.write('Unknown error occurred in read_source: %s: %s\n' % (type(e), e.message))
@@ -73,18 +76,23 @@ def update(request, app_name, model_name, data):
     '    The modified object serialized as json.
     '''
 
+    user = check_access()
+    if user is None:
+        errors = 'User is not logged in properly.'
+        return json.dumps({'errors':errors})
+
     cls = models.loading.get_model(app_name, model_name)
     if 'pk' not in data:
-        if not cls.objects.can_edit(request.user):
+        if not cls.objects.can_edit(user):
             transaction.rollback()
-            return json.dumps({'errors': 'User %s does not have permission to add to this table.' % str(request.user)})
+            return json.dumps({'errors': 'User %s does not have permission to add to this table.' % str(user)})
         obj = cls()
     else:
         try:
-            obj = cls.objects.get_editable_by_pk(request.user, pk=data['pk'])
+            obj = cls.objects.get_editable_by_pk(user, pk=data['pk'])
             if obj is None:
                 transaction.rollback()
-                return json.dumps({'errors': 'User %s does not have permission to edit this object' % str(request.user)})
+                return json.dumps({'errors': 'User %s does not have permission to edit this object' % str(user)})
         except Exception as e:
             transaction.rollback()
             return json.dumps({'errors': 'Cannot load object to save: Exception: ' + e.message})
@@ -114,7 +122,7 @@ def update(request, app_name, model_name, data):
                 elif field['_type'] == 'foreignkey':
                     rel_cls = models.loading.get_model(field['app'], field['model_name'])
                     rel_obj = rel_cls.objects.get(pk=data[field['field']]['pk'])
-                    if rel_obj.can_view(request.user):
+                    if rel_obj.can_view(user):
                         setattr(obj, field['field'], rel_obj)
                     else:
                         transaction.rollback()
@@ -141,7 +149,7 @@ def update(request, app_name, model_name, data):
                 m2m_objs = []
                 for m2m_obj in data[m['field']]:
                     rel_obj = cls.objects.get(pk=m2m_obj['pk'])
-                    if rel_obj.can_view(request.user):
+                    if rel_obj.can_view(user):
                         m2m_objs.append(rel_obj)
                     else:
                         transaction.rollback()
@@ -195,15 +203,19 @@ def destroy(request, app_name, model_name, data):
     ' Receive a model_name and data object via ajax, and remove that item,
     ' returning either a success or error message.
     '''
+    user = check_access()
+    if user is None:
+        errors = 'User is not logged in properly.'
+        return json.dumps({'errors':errors})
 
     cls = models.loading.get_model(app_name, model_name)
     try:
-        obj = cls.objects.get_editable_by_pk(request.user, data['pk'])
+        obj = cls.objects.get_editable_by_pk(user, data['pk'])
         if obj is None:
-            error = "User %s does not have permission to delete this object." % request.user
+            error = "User %s does not have permission to delete this object." % user
             return json.dumps({'errors': error})
     except Exception as e:
-        error = "There was an error for user %s trying to delete this object: %s" % (request.user, str(e))
+        error = "There was an error for user %s trying to delete this object: %s" % (user, str(e))
         return json.dumps({'errors': error})
 
     obj.delete()
