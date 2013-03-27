@@ -16,8 +16,8 @@ import re
 import datetime
 
 # Local Imports
-from django.conf import settings
-AuthUser = settings.get_permission_obj()
+from settings import get_permission_obj, DT_FORMAT, D_FORMAT
+AuthUser = get_permission_obj()
 
 def model_grid(request, app_name, model_name):
     '''
