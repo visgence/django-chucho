@@ -12,12 +12,12 @@ from django.db import models
 from django.http import HttpResponse
 from django.template import RequestContext, loader
 from django.contrib.auth import get_user_model
-AuthUser = get_user_model()
 import re
 import datetime
 
 # Local Imports
-
+from django.conf import settings
+AuthUser = settings.get_permission_obj()
 
 def model_grid(request, app_name, model_name):
     '''

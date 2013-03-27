@@ -17,8 +17,6 @@ except ImportError:
 from dajaxice.decorators import dajaxice_register
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
-from django.contrib.auth import get_user_model
-AuthUser = get_user_model()
 from django.http import HttpResponse
 from django.template import Context, loader
 from django.utils.timezone import utc
@@ -27,8 +25,9 @@ from collections import OrderedDict
 from sys import stderr
 
 # Local imports
+from django.conf import settings
+AuthUser = settings.get_permission_obj()
 from views import genColumns
-from settings import DT_FORMAT, D_FORMAT
 #from check_access import check_access
 
 
@@ -123,7 +122,7 @@ def update(request, app_name, model_name, data):
                         return json.dumps({'errors': error})
 
                 elif field['_type'] == 'datetime':
-                    dt_obj = datetime.strptime(data[field['field']], DT_FORMAT)
+                    dt_obj = datetime.strptime(data[field['field']], settings.DT_FORMAT)
                     dt_obj = dt_obj.replace(tzinfo=utc)
                     setattr(obj, field['field'], dt_obj)
 
