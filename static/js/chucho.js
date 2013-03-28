@@ -718,7 +718,7 @@
      *
      * Return: The newly created select field
      */
-    function get_pk_input (cls, value, model_name) 
+    function get_pk_input (cls, value, model_name,app_name) 
     {
         var input = $("<select></select>").attr({'class': cls});
        
@@ -753,7 +753,7 @@
      *
      * Return: The newly created select multiple field
      */
-    function get_m2m_input (cls, value, model_name) 
+    function get_m2m_input (cls, value, model_name,app_name) 
     {
         var div = $('<div></div>').attr({'class': cls});
         var ul = $('<ul></ul>').css('list-style', 'none');                   
