@@ -38,7 +38,7 @@ def read_source(request, app_name, model_name, get_editable):
     ' Keyword Args:
     '    model_name - The model name to get serialized data from
     '''
-    user = check_access()
+    user = check_access(request)
     if user is None:
         errors = 'User is not logged in properly.'
         return json.dumps({'errors':errors})
@@ -76,7 +76,7 @@ def update(request, app_name, model_name, data):
     '    The modified object serialized as json.
     '''
 
-    user = check_access()
+    user = check_access(request)
     if user is None:
         errors = 'User is not logged in properly.'
         return json.dumps({'errors':errors})
@@ -203,7 +203,7 @@ def destroy(request, app_name, model_name, data):
     ' Receive a model_name and data object via ajax, and remove that item,
     ' returning either a success or error message.
     '''
-    user = check_access()
+    user = check_access(request)
     if user is None:
         errors = 'User is not logged in properly.'
         return json.dumps({'errors':errors})
@@ -231,6 +231,11 @@ def get_columns(request, app_name, model_name):
     ' Keyword args:
     '   model_name - The name of the model to represent.
     '''
+
+    user = check_access(request)
+    if user is None:
+        errors = 'User is not logged in properly.'
+        return json.dumps({'errors':errors})
 
     cls = models.loading.get_model(app_name, model_name)
     return json.dumps(genColumns(cls))
