@@ -284,8 +284,15 @@ def serialize_model_objs(objs, read_only):
             # Relations
             elif isinstance(f, models.fields.related.ForeignKey) or \
                isinstance(f, models.fields.related.OneToOneField):
+                
+                objFromName= getattr(obj, f.name)
+                if objFromName is None:
+                    unicodeStr = ''
+                else:
+                    unicodeStr = objFromName.__unicode__()
+                
                 obj_dict[f.name] = {
-                    '__unicode__': getattr(obj, f.name).__unicode__(),
+                    '__unicode__': unicodeStr,
                     'pk': f.value_from_object(obj),
                     'model_name': f.rel.to.__name__
                 }
