@@ -287,9 +287,9 @@ def serialize_model_objs(objs, read_only):
                 
                 objFromName= getattr(obj, f.name)
                 if objFromName is None:
-                    unicodeStr = ''
+                    unicodeStr = u''
                 else:
-                    unicodeStr = objFromName.__unicode__()
+                    unicodeStr = unicode(objFromName)
                 
                 obj_dict[f.name] = {
                     '__unicode__': unicodeStr,
@@ -313,14 +313,14 @@ def serialize_model_objs(objs, read_only):
                 obj_dict[f.name] = f.value_to_string(obj)
 
         if '__unicode__' not in obj_dict:
-            obj_dict['__unicode__'] = obj.__unicode__()
+            obj_dict['__unicode__'] = unicode(obj)
 
         for m in m2m_fields:
             m_objs = getattr(obj, m.name).all()
             obj_dict[m.name] = []
             for m_obj in m_objs:
                 obj_dict[m.name].append({
-                    '__unicode__': m_obj.__unicode__(),
+                    '__unicode__': unicode(m_obj),
                     'pk': m_obj.pk,
                     'model_name': m.rel.to.__name__
                 })
