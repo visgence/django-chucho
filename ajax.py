@@ -21,7 +21,10 @@ from django.http import HttpResponse
 from django.template import Context, loader
 from django.utils.timezone import utc
 from datetime import datetime
-from collections import OrderedDict
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 from sys import stderr
 
 # Local imports
