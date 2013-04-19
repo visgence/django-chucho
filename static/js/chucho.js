@@ -72,7 +72,8 @@
             forceFitColumns: true,
             enableColumnReorder: true,
             fullWidthRows: true,
-            showTopPanel: true
+            showTopPanel: true,
+            autoHeight: true
         };
 
         this.grid = null;
@@ -572,7 +573,7 @@
                 if(col._editable) {
                     input = get_input('add_form_input', 'text', value); 
                     td2.append(input);
-                    $(input).spinner();
+                    //$(input).spinner();
                 }
                 else {
                     input = $("<span></span>").append(value);
