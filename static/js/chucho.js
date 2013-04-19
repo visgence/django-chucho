@@ -73,7 +73,7 @@
             enableColumnReorder: true,
             fullWidthRows: true,
             showTopPanel: true,
-            autoHeight: true
+            forceSyncScrolling: true
         };
 
         this.grid = null;
