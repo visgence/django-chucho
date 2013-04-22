@@ -102,12 +102,12 @@
             this.clear_row_selection();
             
             var spinner = get_spinner();
+            spinner.spin();
             var styles = { 
-                'display':       'inline',
-                'margin-left':   '1em',
+                'display': 'inline',
+                'bottom':  '6px'
             };  
             $(spinner.el).css(styles);
-            spinner.spin();
             
             var panel = self.grid.getTopPanel();
             $(panel).append(spinner.el);
