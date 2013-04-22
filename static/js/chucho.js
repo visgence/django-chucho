@@ -100,14 +100,22 @@
         this.refresh = function() {
             self = this;
             this.clear_row_selection();
+            var spinner = get_spinner();
+            spinner.spin();
+            var panel = self.grid.getTopPanel();
+            $(panel).append(spinner.el);
+
             Dajaxice.chucho.read_source(
                 function(resp) {
                     if ( 'errors' in resp ) {
                         self.error(resp.errors);
+                        spinner.stop();
                         return;
                     }
-                    else
+                    else {
+                        spinner.stop();
                         $('#server_messages').html('');
+                    }
                     
                     self.model.set_data(resp.data);
                     self.set_read_only(resp.read_only);
@@ -827,6 +835,45 @@
         else
             return $(input).val();
     }
+
+    
+    /** Creates and returns a spinner object.  
+     *
+     *  Spinner options can be specified by providing a Object with Spinner options.
+     *  If provided these options will completly override the default ones given.
+     *
+     * Keyword Args
+     *     opts - Optional Object containing user specified spinner options
+     *
+     * Return: Initialized Spinner object.
+     */
+    function get_spinner (opts) 
+    {
+        var default_opts = { 
+            lines: 11,            // The number of lines to draw
+            length: 8,           // The length of each line
+            width: 2,            // The line thickness
+            radius: 3,           // The radius of the inner circle
+            corners: 1,           // Corner roundness (0..1)
+            rotate: 0,            // The rotation offset
+            direction: 1,         // 1: clockwise, -1: counterclockwise
+            color: '#000',        // #rgb or #rrggbb
+            speed: 1,             // Rounds per second
+            trail: 44,            // Afterglow percentage
+            shadow: false,        // Whether to render a shadow
+            hwaccel: false,       // Whether to use hardware acceleration
+            className: 'spinner', // The CSS class to assign to the spinner
+            zIndex: 2e9,          // The z-index (defaults to 2000000000)
+            top: 'auto',          // Top position relative to parent in px
+            left: 'auto'          // Left position relative to parent in px
+        };  
+
+        //Use defaults if none were given to us.
+        if(!opts)
+            opts = default_opts;
+                                                                                                                                           
+        return new Spinner(opts);
+    } 
 
 })(jQuery);
 
