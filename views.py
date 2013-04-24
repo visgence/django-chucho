@@ -67,7 +67,7 @@ def genColumns(modelObj):
             field['_type'] = 'boolean'
         elif isinstance(f, models.IntegerField) or isinstance(f, models.AutoField):
             field['_type'] = 'integer'
-        elif isinstance(f, models.DecimalField):
+        elif isinstance(f, models.DecimalField) or isinstance(f, models.FloatField):
             field['_type'] = 'decimal'
         elif isinstance(f, models.DateTimeField):
             field['_type'] = 'datetime'
