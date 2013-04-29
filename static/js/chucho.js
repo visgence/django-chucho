@@ -332,33 +332,31 @@
 
                     // Add editors to columns
                     for ( var i = 0; i < self.columns.length; i++) {
-                        if (self.columns[i]._editable === true) {
-                            switch (self.columns[i]._type) {
+                        switch (self.columns[i]._type) {
 
-                            case 'boolean':
-                                self.columns[i].formatter = Slick.Formatters.Checkmark;
-                                break;
-                                
-                            case 'foreignkey':
-                                self.columns[i].formatter = foreign_key_formatter;
-                                break;
-                                
-                            case 'm2m':
-                                self.columns[i].formatter = m2m_formatter;
-                                break;
+                        case 'boolean':
+                            self.columns[i].formatter = Slick.Formatters.Checkmark;
+                            break;
+                            
+                        case 'foreignkey':
+                            self.columns[i].formatter = foreign_key_formatter;
+                            break;
+                            
+                        case 'm2m':
+                            self.columns[i].formatter = m2m_formatter;
+                            break;
 
-                            case 'choice':
-                                self.columns[i].formatter = choices_formatter;
-                                break;
+                        case 'choice':
+                            self.columns[i].formatter = choices_formatter;
+                            break;
 
-                            case 'number':
-                            case 'char':
-                            case 'integer':
-                            case 'text':
-                            case 'date':
+                        case 'number':
+                        case 'char':
+                        case 'integer':
+                        case 'text':
+                        case 'date':
 
-                            default:
-                            }
+                        default:
                         }
                     }
                         
