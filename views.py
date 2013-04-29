@@ -81,7 +81,7 @@ def genColumns(modelObj):
             field['sortable'] = 'true'
         elif isinstance(f, models.TextField):
             field['_type'] = 'text'
-            field['sorter'] = 'numeric_sorter'
+            field['sorter'] = 'alpha_sorter'
             field['sortable'] = 'true'
         elif isinstance(f, models.CharField):
             # See if this is a password field.
@@ -92,7 +92,7 @@ def genColumns(modelObj):
                 field['_type'] = 'color'
             else:
                 field['_type'] = 'char'
-                field['sorter'] = 'numeric_sorter'
+                field['sorter'] = 'alpha_sorter'
                 field['sortable'] = 'true'
 
         else:

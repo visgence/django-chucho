@@ -478,6 +478,7 @@
 
     sorters = {
         'numeric_sorter': numeric_sorter,
+        'alpha_sorter': alpha_sorter,
         'date_sorter': date_sorter,
         'boolean_sorter': boolean_sorter
     }
@@ -494,7 +495,13 @@
         return (val1 > val2 ? -1:1) * sign;
     }
 
-    /** Sorter for general alphanumeric values */
+    /** Sorter for general alpha values (char's, text etc) */
+    function alpha_sorter(row1, row2, sign, col) {
+        var val1 = row1[col].toLowerCase(), val2 = row2[col].toLowerCase();
+        return (val1 > val2 ? -1:1) * sign;
+    }
+
+    /** Sorter for general numeric values */
     function numeric_sorter(row1, row2, sign, col) {
         var val1 = row1[col], val2 = row2[col];
         return (val1 > val2 ? -1:1) * sign;
