@@ -375,7 +375,8 @@
                     self.grid.setSelectionModel(new Slick.RowSelectionModel());
 
                     self.grid.onSort.subscribe(function(e, args) {
-                        console.log(args);
+                        var sign = args.sortAsc ? -1:1;
+                        self.grid.sort(window[args.sortCol.sorter](row_one, row_two, sign, args.sortCol.field))
                     });
 
 
@@ -467,6 +468,13 @@
             },  
             buttons: buttons
         });
+    }
+
+    function numeric_sorter(row1, row2, sign, col) {
+        console.log(row1);
+        console.log(col);
+        var val1 = row1[col], val2 = row2[col];
+        return (val1 > val2 ? -1:1) * sign;
     }
 
     /** Custom formatter for columns that have a list of choices to choose from. */
