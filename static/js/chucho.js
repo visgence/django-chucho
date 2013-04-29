@@ -373,10 +373,16 @@
                     $(message_span).appendTo(self.grid.getTopPanel());
                     
                     self.grid.setSelectionModel(new Slick.RowSelectionModel());
-
+                        
                     self.grid.onSort.subscribe(function(e, args) {
                         var sign = args.sortAsc ? -1:1;
-                        self.grid.sort(window[args.sortCol.sorter](row_one, row_two, sign, args.sortCol.field))
+                        var sorter = sorters[args.sortCol.sorter];
+                        var col = args.sortCol.field;
+
+                        self.model.data.sort(function(row1, row2) {
+                            return sorter(row1, row2, sign, col);
+                        }); 
+                        self.grid.invalidate();
                     });
 
 
@@ -470,9 +476,26 @@
         });
     }
 
+    sorters = {
+        'numeric_sorter': numeric_sorter,
+        'date_sorter': date_sorter,
+        'boolean_sorter': boolean_sorter
+    }
+
+    /** Sorter for boolean values */
+    function boolean_sorter(row1, row2, sign, col) {
+        var val1 = row1[col], val2 = row2[col];
+        return (val1 && !val2 ? -1:1) * sign;
+    }
+
+    /** Sorter for dates*/
+    function date_sorter(row1, row2, sign, col) {
+        var val1 = new Date(row1[col]), val2 = new Date(row2[col]);
+        return (val1 > val2 ? -1:1) * sign;
+    }
+
+    /** Sorter for general alphanumeric values */
     function numeric_sorter(row1, row2, sign, col) {
-        console.log(row1);
-        console.log(col);
         var val1 = row1[col], val2 = row2[col];
         return (val1 > val2 ? -1:1) * sign;
     }
