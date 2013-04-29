@@ -374,6 +374,11 @@
                     
                     self.grid.setSelectionModel(new Slick.RowSelectionModel());
 
+                    self.grid.onSort.subscribe(function(e, args) {
+                        console.log(args);
+                    });
+
+
                     self.grid.getSelectionModel().onSelectedRangesChanged.subscribe(function(e, args) {
                         var panel = self.grid.getTopPanel();
                         var serv_msg = $('#server_messages'); 

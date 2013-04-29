@@ -65,14 +65,24 @@ def genColumns(modelObj):
                 field['choices'].append(choice)
         elif isinstance(f, models.BooleanField):
             field['_type'] = 'boolean'
+            field['sorter'] = 'boolean_sorter'
+            field['sortable'] = 'true'
         elif isinstance(f, models.IntegerField) or isinstance(f, models.AutoField):
             field['_type'] = 'integer'
+            field['sorter'] = 'numeric_sorter'
+            field['sortable'] = 'true'
         elif isinstance(f, models.DecimalField) or isinstance(f, models.FloatField):
             field['_type'] = 'decimal'
+            field['sorter'] = 'numeric_sorter'
+            field['sortable'] = 'true'
         elif isinstance(f, models.DateTimeField):
             field['_type'] = 'datetime'
+            field['sorter'] = 'date_sorter'
+            field['sortable'] = 'true'
         elif isinstance(f, models.TextField):
             field['_type'] = 'text'
+            field['sorter'] = 'numeric_sorter'
+            field['sortable'] = 'true'
         elif isinstance(f, models.CharField):
             # See if this is a password field.
             if f.model == AuthUser and f.name == 'password':
@@ -82,6 +92,8 @@ def genColumns(modelObj):
                 field['_type'] = 'color'
             else:
                 field['_type'] = 'char'
+                field['sorter'] = 'numeric_sorter'
+                field['sortable'] = 'true'
 
         else:
             raise Exception("In genColumns: The field type %s is not handled." % type(f))
