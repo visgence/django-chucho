@@ -90,6 +90,8 @@ def genColumns(modelObj):
             #Try and see if this field was meant to hold colors
             elif re.match('color$', f.name.lower()):
                 field['_type'] = 'color'
+                field['sorter'] = 'alpha_sorter'
+                field['sortable'] = 'true'
             else:
                 field['_type'] = 'char'
                 field['sorter'] = 'alpha_sorter'
