@@ -17,14 +17,8 @@ except ImportError:
 from dajaxice.decorators import dajaxice_register
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
-from django.http import HttpResponse
-from django.template import Context, loader
 from django.utils.timezone import utc
 from datetime import datetime
-try:
-    from collections import OrderedDict
-except ImportError:
-    from ordereddict import OrderedDict
 from sys import stderr
 
 # Local imports
@@ -33,8 +27,29 @@ AuthUser = get_permission_obj()
 from views import genColumns
 from check_access import check_access
 
+filter_operators = {
+    '=': 'exact',
+    '= (no case)': 'iexact',
+    'contains string': 'contains',
+    'contains (no case)': 'icontains',
+    'starts with string': 'startswith',
+    'starts with (no case)': 'istartswith',
+    'ends with string': 'endswith',
+    'ends with (no case)': 'iendswith',
+    'element in': 'in',
+    '>': 'gt',
+    '>=': 'gte',
+    '<': 'lt',
+    '<=': 'lte',
+    'between': 'range',
+    'is null': 'isnull',
+    'regular expression': 'regex',
+    'regular expression (no case)': 'iregex'
+    }
+
+
 @dajaxice_register
-def read_source(request, app_name, model_name, get_editable):
+def read_source(request, app_name, model_name, get_editable, filter_args=None):
     '''
     ' Returns all data from a given model as serialized json.
     '
@@ -44,7 +59,18 @@ def read_source(request, app_name, model_name, get_editable):
     user = check_access(request)
     if user is None:
         errors = 'User is not logged in properly.'
-        return json.dumps({'errors':errors})
+        return json.dumps({'errors': errors})
+    kwargs = None
+    if filter_args is not None:
+        try:
+            filter_args = json.loads(filter_args)
+            kwargs = {}
+            for col, comp in filter_args.iteritems():
+                keyword = col + '__' + filter_operators[comp['oper']]
+                kwargs[keyword] = comp['val']
+        except Exception as e:
+            stderr.write('Error deserializing filter_args: %s' % e)
+            stderr.flush()
 
     cls = models.loading.get_model(app_name, model_name)
 
@@ -52,9 +78,9 @@ def read_source(request, app_name, model_name, get_editable):
     try:
         #Only get the objects that can be edited by the user logged in
         if get_editable and cls.objects.can_edit(user):
-            objs = cls.objects.get_editable(user)
+            objs = cls.objects.get_editable(user, kwargs)
         else:
-            objs = cls.objects.get_viewable(user)
+            objs = cls.objects.get_viewable(user, kwargs)
             read_only = True
     except Exception as e:
         stderr.write('Unknown error occurred in read_source: %s: %s\n' % (type(e), e.message))
@@ -82,7 +108,7 @@ def update(request, app_name, model_name, data):
     user = check_access(request)
     if user is None:
         errors = 'User is not logged in properly.'
-        return json.dumps({'errors':errors})
+        return json.dumps({'errors': errors})
 
     cls = models.loading.get_model(app_name, model_name)
     if 'pk' not in data:
@@ -209,7 +235,7 @@ def destroy(request, app_name, model_name, data):
     user = check_access(request)
     if user is None:
         errors = 'User is not logged in properly.'
-        return json.dumps({'errors':errors})
+        return json.dumps({'errors': errors})
 
     cls = models.loading.get_model(app_name, model_name)
     try:
@@ -238,7 +264,7 @@ def get_columns(request, app_name, model_name):
     user = check_access(request)
     if user is None:
         errors = 'User is not logged in properly.'
-        return json.dumps({'errors':errors})
+        return json.dumps({'errors': errors})
 
     cls = models.loading.get_model(app_name, model_name)
     return json.dumps(genColumns(cls))
@@ -287,13 +313,13 @@ def serialize_model_objs(objs, read_only):
             # Relations
             elif isinstance(f, models.fields.related.ForeignKey) or \
                isinstance(f, models.fields.related.OneToOneField):
-                
-                objFromName= getattr(obj, f.name)
+
+                objFromName = getattr(obj, f.name)
                 if objFromName is None:
                     unicodeStr = u''
                 else:
                     unicodeStr = unicode(objFromName)
-                
+
                 obj_dict[f.name] = {
                     '__unicode__': unicodeStr,
                     'pk': f.value_from_object(obj),
