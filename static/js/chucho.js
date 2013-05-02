@@ -111,7 +111,11 @@
                     self.model.set_data(resp.data);
                     self.set_read_only(resp.read_only);
                     self.grid.invalidate();
-                },{'app_name': self.app_name, 'model_name': self.model_name, 'get_editable': true});
+                },{'app_name': self.app_name,
+                   'model_name': self.model_name,
+                   'get_editable': true,
+                   'filter_args': JSON.stringify(get_filter_data())
+                  });
         };
 
         /** Method to add a record */
@@ -496,12 +500,6 @@
         return m_input;
     }
 
-    $.extend(window, {
-        'DataGrid': DataGrid,
-        'confirm_dialog': confirm_dialog
-    });
-
-
     /** Creates a hidden div structure filled with various input fields to be shown by a dialog.
      * 
      *  The divs inputs are determined by the columns that are passed in.  These columns should be
@@ -827,5 +825,34 @@
             return $(input).val();
     }
 
-})(jQuery);
+    function get_filter_data() {
+        var filter_data = {};
+        var filters = $('.grid-filter');
+        $(filters).each(function(i, e) {
+            var temp_obj = {};
 
+            var temp = $(e).find('select[name="operator"]').val();
+            if ( !temp )
+                return;
+            temp_obj.oper = temp;
+
+            temp = $(e).find('input[name="comparison_value"]').val();
+            if ( !temp )
+                return;
+            temp_obj.val = temp;
+
+            temp = $(e).find('select[name="column"]').val();
+            if ( !temp )
+                return;
+            filter_data[temp] = temp_obj;
+        });
+        return filter_data;
+    }
+    
+    $.extend(window, {
+        'DataGrid': DataGrid,
+        'confirm_dialog': confirm_dialog
+    });
+    
+
+})(jQuery);

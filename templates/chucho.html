@@ -1,8 +1,39 @@
 
 <input type="hidden" id="model_name" value="{{model_name}}">
 <input type="hidden" id="app_name" value="{{app_name}}">
-<div id="{{model_name}}_grid" class="grid"></div>
-
+<div>
+    <div id="filter">
+        <table>
+            <tr>
+                <th>Filter:</th>
+            </tr>
+            <tr class="grid-filter">
+                <td>
+                    <select name="column">
+                        <option value="" selected="selected">Select Column</option>
+                        <option value="id">Id</option>
+                        <option value="email">Email</option>
+                    </select>
+                </td>
+                <td>
+                    <select name="operator">
+                        <option value="" selected="selected">Select Operator</option>
+                        <option value="=">=</option>
+                        <option value="contains (no case)">Contains (No Case)</option>
+                        <option value=">=">&gt;=</option>
+                    </select>
+                </td>
+                <td>
+                    Value:
+                    </td>
+                <td>
+                    <input name="comparison_value" type="text">
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="{{model_name}}_grid" class="grid"></div>
+</div>
 <div id="error_dialog" style="display:none" title="An Error has Occurred">
     <div class="ui-state-error ui-conrner-all">
         <span class="ui-icon ui-icon-alert">&nbsp;</span>
@@ -22,7 +53,7 @@
         <p>
             Deleting a {{model_name|title}} may remove any related objects.  This operation cannot be
             undone.
-            </p>
+        </p>
         <p>Do you still want to proceed?</p>
     </div>
 </div>
