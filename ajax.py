@@ -42,7 +42,6 @@ filter_operators = {
     '>=': 'gte',
     '<': 'lt',
     '<=': 'lte',
-    'between': 'range',
     'is null': 'isnull',
     'regular expression': 'regex',
     'regular expression (no case)': 'iregex'
