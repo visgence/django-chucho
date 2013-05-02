@@ -890,6 +890,7 @@
     /** This will remove a filter from the filter table */
     function remove_filter_row(e) {
         $(e).parent().parent().remove();
+        myGrid.refresh();
     }
 
 
