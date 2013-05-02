@@ -2,32 +2,13 @@
 <input type="hidden" id="model_name" value="{{model_name}}">
 <input type="hidden" id="app_name" value="{{app_name}}">
 <div>
-    <div id="filter">
-        <table>
+    <div id="filter-div">
+        <table id="filter-table">
             <tr>
-                <th>Filter:</th>
-            </tr>
-            <tr class="grid-filter">
+                <td colspan="3">Filter:</td>
                 <td>
-                    <select name="column">
-                        <option value="" selected="selected">Select Column</option>
-                        <option value="id">Id</option>
-                        <option value="email">Email</option>
-                    </select>
-                </td>
-                <td>
-                    <select name="operator">
-                        <option value="" selected="selected">Select Operator</option>
-                        <option value="=">=</option>
-                        <option value="contains (no case)">Contains (No Case)</option>
-                        <option value=">=">&gt;=</option>
-                    </select>
-                </td>
-                <td>
-                    Value:
-                    </td>
-                <td>
-                    <input name="comparison_value" type="text">
+                    <span class="ui-icon ui-icon-circle-plus" onclick="myGrid.add_filter_row();" style="float:right">
+                    </span>
                 </td>
             </tr>
         </table>

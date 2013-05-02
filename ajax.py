@@ -17,6 +17,7 @@ except ImportError:
 from dajaxice.decorators import dajaxice_register
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
+from django.template import Context, loader
 from django.utils.timezone import utc
 from datetime import datetime
 from sys import stderr
@@ -49,6 +50,41 @@ filter_operators = {
 
 
 @dajaxice_register
+def get_filter_options(request, app_name, model_name):
+    '''
+    ' Return JSON dump of dict of list of select option elements.
+    ' This is used by the filter tool in the ui.
+    '''
+    print app_name
+    print model_name
+    user = check_access(request)
+    if user is None:
+        errors = 'User is not logged in properly.'
+        return json.dumps({'errors': errors})
+    t = loader.get_template('select_options.html')
+    operators = filter_operators.keys()
+    operators.sort()
+    c_operators = Context({'select_title': 'Select Operator', 'options': operators})
+
+    cls = models.loading.get_model(app_name, model_name)
+    try:
+        columns = cls.filter_columns
+        columns.sort()
+        c_columns = Context({'select_title': 'Select Column', 'options': columns})
+    except AttributeError:
+        columns = [f.name for f in cls._meta.fields]
+        print columns
+        columns.sort()
+        print columns
+        c_columns = Context({'select_title': 'Select Column', 'options': columns})
+    options = {
+        'operators': t.render(c_operators),
+        'columns': t.render(c_columns)
+        }
+    return json.dumps(options)
+
+
+@dajaxice_register
 def read_source(request, app_name, model_name, get_editable, filter_args=None):
     '''
     ' Returns all data from a given model as serialized json.
@@ -65,9 +101,9 @@ def read_source(request, app_name, model_name, get_editable, filter_args=None):
         try:
             filter_args = json.loads(filter_args)
             kwargs = {}
-            for col, comp in filter_args.iteritems():
-                keyword = col + '__' + filter_operators[comp['oper']]
-                kwargs[keyword] = comp['val']
+            for i in filter_args:
+                keyword = i['col'] + '__' + filter_operators[i['oper']]
+                kwargs[keyword] = i['val']
         except Exception as e:
             stderr.write('Error deserializing filter_args: %s' % e)
             stderr.flush()
