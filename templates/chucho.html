@@ -1,8 +1,20 @@
 
 <input type="hidden" id="model_name" value="{{model_name}}">
 <input type="hidden" id="app_name" value="{{app_name}}">
-<div id="{{model_name}}_grid" class="grid"></div>
-
+<div>
+    <div id="filter-div">
+        <table id="filter-table">
+            <tr>
+                <td colspan="3">Filter:</td>
+                <td>
+                    <span class="ui-icon ui-icon-circle-plus" onclick="myGrid.add_filter_row();" style="float:right">
+                    </span>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="{{model_name}}_grid" class="grid"></div>
+</div>
 <div id="error_dialog" style="display:none" title="An Error has Occurred">
     <div class="ui-state-error ui-conrner-all">
         <span class="ui-icon ui-icon-alert">&nbsp;</span>
@@ -22,7 +34,7 @@
         <p>
             Deleting a {{model_name|title}} may remove any related objects.  This operation cannot be
             undone.
-            </p>
+        </p>
         <p>Do you still want to proceed?</p>
     </div>
 </div>

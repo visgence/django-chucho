@@ -78,6 +78,9 @@
 
         this.grid = null;
 
+        /** The columns and operators that we can filter over for this grid. */
+        this.filter_options = null;
+
         /** Determines whether or not we want to allow the user to only view data or edit it. */
         this.read_only = true;
 
@@ -127,7 +130,11 @@
                     self.model.set_data(resp.data);
                     self.set_read_only(resp.read_only);
                     self.grid.invalidate();
-                },{'app_name': self.app_name, 'model_name': self.model_name, 'get_editable': true});
+                },{'app_name': self.app_name,
+                   'model_name': self.model_name,
+                   'get_editable': true,
+                   'filter_args': JSON.stringify(get_filter_data())
+                  });
         };
 
         /** Method to add a record */
@@ -321,6 +328,24 @@
             $('#server_messages').html(msg).css('color','green');
         };
 
+        /** This will append a filter to the filter table.*/
+        this.add_filter_row = function() {
+            var row = $('<tr>');
+            var remove = $('<span class="ui-icon ui-icon-circle-close">');
+            remove.attr('onclick', 'remove_filter_row(this);');
+            var column = $('<select name="column">');
+            var operator = $('<select name="operator">');
+            var comparison = $('<input type="text" name="comparison-value">');
+            $(operator).append(this.filter_options.operators);
+            $(column).append(this.filter_options.columns);
+            $(row).append($('<td>').append($(remove)))
+                .append($('<td>').append(column))
+                .append($('<td>').append(operator))
+                .append($('<td>').append(comparison))
+                .addClass('grid-filter')
+                .appendTo($('#filter-table'));
+        };
+
         /** Here we initialize our object. */
         this.init = function() {
             this.model_name = $('#model_name').val();
@@ -408,8 +433,23 @@
                 },
                 {'app_name': self.app_name, 'model_name': self.model_name}
             );
+
+            // Populate the filter options.
+            Dajaxice.chucho.get_filter_options(
+                function(resp) {
+                    if ('errors' in resp) {
+                        self.error(resp.errors);
+                        return;
+                    }
+                    self.filter_options = resp;
+                },
+                {
+                    'app_name': self.app_name,
+                    'model_name': self.model_name
+                }
+            );
         };
-       
+
         this.clear_row_selection = function() {
             var panel = this.grid.getTopPanel();
             $(panel).find('input[value="Delete"]').remove(); 
@@ -552,12 +592,6 @@
 
         return m_input;
     }
-
-    $.extend(window, {
-        'DataGrid': DataGrid,
-        'confirm_dialog': confirm_dialog
-    });
-
 
     /** Creates a hidden div structure filled with various input fields to be shown by a dialog.
      * 
@@ -923,5 +957,44 @@
         return new Spinner(opts);
     } 
 
-})(jQuery);
+    function get_filter_data() {
+        var filter_data = [];
+        var filters = $('.grid-filter');
+        $(filters).each(function(i, e) {
+            var temp_obj = {};
 
+            var temp = $(e).find('select[name="column"]').val();
+            if ( !temp )
+                return;
+            temp_obj.col = temp;
+
+            temp = $(e).find('select[name="operator"]').val();
+            if ( !temp )
+                return;
+            temp_obj.oper = temp;
+
+            temp = $(e).find('input[name="comparison-value"]').val();
+            if ( !temp )
+                temp = '';
+            temp_obj.val = temp;
+
+            filter_data.push(temp_obj);
+        });
+        return filter_data;
+    }
+
+    /** This will remove a filter from the filter table */
+    function remove_filter_row(e) {
+        $(e).parent().parent().remove();
+        myGrid.refresh();
+    }
+
+
+    $.extend(window, {
+        'DataGrid': DataGrid,
+        'confirm_dialog': confirm_dialog,
+        'remove_filter_row': remove_filter_row
+    });
+    
+
+})(jQuery);
