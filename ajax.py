@@ -198,6 +198,11 @@ def update(request, app_name, model_name, data):
                     dt_obj = dt_obj.replace(tzinfo=utc)
                     setattr(obj, field['field'], dt_obj)
 
+                elif field['_type'] == 'date':
+                    dt_obj = datetime.strptime(data[field['field']], D_FORMAT)
+                    dt_obj = dt_obj.replace(tzinfo=utc)
+                    setattr(obj, field['field'], dt_obj.date())
+
                 elif field['_type'] == 'auth_password':
                     if data[field['field']] not in [None, '']:
                         obj.set_password(data[field['field']])

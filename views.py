@@ -11,12 +11,10 @@
 from django.db import models
 from django.http import HttpResponse
 from django.template import RequestContext, loader
-from django.contrib.auth import get_user_model
 import re
-import datetime
 
 # Local Imports
-from settings import get_permission_obj, DT_FORMAT, D_FORMAT
+from settings import get_permission_obj
 AuthUser = get_permission_obj()
 from check_access import check_access
 
@@ -77,6 +75,10 @@ def genColumns(modelObj):
             field['sortable'] = 'true'
         elif isinstance(f, models.DateTimeField):
             field['_type'] = 'datetime'
+            field['sorter'] = 'date_sorter'
+            field['sortable'] = 'true'
+        elif isinstance(f, models.DateField):
+            field['_type'] = 'date'
             field['sorter'] = 'date_sorter'
             field['sortable'] = 'true'
         elif isinstance(f, models.TextField):
