@@ -16,6 +16,7 @@ except ImportError:
 
 from dajaxice.decorators import dajaxice_register
 from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import models, transaction
 from django.template import Context, loader
 from django.utils.timezone import utc
@@ -84,18 +85,26 @@ def get_filter_options(request, app_name, model_name):
 
 
 @dajaxice_register
-def read_source(request, app_name, model_name, get_editable, filter_args=None):
+def read_source(request, app_name, model_name, get_editable, result_info): #get_editable, filter_args=None, page=1):
     '''
     ' Returns all data from a given model as serialized json.
     '
     ' Keyword Args:
-    '    model_name - The model name to get serialized data from
+    '    app_name     - (string) The application the desired model resides in
+    '    model_name   - (string) The model name to get serialized data from
+    '    get_editable - (bool)   True if you are getting the editable objects, false if only the viewable.
+    '    filter_args  - (list)   This is a list of filter arguments for filtering the results by.
+    '    page         - (int)    The page of data to return.
+    '    
     '''
     user = check_access(request)
     if user is None:
         errors = 'User is not logged in properly.'
         return json.dumps({'errors': errors})
+    result_info = json.loads(result_info)
     kwargs = None
+    filter_args = result_info['filter_args']
+    
     if filter_args is not None:
         try:
             filter_args = json.loads(filter_args)
@@ -122,7 +131,19 @@ def read_source(request, app_name, model_name, get_editable, filter_args=None):
         stderr.flush()
         return json.dumps({'errors': 'Unknown error occurred in read_source: %s: %s' % (type(e), e.message)})
 
-    return serialize_model_objs(objs, read_only)
+    paginator = Paginator(objs, result_info['per_page'])
+    try:
+        objs = paginator.page(result_info['page'])
+    except PageNotAnInteger:
+        objs = paginator.page(1)
+    except EmptyPage:
+        objs = paginator.page(paginator.num_pages)
+        
+    extras = {
+        'read_only': read_only
+        }
+
+    return serialize_model_objs(objs, extras)
 
 
 @dajaxice_register
@@ -254,7 +275,7 @@ def update(request, app_name, model_name, data):
         return json.dumps({'errors': errors})
 
     try:
-        serialized_model = serialize_model_objs([obj.__class__.objects.get(pk=obj.pk)], True)
+        serialized_model = serialize_model_objs([obj.__class__.objects.get(pk=obj.pk)], {'read_only':True})
     except Exception as e:
         transaction.rollback()
         error = 'In ajax update exception: %s: %s\n' % (type(e), e.message)
@@ -310,7 +331,7 @@ def get_columns(request, app_name, model_name):
     return json.dumps(genColumns(cls))
 
 
-def serialize_model_objs(objs, read_only):
+def serialize_model_objs(objs, extras):
     '''
     ' Takes a list of model objects and returns the serialization of them.
     '
@@ -399,5 +420,5 @@ def serialize_model_objs(objs, read_only):
 
         new_objs.append(obj_dict)
 
-    json_data = {'read_only': read_only, 'data': new_objs}
-    return json.dumps(json_data, indent=4)
+    extras['data'] = new_objs
+    return json.dumps(extras, indent=4)

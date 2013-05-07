@@ -100,7 +100,7 @@
         };
 
         /** Method to get data from server and refresh the grid.*/
-        this.refresh = function() {
+        this.refresh = function(page) {
             self = this;
             this.clear_row_selection();
             
@@ -114,6 +114,15 @@
             
             var panel = self.grid.getTopPanel();
             $(panel).append(spinner.el);
+
+            var result_info = {};
+            if ( page )
+                result_info.page = page;
+            else
+                result_info.page = 1;
+
+            result_info.per_page = $('#pageSelect').val();
+            result_info.filter_args = get_filter_data();
 
             Dajaxice.chucho.read_source(
                 function(resp) {
@@ -133,7 +142,7 @@
                 },{'app_name': self.app_name,
                    'model_name': self.model_name,
                    'get_editable': true,
-                   'filter_args': JSON.stringify(get_filter_data())
+                   'result_info': JSON.stringify(result_info)
                   });
         };
 
