@@ -1,6 +1,12 @@
-{% if pages.has_previous %}
-    <a onclick="myGrid.refresh({{pages.previous_page_number}})">
-        <span class="ui-icon ui-icon-circle-arrow-w"></span>
+<input type="hidden" id="chucho_current-page" value="{{curr_page.number}}">
+{% if curr_page.has_previous %}
+    <a onclick="myGrid.refresh({{curr_page.previous_page_number}});" class="clickable">
+        &lt;&lt;Prev
     </a>
 {% endif %}
- 
+
+{% if curr_page.has_next %}
+    <a onclick="myGrid.refresh({{curr_page.next_page_number}});" class="clickable">
+        Next&gt;&gt;
+    </a>
+{% endif %}

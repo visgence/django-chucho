@@ -138,9 +138,15 @@ def read_source(request, app_name, model_name, get_editable, result_info): #get_
         objs = paginator.page(1)
     except EmptyPage:
         objs = paginator.page(paginator.num_pages)
-        
+
+    # Creat list of pages to render links for
+    #for i in range(
+
+    t_pages = loader.get_template('page_list.html')
+    c_pages = Context({'curr_page': objs})
     extras = {
-        'read_only': read_only
+        'read_only': read_only,
+        'page_list': t_pages.render(c_pages)
         }
 
     return serialize_model_objs(objs, extras)

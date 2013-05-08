@@ -118,10 +118,15 @@
             var result_info = {};
             if ( page )
                 result_info.page = page;
+            else if ( $('#chucho_current-page').length > 0 ) {
+                console.log($('#chucho_current-page'));
+                result_info.page = $('#chucho_current-page').val();
+            }
             else
                 result_info.page = 1;
 
             result_info.per_page = $('#pageSelect').val();
+            console.log(result_info);
             result_info.filter_args = get_filter_data();
 
             Dajaxice.chucho.read_source(
@@ -139,6 +144,9 @@
                     self.model.set_data(resp.data);
                     self.set_read_only(resp.read_only);
                     self.grid.invalidate();
+                    if ( 'page_list' in resp ) {
+                        $('#chucho_page_list').html(resp.page_list);
+                    }
                 },{'app_name': self.app_name,
                    'model_name': self.model_name,
                    'get_editable': true,
