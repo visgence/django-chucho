@@ -7,7 +7,7 @@
             <tr>
                 <td colspan="3">Filter:</td>
                 <td>
-                    <span class="ui-icon ui-icon-circle-plus" onclick="myGrid.add_filter_row();"
+                    <span id="chucho-add-filter" class="ui-icon ui-icon-circle-plus" onclick="myGrid.add_filter_row();"
                           style="float:right">
                     </span>
                 </td>
@@ -39,6 +39,9 @@
 
 <script type="text/javascript">
     var myGrid = new DataGrid();
+    $(function() {
+        $('#chucho-add-filter').button();
+    });
 </script>
 
 <div id="delete_confirm" title="Confirm Deletion" style="display:none">

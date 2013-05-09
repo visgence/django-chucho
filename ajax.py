@@ -140,10 +140,18 @@ def read_source(request, app_name, model_name, get_editable, result_info): #get_
         objs = paginator.page(paginator.num_pages)
 
     # Creat list of pages to render links for
-    #for i in range(
-
+    pages = []
+    for i in paginator.page_range:
+        if i == objs.number or \
+                i <= 3 or \
+                (i <= objs.number + 2 and i >= objs.number - 2) or \
+                (i <= paginator.num_pages and i >= paginator.num_pages - 2):
+            if len(pages) > 0 and i - 1 > pages[-1]:
+                pages.append(-1)
+            pages.append(i)
+            
     t_pages = loader.get_template('page_list.html')
-    c_pages = Context({'curr_page': objs})
+    c_pages = Context({'curr_page': objs, 'pages': pages})
     extras = {
         'read_only': read_only,
         'page_list': t_pages.render(c_pages)

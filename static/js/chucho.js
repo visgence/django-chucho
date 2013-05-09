@@ -146,6 +146,8 @@
                     self.grid.invalidate();
                     if ( 'page_list' in resp ) {
                         $('#chucho_page_list').html(resp.page_list);
+                        $('.chucho-button').button();
+                        $('.chucho-button-disabled').button({disabled: true});
                     }
                 },{'app_name': self.app_name,
                    'model_name': self.model_name,
@@ -348,8 +350,11 @@
         /** This will append a filter to the filter table.*/
         this.add_filter_row = function() {
             var row = $('<tr>');
-            var remove = $('<span class="ui-icon ui-icon-circle-close">');
-            remove.attr('onclick', 'remove_filter_row(this);');
+            var remove = $('<span>');
+            remove.attr('onclick', 'remove_filter_row(this);')
+                .addClass('ui-icon').addClass('ui-icon-circle-close')
+                .addClass('chucho-remove-button')
+                .button();
             var column = $('<select name="column">');
             var operator = $('<select name="operator">');
             var comparison = $('<input type="text" name="comparison-value">');
@@ -361,6 +366,7 @@
                 .append($('<td>').append(comparison))
                 .addClass('grid-filter')
                 .appendTo($('#filter-table'));
+            
         };
 
         /** Here we initialize our object. */

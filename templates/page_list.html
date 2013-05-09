@@ -1,12 +1,23 @@
 <input type="hidden" id="chucho_current-page" value="{{curr_page.number}}">
 {% if curr_page.has_previous %}
-    <a onclick="myGrid.refresh({{curr_page.previous_page_number}});" class="clickable">
+    <span onclick="myGrid.refresh({{curr_page.previous_page_number}});" class="chucho-button">
         &lt;&lt;Prev
-    </a>
+    </span>
 {% endif %}
 
+{% for page in pages %}
+    
+    {% if page == curr_page.number %}
+        <span class="chucho-button-disabled">{{page}}</span>
+    {% elif page < 0 %}
+        ...
+    {% else %}
+        <span onclick="myGrid.refresh({{page}});" class="chucho-button">{{page}}</span>
+    {% endif %}
+{% endfor %}
+
 {% if curr_page.has_next %}
-    <a onclick="myGrid.refresh({{curr_page.next_page_number}});" class="clickable">
+    <span onclick="myGrid.refresh({{curr_page.next_page_number}});" class="chucho-button">
         Next&gt;&gt;
-    </a>
+    </span>
 {% endif %}
