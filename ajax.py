@@ -85,36 +85,49 @@ def get_filter_options(request, app_name, model_name):
 
 
 @dajaxice_register
-def read_source(request, app_name, model_name, get_editable, result_info): #get_editable, filter_args=None, page=1):
+def read_source(request, app_name, model_name, get_editable, result_info=None):
     '''
-    ' Returns all data from a given model as serialized json.
+    ' Returns - Dictionary serialized as json:
+    '           'data' - paged data from a given model
+    '           'page_list' - page buttons html
+    '           'errors' - Errors reported to client.
     '
     ' Keyword Args:
     '    app_name     - (string) The application the desired model resides in
     '    model_name   - (string) The model name to get serialized data from
     '    get_editable - (bool)   True if you are getting the editable objects, false if only the viewable.
-    '    filter_args  - (list)   This is a list of filter arguments for filtering the results by.
-    '    page         - (int)    The page of data to return.
-    '    
+    '    result_info  - (serialized json) This optional serialized json should contain a dictionary with
+    '                   the following possible keys:
+    '                       filter_args - A list of dictionaries with keys:
+    '                                     col  - Column name to filter on.
+    '                                     oper - The filter operation to perform.
+    '                                     val  - The value to filter against.
+    '                       sort_columns - A list of dictionaries with keys (directly from slick-grid):
+    '                                     'sortAsc'  - Sort ascending or descending
+    '                                     'columnId' - Name of the column to sort on.
+    '                       page - The page to data to return
+    '                       per_page - The number of items on a page.
     '''
     user = check_access(request)
     if user is None:
         errors = 'User is not logged in properly.'
         return json.dumps({'errors': errors})
+
+    extras = {}
+
     result_info = json.loads(result_info)
-    kwargs = None
-    filter_args = result_info['filter_args']
-    
+
+    if 'filter_args' in result_info:
+        filter_args = result_info['filter_args']
+    else:
+        filter_args = None
+        
+    kwargs = None    
     if filter_args is not None:
-        try:
-            #filter_args = ds(filter_args)
-            kwargs = {}
-            for i in filter_args:
-                keyword = i['col'] + '__' + filter_operators[i['oper']]
-                kwargs[keyword] = i['val']
-        except Exception as e:
-            stderr.write('Error deserializing filter_args: %s' % e)
-            stderr.flush()
+        kwargs = {}
+        for i in filter_args:
+            keyword = i['col'] + '__' + filter_operators[i['oper']]
+            kwargs[keyword] = i['val']
 
     cls = models.loading.get_model(app_name, model_name)
 
@@ -131,43 +144,40 @@ def read_source(request, app_name, model_name, get_editable, result_info): #get_
         stderr.flush()
         return json.dumps({'errors': 'Unknown error occurred in read_source: %s: %s' % (type(e), e.message)})
 
+    extras['read_only'] = read_only
+
     # Order the data
-    print 'Sorting...'
-    print result_info['sort_columns']
-    if len(result_info['sort_columns']) > 0:
+    if 'sort_columns' in result_info and len(result_info['sort_columns']) > 0:
         if result_info['sort_columns'][0]['sortAsc']:
             sort_arg = result_info['sort_columns'][0]['columnId']
         else:
             sort_arg = '-' + result_info['sort_columns'][0]['columnId']
-        print sort_arg
         objs = objs.order_by(sort_arg)
     
     # Break the data into pages
-    paginator = Paginator(objs, result_info['per_page'])
-    try:
-        objs = paginator.page(result_info['page'])
-    except PageNotAnInteger:
-        objs = paginator.page(1)
-    except EmptyPage:
-        objs = paginator.page(paginator.num_pages)
+    if 'page' in result_info and 'per_page' in result_info:
+        paginator = Paginator(objs, result_info['per_page'])
+        try:
+            objs = paginator.page(result_info['page'])
+        except PageNotAnInteger:
+            objs = paginator.page(1)
+        except EmptyPage:
+            objs = paginator.page(paginator.num_pages)
 
-    # Creat list of pages to render links for
-    pages = []
-    for i in paginator.page_range:
-        if i == objs.number or \
-                i <= 3 or \
-                (i <= objs.number + 2 and i >= objs.number - 2) or \
-                (i <= paginator.num_pages and i >= paginator.num_pages - 2):
-            if len(pages) > 0 and i - 1 > pages[-1]:
-                pages.append(-1)
-            pages.append(i)
+        # Creat list of pages to render links for
+        pages = []
+        for i in paginator.page_range:
+            if i == objs.number or \
+                    i <= 3 or \
+                    (i <= objs.number + 2 and i >= objs.number - 2) or \
+                    (i <= paginator.num_pages and i >= paginator.num_pages - 2):
+                if len(pages) > 0 and i - 1 > pages[-1]:
+                    pages.append(-1)
+                pages.append(i)
             
-    t_pages = loader.get_template('page_list.html')
-    c_pages = Context({'curr_page': objs, 'pages': pages})
-    extras = {
-        'read_only': read_only,
-        'page_list': t_pages.render(c_pages)
-        }
+        t_pages = loader.get_template('page_list.html')
+        c_pages = Context({'curr_page': objs, 'pages': pages})
+        extras['page_list'] = t_pages.render(c_pages)
 
     return serialize_model_objs(objs, extras)
 
