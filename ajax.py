@@ -107,7 +107,7 @@ def read_source(request, app_name, model_name, get_editable, result_info): #get_
     
     if filter_args is not None:
         try:
-            filter_args = json.loads(filter_args)
+            #filter_args = ds(filter_args)
             kwargs = {}
             for i in filter_args:
                 keyword = i['col'] + '__' + filter_operators[i['oper']]
@@ -131,6 +131,18 @@ def read_source(request, app_name, model_name, get_editable, result_info): #get_
         stderr.flush()
         return json.dumps({'errors': 'Unknown error occurred in read_source: %s: %s' % (type(e), e.message)})
 
+    # Order the data
+    print 'Sorting...'
+    print result_info['sort_columns']
+    if len(result_info['sort_columns']) > 0:
+        if result_info['sort_columns'][0]['sortAsc']:
+            sort_arg = result_info['sort_columns'][0]['columnId']
+        else:
+            sort_arg = '-' + result_info['sort_columns'][0]['columnId']
+        print sort_arg
+        objs = objs.order_by(sort_arg)
+    
+    # Break the data into pages
     paginator = Paginator(objs, result_info['per_page'])
     try:
         objs = paginator.page(result_info['page'])
