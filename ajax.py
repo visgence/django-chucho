@@ -115,7 +115,10 @@ def read_source(request, app_name, model_name, get_editable, result_info=None):
 
     extras = {}
 
-    result_info = json.loads(result_info)
+    if result_info is not None:
+        result_info = json.loads(result_info)
+    else:
+        result_info = {}
 
     if 'filter_args' in result_info:
         filter_args = result_info['filter_args']
