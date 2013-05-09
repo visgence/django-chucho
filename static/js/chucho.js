@@ -134,6 +134,8 @@
                     if ( 'errors' in resp ) {
                         self.error(resp.errors);
                         spinner.stop();
+
+                        $(window).trigger('chucho-refreshed');
                         return;
                     }
                     else {
@@ -149,6 +151,8 @@
                         $('.chucho-button').button();
                         $('.chucho-button-disabled').button({disabled: true});
                     }
+
+                    $(window).trigger('chucho-refreshed');
                 },{'app_name': self.app_name,
                    'model_name': self.model_name,
                    'get_editable': true,
