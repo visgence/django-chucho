@@ -399,6 +399,9 @@
                             self.columns[i].formatter = choices_formatter;
                             break;
 
+                        case 'timestamp':
+                            self.columns[i].formatter = timestamp_formatter;
+
                         case 'number':
                         case 'char':
                         case 'integer':
@@ -581,6 +584,16 @@
         return data.__unicode__;
     }
 
+    /** Custom formatter for epoch timestamp columns to display in human readable. */
+    function timestamp_formatter(row, cell, columnDef, dataContext) {
+        var grid = myGrid.grid;
+        var model = myGrid.model;
+        var col = grid.getColumns()[cell].field;
+        var data = model.get_cell_data(row, col);
+        var time =  new Date(myGrid.model.get_cell_data(row, myGrid.grid.getColumns()[cell].field)*1000);
+        return dateToString(time);
+    } 
+
     /** Custom formatter for Foreign Key columns in the data grid */
     function foreign_key_formatter(row, cell, columnDef, dataContext) {
         var grid = myGrid.grid;
@@ -730,7 +743,7 @@
                 td1.append(label);
 
                 $(input).datepicker({
-                    dateFormat: 'mm/dd/yy',
+                    dateFormat: 'mm/dd/yy'
                 });
                 $(input).datepicker('setDate', value); 
                 break;
@@ -746,6 +759,29 @@
                     timeFormat: 'hh:mm:ss'
                 });
                 $(input).datetimepicker('setDate', value); 
+                break;
+
+            case 'timestamp':
+                var timestamp = new Date(value*1000);
+                if(col._editable) {
+                    input_user = get_input('', 'text', '');
+                    input = get_input('add_form_input', 'hidden', timestamp.valueOf()/1000);
+                    $(input_user).attr('onchange', 'updateTimestampInput(this);');
+                    td2.append(input_user);
+                    td2.append(input);
+                    
+                    $(input_user).datetimepicker({
+                        showSecond: true,
+                        dateFormat: 'mm/dd/yy',
+                        timeFormat: 'hh:mm:ss'
+                    });
+                    $(input_user).datetimepicker('setDate', timestamp);
+                }
+                else {
+                    input = $('<span>').text(dateToString(timestamp));
+                    td2.append(input);
+                }
+                td1.append(label);
                 break;
                 
             case 'color':
@@ -1025,12 +1061,28 @@
         myGrid.refresh();
     }
 
-
+    /** Take a Date object and return a string formatted as:
+     * mm/dd/yyyy HH:MM:SS
+     */
+    function dateToString(date)
+    {
+        dStr = String(date.getMonth() + 1) + '/' + String(date.getDate()) + '/' + String(date.getFullYear());
+        dStr += ' ' + String(date.getHours()) + ':' + String(date.getMinutes()) + ':';
+        if (date.getSeconds() < 10)
+            dStr += '0';
+        dStr += String(date.getSeconds());
+        return dStr;
+    }
+    
     $.extend(window, {
         'DataGrid': DataGrid,
         'confirm_dialog': confirm_dialog,
-        'remove_filter_row': remove_filter_row
+        'remove_filter_row': remove_filter_row,
+        'updateTimestampInput': updateTimestampInput
     });
-    
 
+    function updateTimestampInput(e) {
+        d = new Date($(e).val());
+        $(e).nextAll('.add_form_input').val(d.valueOf()/1000);
+    }
 })(jQuery);

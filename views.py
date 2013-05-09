@@ -31,6 +31,7 @@ def model_grid(request, app_name, model_name):
 
 def genColumns(modelObj):
     columns = []
+    column_options = get_column_options(modelObj)
     for f in get_meta_fields(modelObj):
 
         #We don't care about these fields
@@ -63,27 +64,21 @@ def genColumns(modelObj):
                 field['choices'].append(choice)
         elif isinstance(f, models.BooleanField):
             field['_type'] = 'boolean'
-            field['sorter'] = 'boolean_sorter'
             field['sortable'] = 'true'
         elif isinstance(f, models.IntegerField) or isinstance(f, models.AutoField):
             field['_type'] = 'integer'
-            field['sorter'] = 'numeric_sorter'
             field['sortable'] = 'true'
         elif isinstance(f, models.DecimalField) or isinstance(f, models.FloatField):
             field['_type'] = 'decimal'
-            field['sorter'] = 'numeric_sorter'
             field['sortable'] = 'true'
         elif isinstance(f, models.DateTimeField):
             field['_type'] = 'datetime'
-            field['sorter'] = 'date_sorter'
             field['sortable'] = 'true'
         elif isinstance(f, models.DateField):
             field['_type'] = 'date'
-            field['sorter'] = 'date_sorter'
             field['sortable'] = 'true'
         elif isinstance(f, models.TextField):
             field['_type'] = 'text'
-            field['sorter'] = 'alpha_sorter'
             field['sortable'] = 'true'
         elif isinstance(f, models.CharField):
             # See if this is a password field.
@@ -92,15 +87,17 @@ def genColumns(modelObj):
             #Try and see if this field was meant to hold colors
             elif re.match('color$', f.name.lower()):
                 field['_type'] = 'color'
-                field['sorter'] = 'alpha_sorter'
                 field['sortable'] = 'true'
             else:
                 field['_type'] = 'char'
-                field['sorter'] = 'alpha_sorter'
                 field['sortable'] = 'true'
 
-        else:
+        elif f.name not in column_options:
             raise Exception("In genColumns: The field type %s is not handled." % type(f))
+
+        # Apply any custom options for the field.
+        if f.name in column_options:
+            field.update(column_options[f.name])
 
         columns.append(field)
     for m in get_meta_m2m(modelObj):
@@ -129,3 +126,12 @@ def get_meta_m2m(cls):
     ' Use a model class to get the _meta ManyToMany fields
     '''
     return cls._meta.many_to_many
+
+def get_column_options(cls):
+    '''
+    ' Use a model class to get the _meta.column_options, if they exist.
+    '''
+    try:
+        return cls.column_options
+    except:
+        return {}
