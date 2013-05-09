@@ -126,8 +126,9 @@
                 result_info.page = 1;
 
             result_info.per_page = $('#pageSelect').val();
-            console.log(result_info);
             result_info.filter_args = get_filter_data();
+
+            result_info.sort_columns = this.grid.getSortColumns();
 
             Dajaxice.chucho.read_source(
                 function(resp) {
@@ -434,14 +435,15 @@
                     self.grid.setSelectionModel(new Slick.RowSelectionModel());
                         
                     self.grid.onSort.subscribe(function(e, args) {
-                        var sign = args.sortAsc ? -1:1;
-                        var sorter = sorters[args.sortCol.sorter];
-                        var col = args.sortCol.field;
+                        //var sign = args.sortAsc ? -1:1;
+                        //var sorter = sorters[args.sortCol.sorter];
+                        //var col = args.sortCol.field;
 
-                        self.model.data.sort(function(row1, row2) {
-                            return sorter(row1, row2, sign, col);
-                        }); 
-                        self.grid.invalidate();
+                        //self.model.data.sort(function(row1, row2) {
+                        //    return sorter(row1, row2, sign, col);
+                        //}); 
+                        //self.grid.invalidate();
+                        self.refresh();
                     });
 
 
@@ -550,36 +552,36 @@
         });
     }
 
-    sorters = {
-        'numeric_sorter': numeric_sorter,
-        'alpha_sorter': alpha_sorter,
-        'date_sorter': date_sorter,
-        'boolean_sorter': boolean_sorter
-    }
+    // sorters = {
+    //     'numeric_sorter': numeric_sorter,
+    //     'alpha_sorter': alpha_sorter,
+    //     'date_sorter': date_sorter,
+    //     'boolean_sorter': boolean_sorter
+    // }
 
-    /** Sorter for boolean values */
-    function boolean_sorter(row1, row2, sign, col) {
-        var val1 = row1[col], val2 = row2[col];
-        return (val1 && !val2 ? -1:1) * sign;
-    }
+    // /** Sorter for boolean values */
+    // function boolean_sorter(row1, row2, sign, col) {
+    //     var val1 = row1[col], val2 = row2[col];
+    //     return (val1 && !val2 ? -1:1) * sign;
+    // }
 
-    /** Sorter for dates*/
-    function date_sorter(row1, row2, sign, col) {
-        var val1 = new Date(row1[col]), val2 = new Date(row2[col]);
-        return (val1 > val2 ? -1:1) * sign;
-    }
+    // /** Sorter for dates*/
+    // function date_sorter(row1, row2, sign, col) {
+    //     var val1 = new Date(row1[col]), val2 = new Date(row2[col]);
+    //     return (val1 > val2 ? -1:1) * sign;
+    // }
 
-    /** Sorter for general alpha values (char's, text etc) */
-    function alpha_sorter(row1, row2, sign, col) {
-        var val1 = row1[col].toLowerCase(), val2 = row2[col].toLowerCase();
-        return (val1 > val2 ? -1:1) * sign;
-    }
+    // /** Sorter for general alpha values (char's, text etc) */
+    // function alpha_sorter(row1, row2, sign, col) {
+    //     var val1 = row1[col].toLowerCase(), val2 = row2[col].toLowerCase();
+    //     return (val1 > val2 ? -1:1) * sign;
+    // }
 
-    /** Sorter for general numeric values */
-    function numeric_sorter(row1, row2, sign, col) {
-        var val1 = row1[col], val2 = row2[col];
-        return (val1 > val2 ? -1:1) * sign;
-    }
+    // /** Sorter for general numeric values */
+    // function numeric_sorter(row1, row2, sign, col) {
+    //     var val1 = row1[col], val2 = row2[col];
+    //     return (val1 > val2 ? -1:1) * sign;
+    // }
 
     /** Custom formatter for columns that have a list of choices to choose from. */
     function choices_formatter (row, cell, columnDef, dataContext) {
