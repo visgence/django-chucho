@@ -131,11 +131,18 @@
 
             Dajaxice.chucho.read_source(
                 function(resp) {
+                   
+                    //In case some additional data gets loaded into the response object from 
+                    //outside of chucho, grab it to be sent off.
+                    var cust_data = null;
+                    if('cust_data' in resp)
+                        cust_data = resp['cust_data'];
+
                     if ( 'errors' in resp ) {
                         self.error(resp.errors);
                         spinner.stop();
 
-                        $(window).trigger('chucho-refreshed');
+                        $(window).trigger('chucho-refreshed', cust_data);
                         return;
                     }
                     else {
@@ -152,7 +159,7 @@
                         $('.chucho-button-disabled').button({disabled: true});
                     }
 
-                    $(window).trigger('chucho-refreshed');
+                    $(window).trigger('chucho-refreshed', cust_data);
                 },{'app_name': self.app_name,
                    'model_name': self.model_name,
                    'get_editable': true,
