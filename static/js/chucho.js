@@ -678,7 +678,7 @@
             
             //Make button that triggers dialog
             var onclick = "confirm_dialog('m2m_" + row + "_" + cell + "', null, null, 'Ok');";
-            m_input = '<input type="button" value="View" onclick="' + onclick + '" />' + div;
+            m_input = '<span onclick="' + onclick + '" class="chucho-clickable">View</span>' + div;
         }
 
         return m_input;

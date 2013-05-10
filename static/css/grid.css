@@ -32,3 +32,14 @@ div#utilities-container div.grid
 {
     height: 650px;
 }
+
+.chucho-clickable
+{
+    cursor: pointer;
+    color: blue;
+}
+
+.chucho-clickable:hover
+{
+    color: red;
+}
