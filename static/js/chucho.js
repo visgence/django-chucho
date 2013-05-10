@@ -21,6 +21,18 @@
     var refresh_button = '<input type="button" value="Refresh" onclick="myGrid.refresh();"/>';
     var message_span = '<span id="server_messages" style="padding-left:1em"></span>';
 
+    function option_element(value, text, is_selected) {
+        var option = $('<option>', {
+            value: value,
+            text: text
+        });
+
+        if ( is_selected )
+            option.attr('selected', 'selected');
+
+        return option;
+    }
+
     /* Grid configuration */
     function DataGrid() {
         /** This is the object that contains the data.  It allows for more
@@ -66,6 +78,29 @@
         /** The column definition for the grid.  This is loaded via ajax. */
         this.columns = null;
 
+        /** Return the columns to be displayed by slickgrid */
+        this.grid_columns = function() {
+            var columns = $.map(this.columns, function(c, i) {
+                if ( c.grid_column)
+                    return c;
+                else
+                    return undefined;
+            });
+            return columns;
+        };
+
+        /** Return the columns allowed to filter by. */
+        this.filter_columns = function() {
+            var columns = $.map(this.columns, function(c, i) {
+                if ( c.filter_column === false )
+                    return undefined;
+                else if ( c.filter_column || c.grid_column )
+                    return c;
+                return undefined;
+            });
+            return columns;
+        };
+
         /** These are the slickGrid options.*/
         this.options = {
             enableCellNavigation: true,
@@ -79,7 +114,7 @@
         this.grid = null;
 
         /** The columns and operators that we can filter over for this grid. */
-        this.filter_options = null;
+        this.filter_operators = null;
 
         /** Determines whether or not we want to allow the user to only view data or edit it. */
         this.read_only = true;
@@ -119,7 +154,6 @@
             if ( page )
                 result_info.page = page;
             else if ( $('#chucho_current-page').length > 0 ) {
-                console.log($('#chucho_current-page'));
                 result_info.page = $('#chucho_current-page').val();
             }
             else
@@ -370,15 +404,25 @@
             var column = $('<select name="column">');
             var operator = $('<select name="operator">');
             var comparison = $('<input type="text" name="comparison-value">');
-            $(operator).append(this.filter_options.operators);
-            $(column).append(this.filter_options.columns);
+
+            $(operator).append(option_element('', 'Select Operator', true));
+            $(column).append(option_element('', 'Select Column', true));
+
             $(row).append($('<td>').append($(remove)))
                 .append($('<td>').append(column))
                 .append($('<td>').append(operator))
                 .append($('<td>').append(comparison))
                 .addClass('grid-filter')
                 .appendTo($('#filter-table'));
-            
+
+            $.each(this.filter_operators, function(i, name) {
+                var option = (option_element(name, name));
+                option.appendTo($(operator));
+            });
+            $.each(this.filter_columns(), function(i, c) {
+                var option = (option_element(c.id, c.name));
+                option.appendTo($(column));
+            });            
         };
 
         /** Here we initialize our object. */
@@ -412,6 +456,7 @@
 
                         case 'timestamp':
                             self.columns[i].formatter = timestamp_formatter;
+                            break;
 
                         case 'number':
                         case 'char':
@@ -423,7 +468,8 @@
                         }
                     }
                         
-                    self.grid = new Slick.Grid("#" + self.model_name + "_grid", self.model, self.columns, self.options);
+                    self.grid = new Slick.Grid("#" + self.model_name + "_grid", self.model,
+                                               self.grid_columns(), self.options);
 
                     self.grid.onDblClick.subscribe(function(e, args) {
                         if(!self.read_only)
@@ -474,17 +520,13 @@
             );
 
             // Populate the filter options.
-            Dajaxice.chucho.get_filter_options(
+            Dajaxice.chucho.get_filter_operators(
                 function(resp) {
                     if ('errors' in resp) {
                         self.error(resp.errors);
                         return;
                     }
-                    self.filter_options = resp;
-                },
-                {
-                    'app_name': self.app_name,
-                    'model_name': self.model_name
+                    self.filter_operators = resp;
                 }
             );
         };
@@ -1084,16 +1126,16 @@
         dStr += String(date.getSeconds());
         return dStr;
     }
-    
+
+    function updateTimestampInput(e) {
+        d = new Date($(e).val());
+        $(e).nextAll('.add_form_input').val(d.valueOf()/1000);
+    }
+
     $.extend(window, {
         'DataGrid': DataGrid,
         'confirm_dialog': confirm_dialog,
         'remove_filter_row': remove_filter_row,
         'updateTimestampInput': updateTimestampInput
     });
-
-    function updateTimestampInput(e) {
-        d = new Date($(e).val());
-        $(e).nextAll('.add_form_input').val(d.valueOf()/1000);
-    }
 })(jQuery);

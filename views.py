@@ -38,7 +38,14 @@ def genColumns(modelObj):
         if f.name.endswith('_ptr'):
             continue
 
-        field = {'field': f.name, 'name': f.name.title(), 'id': f.name}
+        field = {
+            'field': f.name,
+            'name': f.name.title(),
+            'id': f.name,
+            'sortable': True,
+            'grid_column': True
+            }
+
         #if f.name in ['name', 'id']:
         #    field['sortable'] = True
         # Make sure to give the type and other meta data for the columns.
@@ -64,33 +71,26 @@ def genColumns(modelObj):
                 field['choices'].append(choice)
         elif isinstance(f, models.BooleanField):
             field['_type'] = 'boolean'
-            field['sortable'] = 'true'
         elif isinstance(f, models.IntegerField) or isinstance(f, models.AutoField):
             field['_type'] = 'integer'
-            field['sortable'] = 'true'
         elif isinstance(f, models.DecimalField) or isinstance(f, models.FloatField):
             field['_type'] = 'decimal'
-            field['sortable'] = 'true'
         elif isinstance(f, models.DateTimeField):
             field['_type'] = 'datetime'
-            field['sortable'] = 'true'
         elif isinstance(f, models.DateField):
             field['_type'] = 'date'
-            field['sortable'] = 'true'
         elif isinstance(f, models.TextField):
             field['_type'] = 'text'
-            field['sortable'] = 'true'
         elif isinstance(f, models.CharField):
             # See if this is a password field.
             if f.model == AuthUser and f.name == 'password':
                 field['_type'] = 'auth_password'
+                field['sortable'] = False
             #Try and see if this field was meant to hold colors
             elif re.match('color$', f.name.lower()):
                 field['_type'] = 'color'
-                field['sortable'] = 'true'
             else:
                 field['_type'] = 'char'
-                field['sortable'] = 'true'
 
         elif f.name not in column_options:
             raise Exception("In genColumns: The field type %s is not handled." % type(f))

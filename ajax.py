@@ -32,56 +32,56 @@ from check_access import check_access
 filter_operators = {
     '=': 'exact',
     '= (no case)': 'iexact',
-    'contains string': 'contains',
-    'contains (no case)': 'icontains',
-    'starts with string': 'startswith',
-    'starts with (no case)': 'istartswith',
-    'ends with string': 'endswith',
-    'ends with (no case)': 'iendswith',
-    'element in': 'in',
+    'Contains String': 'contains',
+    'Contains (No Case)': 'icontains',
+    'Starts With String': 'startswith',
+    'Starts With (No Case)': 'istartswith',
+    'Ends With String': 'endswith',
+    'Ends With (No Case)': 'iendswith',
+    'Element In': 'in',
     '>': 'gt',
     '>=': 'gte',
     '<': 'lt',
     '<=': 'lte',
-    'is null': 'isnull',
-    'regular expression': 'regex',
-    'regular expression (no case)': 'iregex'
+    'Is Null': 'isnull',
+    'Regular Expression': 'regex',
+    'Regular Expression (No Case)': 'iregex'
     }
 
 
 @dajaxice_register
-def get_filter_options(request, app_name, model_name):
+def get_filter_operators(request):
     '''
     ' Return JSON dump of dict of list of select option elements.
     ' This is used by the filter tool in the ui.
     '''
-    print app_name
-    print model_name
     user = check_access(request)
     if user is None:
         errors = 'User is not logged in properly.'
         return json.dumps({'errors': errors})
-    t = loader.get_template('select_options.html')
+
     operators = filter_operators.keys()
     operators.sort()
-    c_operators = Context({'select_title': 'Select Operator', 'options': operators})
+    return json.dumps(operators)
 
-    cls = models.loading.get_model(app_name, model_name)
-    try:
-        columns = cls.filter_columns
-        columns.sort()
-        c_columns = Context({'select_title': 'Select Column', 'options': columns})
-    except AttributeError:
-        columns = [f.name for f in cls._meta.fields]
-        print columns
-        columns.sort()
-        print columns
-        c_columns = Context({'select_title': 'Select Column', 'options': columns})
-    options = {
-        'operators': t.render(c_operators),
-        'columns': t.render(c_columns)
-        }
-    return json.dumps(options)
+# c_operators = Context({'select_title': 'Select Operator', 'options': operators})
+
+#     cls = models.loading.get_model(app_name, model_name)
+#     try:
+#         columns = cls.filter_columns
+#         columns.sort()
+#         c_columns = Context({'select_title': 'Select Column', 'options': columns})
+#     except AttributeError:
+#         columns = [f.name for f in cls._meta.fields]
+#         print columns
+#         columns.sort()
+#         print columns
+#         c_columns = Context({'select_title': 'Select Column', 'options': columns})
+#     options = {
+#         'operators': t.render(c_operators),
+#         'columns': t.render(c_columns)
+#         }
+#     return json.dumps(options)
 
 
 @dajaxice_register
