@@ -100,6 +100,7 @@ def genColumns(modelObj):
             field.update(column_options[f.name])
 
         columns.append(field)
+    
     for m in get_meta_m2m(modelObj):
         columns.append({
             'field': m.name,
@@ -108,7 +109,8 @@ def genColumns(modelObj):
             'model_name': m.rel.to.__name__,
             'app': m.rel.to._meta.app_label,
             '_type': 'm2m',
-            '_editable': True
+            '_editable': True,
+            'grid_column': True
         })
 
     return columns
