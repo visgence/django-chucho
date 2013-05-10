@@ -3,11 +3,6 @@
     background: yellow;
 }
 
-.slick-cell.active
-{
-    background: grey;
-}
-
 .slick-header-column
 {
     text-align: center;
