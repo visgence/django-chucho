@@ -436,10 +436,10 @@ def serialize_model_objs(objs, extras):
             elif isinstance(f, models.fields.DateTimeField):
                 dt_obj = f.value_from_object(obj)
                 if dt_obj is not None:
-                    if USER_TZ and is_aware(dt_obj):
+                    if not USER_TZ and not is_aware(dt_obj):
                         aware_dt_obj = make_aware(dt_obj, get_current_timezone())
                         obj_dict[f.name] = timegm(aware_dt_obj.utctimetuple())
-                    elif not USER_TZ and not is_aware(dt_obj):
+                    elif USER_TZ and is_aware(dt_obj):
                         obj_dict[f.name] = timegm(dt_obj.utctimetuple())
                     else:
                         error = "There is a datetime that is aware while USER_TZ is false! or vice-versa"
