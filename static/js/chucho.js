@@ -642,9 +642,11 @@
     function timestamp_formatter(row, cell, columnDef, dataContext) {
         var grid = myGrid.grid;
         var model = myGrid.model;
-        var col = grid.getColumns()[cell].field;
-        var data = model.get_cell_data(row, col);
-        var time =  new Date(myGrid.model.get_cell_data(row, myGrid.grid.getColumns()[cell].field)*1000);
+        var data = myGrid.model.get_cell_data(row, myGrid.grid.getColumns()[cell].field;
+        var time = '';
+        if(data)
+            time =  new Date(data)*1000);
+
         return dateToString(time);
     } 
 
