@@ -811,7 +811,7 @@
                 if(col._editable) {
                     input_user = get_input('', 'text', '');
                     
-                    if(!isNaN(timestamp.valueOf())
+                    if(!isNaN(timestamp.valueOf()))
                         input = get_input('add_form_input', 'hidden', timestamp.valueOf()/1000);
                     else
                         input = get_input('add_form_input', 'hidden', '');
@@ -827,7 +827,7 @@
                     $(input_user).datetimepicker('setDate', timestamp);
                 }
                 else {
-                    if(!isNaN(timestamp.valueOf())
+                    if(!isNaN(timestamp.valueOf()))
                         input = $('<span>').text(dateToString(timestamp));
                     else
                         input = $('<span>').text('');
