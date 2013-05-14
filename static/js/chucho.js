@@ -454,6 +454,8 @@
                             self.columns[i].formatter = choices_formatter;
                             break;
 
+                        case 'date':
+                        case 'datetime':
                         case 'timestamp':
                             self.columns[i].formatter = timestamp_formatter;
                             break;
@@ -462,7 +464,6 @@
                         case 'char':
                         case 'integer':
                         case 'text':
-                        case 'date':
 
                         default:
                         }

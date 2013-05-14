@@ -21,6 +21,7 @@ from django.db import models, transaction
 from django.template import Context, loader
 from django.utils.timezone import utc
 from datetime import datetime
+from calendar import timegm
 from sys import stderr
 
 # Local imports
@@ -431,11 +432,11 @@ def serialize_model_objs(objs, extras):
             elif isinstance(f, models.fields.DateTimeField):
                 dt_obj = f.value_from_object(obj)
                 if dt_obj is not None:
-                    obj_dict[f.name] = dt_obj.strftime(DT_FORMAT)
+                    obj_dict[f.name] = timegm(dt_obj.utctimetuple())
             elif isinstance(f, models.fields.DateField):
                 d_obj = f.value_from_object(obj)
                 if d_obj is not None:
-                    obj_dict[f.name] = d_obj.strftime(D_FORMAT)
+                    obj_dict[f.name] = timegm(dt_obj.utctimetuple())
 
             # Types that need to be returned as strings
             elif type(obj_dict[f.name]) not in [dict, list, unicode, int, long, float, bool, type(None)]:
