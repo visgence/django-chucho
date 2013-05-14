@@ -810,7 +810,7 @@
                 var timestampval = '';
                 var timestampstr = '';
                 var timestamp = new Date(value*1000);
-                if(value !== null && !isNaN(timestamp.valueOf())) {
+                if(value !== null && value !== "" && !isNaN(timestamp.valueOf())) {
                     timestampstr = dateToString(timestamp);
                     timestampval = timestamp.valueOf()/1000;
                 }
