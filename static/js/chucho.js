@@ -805,19 +805,20 @@
                 $(input).datepicker('setDate', value); 
                 break;
 
+            
+//                input = get_input('add_form_input', 'text', value);
+//                td2.append(input);
+//                td1.append(label);
+//
+//                $(input).datetimepicker({
+//                    showSecond: true,
+//                    dateFormat: 'mm/dd/yy',
+//                    timeFormat: 'hh:mm:ss'
+//                });
+//                $(input).datetimepicker('setDate', value); 
+//                break;
+
             case 'datetime':
-                input = get_input('add_form_input', 'text', value);
-                td2.append(input);
-                td1.append(label);
-
-                $(input).datetimepicker({
-                    showSecond: true,
-                    dateFormat: 'mm/dd/yy',
-                    timeFormat: 'hh:mm:ss'
-                });
-                $(input).datetimepicker('setDate', value); 
-                break;
-
             case 'timestamp':
                 var timestamp = new Date(value*1000);
                 if(col._editable) {

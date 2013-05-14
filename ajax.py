@@ -19,7 +19,7 @@ from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import models, transaction
 from django.template import Context, loader
-from django.utils.timezone import utc, make_aware, is_aware, get_current_timezone
+from django.utils.timezone import utc, make_naive,  make_aware, is_aware, get_current_timezone
 from datetime import datetime
 from calendar import timegm
 from sys import stderr
@@ -259,13 +259,16 @@ def update(request, app_name, model_name, data):
                         return json.dumps({'errors': error})
 
                 elif field['_type'] == 'datetime':
-                    dt_obj = datetime.strptime(data[field['field']], DT_FORMAT)
-                    dt_obj = dt_obj.replace(tzinfo=utc)
+                    if USER_TZ:
+                        dt_obj = make_aware(datetime.utcfromtimestamp(data[field['field']]), utc)
+                    else:
+                        aware_dt_obj = make_aware(datetime.utcfromtimestamp(data[field['field']]), utc)
+                        dt_obj = make_naive(aware_dt_obj, get_current_timezone())
+
                     setattr(obj, field['field'], dt_obj)
 
                 elif field['_type'] == 'date':
                     dt_obj = datetime.strptime(data[field['field']], D_FORMAT)
-                    dt_obj = dt_obj.replace(tzinfo=utc)
                     setattr(obj, field['field'], dt_obj.date())
 
                 elif field['_type'] == 'auth_password':
