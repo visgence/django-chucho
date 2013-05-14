@@ -807,14 +807,18 @@
  
             case 'datetime':
             case 'timestamp':
+                var timestampval = '';
+                var timestampstr = '';
                 var timestamp = new Date(value*1000);
+                if(value !== null && !isNaN(timestamp.valueOf())) {
+                    timestampstr = dateToString(timestamp);
+                    timestampval = timestamp.valueOf()/1000;
+                }
+
                 if(col._editable) {
                     input_user = get_input('', 'text', '');
-                    
-                    if(!isNaN(timestamp.valueOf()))
-                        input = get_input('add_form_input', 'hidden', timestamp.valueOf()/1000);
-                    else
-                        input = get_input('add_form_input', 'hidden', '');
+                   
+                    input = get_input('add_form_input', 'hidden', timestampval);
                     $(input_user).attr('onchange', 'updateTimestampInput(this);');
                     td2.append(input_user);
                     td2.append(input);
@@ -824,13 +828,12 @@
                         dateFormat: 'mm/dd/yy',
                         timeFormat: 'hh:mm:ss'
                     });
-                    $(input_user).datetimepicker('setDate', timestamp);
+                   
+                    if(timestampstr != '')
+                        $(input_user).datetimepicker('setDate', timestampstr);
                 }
                 else {
-                    if(!isNaN(timestamp.valueOf()))
-                        input = $('<span>').text(dateToString(timestamp));
-                    else
-                        input = $('<span>').text('');
+                    input = $('<span>').text(timestampstr);
                     td2.append(input);
                 }
                 td1.append(label);
