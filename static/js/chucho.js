@@ -804,26 +804,17 @@
                 });
                 $(input).datepicker('setDate', value); 
                 break;
-
-            
-//                input = get_input('add_form_input', 'text', value);
-//                td2.append(input);
-//                td1.append(label);
-//
-//                $(input).datetimepicker({
-//                    showSecond: true,
-//                    dateFormat: 'mm/dd/yy',
-//                    timeFormat: 'hh:mm:ss'
-//                });
-//                $(input).datetimepicker('setDate', value); 
-//                break;
-
+ 
             case 'datetime':
             case 'timestamp':
                 var timestamp = new Date(value*1000);
                 if(col._editable) {
                     input_user = get_input('', 'text', '');
-                    input = get_input('add_form_input', 'hidden', timestamp.valueOf()/1000);
+                    
+                    if(!isNaN(timestamp.valueOf())
+                        input = get_input('add_form_input', 'hidden', timestamp.valueOf()/1000);
+                    else
+                        input = get_input('add_form_input', 'hidden', '');
                     $(input_user).attr('onchange', 'updateTimestampInput(this);');
                     td2.append(input_user);
                     td2.append(input);
@@ -836,7 +827,10 @@
                     $(input_user).datetimepicker('setDate', timestamp);
                 }
                 else {
-                    input = $('<span>').text(dateToString(timestamp));
+                    if(!isNaN(timestamp.valueOf())
+                        input = $('<span>').text(dateToString(timestamp));
+                    else
+                        input = $('<span>').text('');
                     td2.append(input);
                 }
                 td1.append(label);
@@ -1133,8 +1127,11 @@
     }
 
     function updateTimestampInput(e) {
-        d = new Date($(e).val());
-        $(e).nextAll('.add_form_input').val(d.valueOf()/1000);
+        var d = new Date($(e).val());
+        var value = null;
+        if(!isNaN(d.valueOf()))
+            value = d.valueOf()/1000;
+         $(e).nextAll('.add_form_input').val(value);
     }
 
     $.extend(window, {

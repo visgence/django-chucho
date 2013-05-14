@@ -259,10 +259,11 @@ def update(request, app_name, model_name, data):
                         return json.dumps({'errors': error})
 
                 elif field['_type'] == 'datetime':
-                    if USER_TZ:
+                    dt_obj = None
+                    if USER_TZ and data[field['field']] is not None:
                         dt_obj = make_aware(datetime.utcfromtimestamp(data[field['field']]), utc)
-                    else:
-                        aware_dt_obj = make_aware(datetime.utcfromtimestamp(data[field['field']]), utc)
+                    elif not USER_TZ and data[field['field']] is not None:
+                        aware_dt_obj = make_aware(datetime.utcfromtimestamp(float(data[field['field']])), utc)
                         dt_obj = make_naive(aware_dt_obj, get_current_timezone())
 
                     setattr(obj, field['field'], dt_obj)
