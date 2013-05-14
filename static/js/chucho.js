@@ -166,22 +166,19 @@
 
             Dajaxice.chucho.read_source(
                 function(resp) {
-                   
+                    spinner.stop();
                     //In case some additional data gets loaded into the response object from 
                     //outside of chucho, grab it to be sent off.
                     var cust_data = null;
                     if('cust_data' in resp)
-                        cust_data = resp['cust_data'];
+                        cust_data = resp.cust_data;
 
                     if ( 'errors' in resp ) {
                         self.error(resp.errors);
-                        spinner.stop();
-
                         $(window).trigger('chucho-refreshed', cust_data);
                         return;
                     }
                     else {
-                        spinner.stop();
                         $('#server_messages').html('');
                     }
                     
@@ -1104,6 +1101,9 @@
 
             filter_data.push(temp_obj);
         });
+        if ( filter_data.length === 0 && $('#chucho-omni-filter').val() )
+            filter_data.push({col: 'chucho-omni', val: $('#chucho-omni-filter').val()});
+
         return filter_data;
     }
 

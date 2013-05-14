@@ -69,26 +69,6 @@ def get_filter_operators(request):
     operators.sort()
     return json.dumps(operators)
 
-# c_operators = Context({'select_title': 'Select Operator', 'options': operators})
-
-#     cls = models.loading.get_model(app_name, model_name)
-#     try:
-#         columns = cls.filter_columns
-#         columns.sort()
-#         c_columns = Context({'select_title': 'Select Column', 'options': columns})
-#     except AttributeError:
-#         columns = [f.name for f in cls._meta.fields]
-#         print columns
-#         columns.sort()
-#         print columns
-#         c_columns = Context({'select_title': 'Select Column', 'options': columns})
-#     options = {
-#         'operators': t.render(c_operators),
-#         'columns': t.render(c_columns)
-#         }
-#     return json.dumps(options)
-
-
 @dajaxice_register
 def read_source(request, app_name, model_name, get_editable, result_info=None):
     '''
@@ -133,9 +113,14 @@ def read_source(request, app_name, model_name, get_editable, result_info=None):
     kwargs = None    
     if filter_args is not None:
         kwargs = {}
+        omni = None
         for i in filter_args:
-            keyword = i['col'] + '__' + filter_operators[i['oper']]
-            kwargs[keyword] = i['val']
+            if i['col'] == 'chucho-omni':
+                omni = i['val']
+            else:
+                keyword = i['col'] + '__' + filter_operators[i['oper']]
+                kwargs[keyword] = i['val']
+            
 
     cls = models.loading.get_model(app_name, model_name)
 
@@ -143,9 +128,9 @@ def read_source(request, app_name, model_name, get_editable, result_info=None):
     try:
         #Only get the objects that can be edited by the user logged in
         if get_editable and cls.objects.can_edit(user):
-            objs = cls.objects.get_editable(user, kwargs)
+            objs = cls.objects.get_editable(user, kwargs, omni)
         else:
-            objs = cls.objects.get_viewable(user, kwargs)
+            objs = cls.objects.get_viewable(user, kwargs, omni)
             read_only = True
     except Exception as e:
         stderr.write('Unknown error occurred in read_source: %s: %s\n' % (type(e), e.message))
