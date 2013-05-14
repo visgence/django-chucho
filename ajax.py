@@ -19,13 +19,13 @@ from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import models, transaction
 from django.template import Context, loader
-from django.utils.timezone import utc
+from django.utils.timezone import utc, make_aware, is_aware, get_current_timezone
 from datetime import datetime
 from calendar import timegm
 from sys import stderr
 
 # Local imports
-from settings import get_permission_obj, DT_FORMAT, D_FORMAT
+from settings import get_permission_obj, DT_FORMAT, D_FORMAT, USER_TZ
 AuthUser = get_permission_obj()
 from views import genColumns
 from check_access import check_access
@@ -432,11 +432,19 @@ def serialize_model_objs(objs, extras):
             elif isinstance(f, models.fields.DateTimeField):
                 dt_obj = f.value_from_object(obj)
                 if dt_obj is not None:
-                    obj_dict[f.name] = timegm(dt_obj.utctimetuple())
+                    if USER_TZ and is_aware(dt_obj):
+                        aware_dt_obj = make_aware(dt_obj, get_current_timezone())
+                        obj_dict[f.name] = timegm(aware_dt_obj.utctimetuple())
+                    elif not USER_TZ and not is_aware(dt_obj):
+                        obj_dict[f.name] = timegm(dt_obj.utctimetuple())
+                    else:
+                        error = "There is a datetime that is aware while USER_TZ is false! or vice-versa"
+                        return json.dumps({"errors": error}) 
+
             elif isinstance(f, models.fields.DateField):
                 d_obj = f.value_from_object(obj)
                 if d_obj is not None:
-                    obj_dict[f.name] = timegm(dt_obj.utctimetuple())
+                    obj_dict[f.name] = dt_obj.strftime(D_FORMAT)
 
             # Types that need to be returned as strings
             elif type(obj_dict[f.name]) not in [dict, list, unicode, int, long, float, bool, type(None)]:

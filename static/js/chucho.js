@@ -454,12 +454,12 @@
                             self.columns[i].formatter = choices_formatter;
                             break;
 
-                        case 'date':
                         case 'datetime':
                         case 'timestamp':
                             self.columns[i].formatter = timestamp_formatter;
                             break;
 
+                        case 'date':
                         case 'number':
                         case 'char':
                         case 'integer':
@@ -643,9 +643,12 @@
      
         var data = myGrid.model.get_cell_data(row, myGrid.grid.getColumns()[cell].field);
         var time = '';
-        if(data)
+        if(data) {
             time =  new Date(data*1000);
-        return dateToString(time);
+            return dateToString(time);
+        }
+        
+        return time
     } 
 
     /** Custom formatter for Foreign Key columns in the data grid */
