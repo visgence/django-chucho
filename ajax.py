@@ -260,9 +260,9 @@ def update(request, app_name, model_name, data):
 
                 elif field['_type'] == 'datetime':
                     dt_obj = None
-                    if USE_TZ and data[field['field']] is not None:
-                        dt_obj = make_aware(datetime.utcfromtimestamp(data[field['field']]), utc)
-                    elif not USE_TZ and data[field['field']] is not None:
+                    if USE_TZ and data[field['field']] not in (None, u""):
+                        dt_obj = make_aware(datetime.utcfromtimestamp(float(data[field['field']])), utc)
+                    elif not USE_TZ and data[field['field']] not in (None, u""):
                         aware_dt_obj = make_aware(datetime.utcfromtimestamp(float(data[field['field']])), utc)
                         dt_obj = make_naive(aware_dt_obj, get_current_timezone())
 
