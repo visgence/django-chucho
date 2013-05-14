@@ -25,7 +25,11 @@ from calendar import timegm
 from sys import stderr
 
 # Local imports
-from settings import get_permission_obj, DT_FORMAT, D_FORMAT, USER_TZ
+from settings import get_permission_obj, DT_FORMAT, D_FORMAT
+try:
+    from settings import USER_TZ
+except:
+    USER_TZ = False
 AuthUser = get_permission_obj()
 from views import genColumns
 from check_access import check_access
