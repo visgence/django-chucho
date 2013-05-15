@@ -748,7 +748,7 @@
                 value = record[col.field];
              
             switch(col._type) {
-            case 'auth_password':
+            case 'password':
                 input = get_input('add_form_input', 'text', '');
                 td1.append(label);
                 td2.append(input);

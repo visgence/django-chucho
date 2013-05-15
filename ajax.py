@@ -242,7 +242,7 @@ def update(request, app_name, model_name, data):
                     continue
 
                 # Handle empy data
-                elif data[field['field']] in [None, ''] and field['_type'] != 'auth_password':
+                elif data[field['field']] in [None, ''] and field['_type'] != 'password':
                     if field['_type'] in ['text', 'char', 'color']:
                         setattr(obj, field['field'], '')
                     else:
@@ -272,7 +272,7 @@ def update(request, app_name, model_name, data):
                     dt_obj = datetime.strptime(data[field['field']], D_FORMAT)
                     setattr(obj, field['field'], dt_obj.date())
 
-                elif field['_type'] == 'auth_password':
+                elif field['_type'] == 'password':
                     if data[field['field']] not in [None, '']:
                         obj.set_password(data[field['field']])
 
