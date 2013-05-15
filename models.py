@@ -16,13 +16,6 @@ class ChuchoManager(models.Manager):
         pattern_name2 = r'^\s*([a-z]+),\s*([a-z]+)\s*$'
 
         result = self.none()
-        m = re.match(pattern_name1, search_str, re.I)
-        if m is not None:
-            result |= self.search_name(m.group(1), m.group(2))
-
-        m = re.match(pattern_name2, search_str, re.I)
-        if m is not None:
-            result |= self.search_name(m.group(2), m.group(1))
 
         result |= self.search_all(search_str)
         
@@ -44,18 +37,6 @@ class ChuchoManager(models.Manager):
                 q |= Q(**{f + op: search_str})
 
         return self.filter(q)
-
-    
-    def search_name(self, first, last):
-        name_fields = {
-            'first': 'first_name',
-            'last': 'last_name'
-            }
-        filter_args = {
-            name_fields['first']  + '__icontains': first,
-            name_fields['last'] + '__icontains': last
-            }
-        return self.filter(**filter_args)
 
 class ChuchoUserManager(models.Manager):
     '''
@@ -83,19 +64,37 @@ class ChuchoUserManager(models.Manager):
             print "Match name2"
             result |= self.search_name(m.group(2), m.group(1))
 
-        #m = re.match(patter_username, search_str, re.I)
-        #if m is not None:
-        #    result |= self.filter(   
+        m = re.match(pattern_username, search_str, re.I)
+        if m is not None:
+            print m.group(1)
+            result |= self.search_username(m.group(1))
 
         return result
 
     def search_name(self, first, last):
-        name_fields = {
-            'first': 'first_name',
-            'last': 'last_name'
-            }
         filter_args = {
             name_fields['first']  + '__icontains': first,
             name_fields['last'] + '__icontains': last
             }
         return self.filter(**filter_args)
+
+    def search_username(self, s):
+        o = self.all()[0]
+        try:
+            username = o.USERNAME_FIELD
+        except AttributeError:
+            username = None
+        result = self.none()
+        try:
+            result |= self.filter(username__icontains=s)
+        except TypeError:
+            pass
+
+        result |= self.filter(Q(first_name__icontains=s) | Q(last_name__icontains=s))
+        return result
+        
+        
+name_fields = {
+    'first': 'first_name',
+    'last': 'last_name'
+    }
