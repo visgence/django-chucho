@@ -1,5 +1,7 @@
 from django.db import models
 from django.db.models import Q
+from django.core.exceptions import ObjectDoesNotExist
+from settings import get_permission_obj
 import re
 
 class ChuchoManager(models.Manager):
@@ -45,6 +47,113 @@ class ChuchoManager(models.Manager):
                 q_list.append(Q(**{f + op: search_str}))
 
         return q_list
+
+    def can_edit(self, user):
+        '''
+        ' Checks if some user instance is allowed to edit or add instances of this model.
+        ' User should be an instance of the auth user model.
+        '
+        ' Keyword Arguments:
+        '   user - AuthUser to check permission for.
+        '
+        ' Return:  True if user is allowed to edit objects of this model and False otherwise
+        '''
+
+        if not isinstance(user, get_permission_obj()):
+            raise TypeError('%s is not an auth user' % str(user))
+        
+        for f in user._meta.fields:
+            if f.name == "is_superuser" and user.is_superuser:
+                return True
+
+        return False
+
+    def get_viewable(self, user, filter_args=None, omni=None):
+        '''
+        ' Gets all instances of a model that can be viewed or assigned by a specific AuthUser.
+        ' Optional search options can be given to filter down the instances returned.  filter_args takes
+        ' precedence over omni for filtering. 
+        '
+        ' Only if the AuthUser has is_superuser and is set to True will a QuerySet of possible instances 
+        ' be returned.
+        '
+        ' Keyword Arguments:
+        '   user - AuthUser to check permissions for.
+        '   filter_args - Dict of key/values to filter by. (Optional)
+        '   omni - String to filter various fields by. (Optional)
+        '
+        ' Return: QuerySet of viewable instances for a specified user.
+        '''
+                
+        if not isinstance(user, get_permission_obj()):
+            raise TypeError("%s is not an Auth User" % str(user))
+
+        for f in user._meta.fields:
+            if f.name == "is_superuser" and user.is_superuser:
+                if filter_args is not None:
+                    return self.filter(**filter_args)
+                elif omni is not None and omni != "":
+                    return self.search(omni)
+                else:
+                    return self.all()
+
+        return self.none()
+
+    def get_editable(self, user, filter_args=None, omni=None):
+        '''
+        ' Gets all instances of a model that can be edited by a specific AuthUser.
+        ' Optional search options can be given to filter down the instances returned.  filter_args takes
+        ' precedence over omni for filtering. 
+        '
+        ' Only if the AuthUser has is_superuser and is set to True will a QuerySet of possible instances 
+        ' be returned.
+        '
+        ' Keyword Arguments:
+        '   user - AuthUser to check permissions for.
+        '   filter_args - Dict of key/values to filter by. (Optional)
+        '   omni - String to filter various fields by. (Optional)
+        '
+        ' Return: QuerySet of editable instances for a specified user.
+        '''
+
+        if not isinstance(user, get_permission_obj()):
+            raise TypeError("%s is not an Auth User" % str(user))
+
+        for f in user._meta.fields:
+            if f.name == "is_superuser" and user.is_superuser:
+                if filter_args is not None:
+                    return self.filter(**filter_args)
+                elif omni is not None and omni != "":
+                    return self.search(omni)
+                else:
+                    return self.all()
+
+        return self.none()
+
+    def get_editable_by_pk(self, user, pk):
+        '''
+        ' Get's an instance specified by a pk if the given AuthUser is allowed to edit it and
+        ' if an instance with the given pk exists. If it does exist and the AuthUser has is_superuser 
+        ' and is True then the instance is returned otherwise None is returned.
+        '
+        ' Keyword Arguments:
+        '   user - AuthUser to check if the user can be edited by them.
+        '   pk   - Primary key of instance to get.
+        '
+        ' Return: Model instance identified by pk if user can edit it, otherwise None.
+        '''
+        if not isinstance(user, get_permission_obj()):
+            raise TypeError('%s is not an Auth User' % str(user))
+
+        for f in user._meta.fields:
+            if f.name == "is_superuser" and user.is_superuser:
+                try:
+                    return self.get(pk=pk)
+                except ObjectDoesNotExist:
+                    pass
+
+        return None
+
 
 class ChuchoUserManager(ChuchoManager):
     '''
