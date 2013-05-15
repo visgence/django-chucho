@@ -92,7 +92,7 @@ class ChuchoManager(models.Manager):
             if f.name == "is_superuser" and user.is_superuser:
                 if filter_args is not None:
                     return self.filter(**filter_args)
-                elif omni is not None and omni != "":
+                elif omni is not None:
                     return self.search(omni)
                 else:
                     return self.all()
@@ -123,7 +123,7 @@ class ChuchoManager(models.Manager):
             if f.name == "is_superuser" and user.is_superuser:
                 if filter_args is not None:
                     return self.filter(**filter_args)
-                elif omni is not None and omni != "":
+                elif omni is not None:
                     return self.search(omni)
                 else:
                     return self.all()
