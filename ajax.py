@@ -27,9 +27,9 @@ from sys import stderr
 # Local imports
 from settings import get_permission_obj, DT_FORMAT, D_FORMAT
 try:
-    from settings import USER_TZ
+    from settings import USE_TZ
 except:
-    USER_TZ = False
+    USE_TZ = False
 AuthUser = get_permission_obj()
 from views import genColumns
 from check_access import check_access
@@ -227,7 +227,7 @@ def update(request, app_name, model_name, data):
                     continue
 
                 # Handle empy data
-                elif data[field['field']] in [None, ''] and field['_type'] != 'auth_password':
+                elif data[field['field']] in [None, ''] and field['_type'] != 'password':
                     if field['_type'] in ['text', 'char', 'color']:
                         setattr(obj, field['field'], '')
                     else:
@@ -245,9 +245,9 @@ def update(request, app_name, model_name, data):
 
                 elif field['_type'] == 'datetime':
                     dt_obj = None
-                    if USER_TZ and data[field['field']] is not None:
-                        dt_obj = make_aware(datetime.utcfromtimestamp(data[field['field']]), utc)
-                    elif not USER_TZ and data[field['field']] is not None:
+                    if USE_TZ and data[field['field']] not in (None, u""):
+                        dt_obj = make_aware(datetime.utcfromtimestamp(float(data[field['field']])), utc)
+                    elif not USE_TZ and data[field['field']] not in (None, u""):
                         aware_dt_obj = make_aware(datetime.utcfromtimestamp(float(data[field['field']])), utc)
                         dt_obj = make_naive(aware_dt_obj, get_current_timezone())
 
@@ -257,7 +257,7 @@ def update(request, app_name, model_name, data):
                     dt_obj = datetime.strptime(data[field['field']], D_FORMAT)
                     setattr(obj, field['field'], dt_obj.date())
 
-                elif field['_type'] == 'auth_password':
+                elif field['_type'] == 'password':
                     if data[field['field']] not in [None, '']:
                         obj.set_password(data[field['field']])
 
@@ -425,13 +425,13 @@ def serialize_model_objs(objs, extras):
             elif isinstance(f, models.fields.DateTimeField):
                 dt_obj = f.value_from_object(obj)
                 if dt_obj is not None:
-                    if not USER_TZ and not is_aware(dt_obj):
+                    if not USE_TZ and not is_aware(dt_obj):
                         aware_dt_obj = make_aware(dt_obj, get_current_timezone())
                         obj_dict[f.name] = timegm(aware_dt_obj.utctimetuple())
-                    elif USER_TZ and is_aware(dt_obj):
+                    elif USE_TZ and is_aware(dt_obj):
                         obj_dict[f.name] = timegm(dt_obj.utctimetuple())
                     else:
-                        error = "There is a datetime that is aware while USER_TZ is false! or vice-versa"
+                        error = "There is a datetime that is aware while USE_TZ is false! or vice-versa"
                         return json.dumps({"errors": error}) 
 
             elif isinstance(f, models.fields.DateField):
