@@ -23,11 +23,6 @@
     z-index: 999998;
 }
 
-div#utilities-container div.grid
-{
-    height: 70%;
-}
-
 .slick-viewport
 {
     height: 650px;
