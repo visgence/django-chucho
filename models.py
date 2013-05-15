@@ -10,35 +10,43 @@ class ChuchoManager(models.Manager):
     '   chucho manager methods.
     '''
     def search(self, search_str, operator=None, column=None):
+        print 'Searching'
+        q_list = []
+        q_list += self.search_all(search_str, operator, column)
 
-        # Regexes to trigger different kinds of searches.
-        pattern_name1 = r'^\s*([a-z]+)\s+([a-z]+)\s*$'
-        pattern_name2 = r'^\s*([a-z]+),\s*([a-z]+)\s*$'
-
-        result = self.none()
-
-        result |= self.search_all(search_str)
+        q_all = None
+        for q in q_list:
+            if q_all is None:
+                q_all = q
+            else:
+                q_all |= q
         
-        return result
+        return self.filter(q_all)
 
-    def search_all(self, search_str):
+    def search_all(self, search_str, operator, column):
         # get an object of type to get the search fields
         o = self.all()[0]
         try:
             fields = o.search_fields
         except AttributeError:
             fields = [f.name for f in o._meta.fields]
-        q = None
+        q_list = []
         op = '__icontains'
+        print fields
         for f in fields:
-            if q is None:
-                q = Q(**{f + op: search_str})
+            f_attr = getattr(o, f)
+            print f
+            if isinstance(f_attr, models.Model):
+                print 'Doing foreign key'
+                # Is a foreign key
+                foreign_objs = f_attr.__class__.objects.search(search_str, operator, column)
+                q_list.append(Q(**{f + '__in': foreign_objs}))
             else:
-                q |= Q(**{f + op: search_str})
+                q_list.append(Q(**{f + op: search_str}))
 
-        return self.filter(q)
+        return q_list
 
-class ChuchoUserManager(models.Manager):
+class ChuchoUserManager(ChuchoManager):
     '''
     ' Custom manager for chucho.  This manager is meant to be inherited by model managers
     '   in user apps.  It provides a search method that can be used by chucho omni filter.
@@ -53,47 +61,69 @@ class ChuchoUserManager(models.Manager):
         pattern_username = r'^\s*(\w+)\s*$'
         pattern_email = r'^\s*(\w+@\w+\.\w+)\s*$'
         result = self.none()
-        print 'Searching'
+        
+        q_list = []
         m = re.match(pattern_name1, search_str, re.I)
         if m is not None:
-            print "Match name1"
-            result |= self.search_name(m.group(1), m.group(2))
+            q_list += self.search_name(m.group(1), m.group(2))
 
         m = re.match(pattern_name2, search_str, re.I)
         if m is not None:
-            print "Match name2"
-            result |= self.search_name(m.group(2), m.group(1))
+            q_list += self.search_name(m.group(2), m.group(1))
 
         m = re.match(pattern_username, search_str, re.I)
         if m is not None:
-            print m.group(1)
-            result |= self.search_username(m.group(1))
+            q_list += self.search_username(m.group(1))
+            q_list += self.search_name_part(m.group(1))
 
-        return result
+        q_all = None
+        for q in q_list:
+            if q_all is None:
+                q_all = q
+            else:
+                q_all |= q
+
+        return self.filter(q_all)
 
     def search_name(self, first, last):
+        op = '__icontains'
         filter_args = {
-            name_fields['first']  + '__icontains': first,
-            name_fields['last'] + '__icontains': last
+            name_fields['first']  + op: first,
+            name_fields['last'] + op: last
             }
-        return self.filter(**filter_args)
+        return [Q(**filter_args)]
 
     def search_username(self, s):
-        o = self.all()[0]
+        op = '__icontains'
+        q_list = []
+        try:
+            o = self.all()[0]
+        except Exception as e:
+            print 'No objects exist for this model'
+            return q_list
         try:
             username = o.USERNAME_FIELD
         except AttributeError:
-            username = None
-        result = self.none()
-        try:
-            result |= self.filter(username__icontains=s)
-        except TypeError:
-            pass
+            print 'No USERNAME_FIELD defined, trying to use "username".'
+            try:
+                u = o.username
+                username = 'username'
+            except Exception as e:
+                print 'Do not know what username field to use, not searching on username.'
+                return q_list
+        
+        q_list.append(Q(**{username + op: s}))
+        return q_list
 
-        result |= self.filter(Q(first_name__icontains=s) | Q(last_name__icontains=s))
-        return result
+    def search_name_part(self, s):
+        op = '__icontains'
+        q_list = []
+        q_list.append(Q(**{name_fields['first'] + op: s}))
+        q_list.append(Q(**{name_fields['last'] + op: s}))
+
+        return q_list
         
-        
+# TODO: Make this more general, and overwriteable.
 name_fields = {
     'first': 'first_name',
     'last': 'last_name'
