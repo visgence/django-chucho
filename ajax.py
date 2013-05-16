@@ -111,9 +111,9 @@ def read_source(request, app_name, model_name, get_editable, result_info=None):
         filter_args = None
         
     kwargs = None    
+    omni = None
     if filter_args is not None:
         kwargs = {}
-        omni = None
         for i in filter_args:
             if i['col'] == 'chucho-omni':
                 omni = i['val']
