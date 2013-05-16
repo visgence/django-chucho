@@ -12,7 +12,6 @@ class ChuchoManager(models.Manager):
     '   chucho manager methods.
     '''
     def search(self, search_str, operator=None, column=None):
-        print 'Searching'
         q_list = []
         q_list += self.search_all(search_str, operator, column)
 
@@ -34,12 +33,14 @@ class ChuchoManager(models.Manager):
             fields = [f.name for f in o._meta.fields]
         q_list = []
         op = '__icontains'
-        print fields
+
         for f in fields:
             f_attr = getattr(o, f)
-            print f
-            if isinstance(f_attr, models.Model):
-                print 'Doing foreign key'
+
+            if type(f_attr) == 'bool':
+                #Ignore booleans
+                pass
+            elif isinstance(f_attr, models.Model):
                 # Is a foreign key
                 foreign_objs = f_attr.__class__.objects.search(search_str, operator, column)
                 q_list.append(Q(**{f + '__in': foreign_objs}))
