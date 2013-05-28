@@ -321,6 +321,7 @@ def update(request, app_name, model_name, data):
 
 
 @dajaxice_register
+@transaction.commit_manually
 def destroy(request, app_name, model_name, data):
     '''
     ' Receive a model_name and data object via ajax, and remove that item,
@@ -328,6 +329,7 @@ def destroy(request, app_name, model_name, data):
     '''
     user = check_access(request)
     if user is None:
+        transaction.rollback()
         errors = 'User is not logged in properly.'
         return json.dumps({'errors': errors})
 
@@ -335,16 +337,22 @@ def destroy(request, app_name, model_name, data):
     try:
         obj = cls.objects.get_editable_by_pk(user, data['pk'])
         if obj is None:
+            transaction.rollback()
             error = "User %s does not have permission to delete this object." % user
             return json.dumps({'errors': error})
     except Exception as e:
+        transaction.rollback()
         error = "There was an error for user %s trying to delete this object: %s" % (user, str(e))
         return json.dumps({'errors': error})
 
     try:
         obj.delete()
     except Exception as e:
+        transaction.rollback()
         error = "Unexpected error deleting object: %s: %s" % (type(e), e)
+        return json.dumps({'errors': error})
+
+    transaction.commit()
     return json.dumps({'success': 'Successfully deleted item with primary key: %s' % data['pk']})
 
 
