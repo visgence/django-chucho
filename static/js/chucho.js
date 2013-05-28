@@ -786,7 +786,7 @@
             case 'boolean':
                 input = get_input('add_form_input', 'checkbox', '');
                 if(value)
-                    input.attr('checked', 'checked');
+                    input.prop('checked', true);
                 td2.append(input);
                 td1.append(label);
                 break;
@@ -986,7 +986,7 @@
                  //Pre-select appropriate objects
                 $(value).each(function(i, val) {
                     if(val !== '' && obj.pk == val.pk) 
-                        checkbox.attr('checked', 'checked');
+                        checkbox.prop('checked', true);
                 });
 
                 ul.append(li);
@@ -1037,7 +1037,7 @@
         else if($(input).hasClass('ui-spinner-input'))
             return $(input).spinner('value');
         else if($(input).attr('type') == "checkbox")
-            return $(input).attr('checked') ? true:false; 
+            return $(input).prop('checked'); 
         else
             return $(input).val();
     }
