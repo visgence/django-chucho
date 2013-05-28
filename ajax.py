@@ -341,7 +341,10 @@ def destroy(request, app_name, model_name, data):
         error = "There was an error for user %s trying to delete this object: %s" % (user, str(e))
         return json.dumps({'errors': error})
 
-    obj.delete()
+    try:
+        obj.delete()
+    except Exception as e:
+        error = "Unexpected error deleting object: %s: %s" % (type(e), e)
     return json.dumps({'success': 'Successfully deleted item with primary key: %s' % data['pk']})
 
 
