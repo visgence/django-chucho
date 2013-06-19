@@ -210,11 +210,11 @@
         this.add_record = function() {
             self = this;
             //Clear row selection
-            this.clear_row_selection();
+            //this.clear_row_selection();
 
             var form_id = get_grid_form(this.model_name+'_grid', this.columns, null, 'Add Record');
             if (form_id) {
-                var add_callback = function() {record_callback(self.model.getLength(), false);};
+                var add_callback = function() {record_callback(null, false);};
                 confirm_dialog(form_id, 'Add', add_callback, 'Cancel', null, true);
             }
             else
@@ -222,14 +222,11 @@
         };
 
         /** Method to edit a selected record in the grid. */
-        this.edit_record = function(selected_row) {
-            //var selected_index = this.grid.getSelectedRows();
-            //var selected_row = this.model.getItem(selected_index);
+        this.edit_record = function(selected_row, selected_index) {
 
             var form_id = get_grid_form(this.model_name+'_grid', this.columns, selected_row, 'Edit Record');
             if (form_id) {
-                var edit_callback = function() {console.log('edit callback');};
-                //var edit_callback = function() {record_callback(selected_index, true);};
+                var edit_callback = function() {record_callback(selected_index, true);};
                 confirm_dialog(form_id, 'Save', edit_callback, 'Cancel', null, true);
             }
             else
@@ -280,20 +277,15 @@
                 else {
                     $('#'+self.model_name + '_add').dialog('close');
                     //Either add new row to beginning or update one.
-                    if (update) {
-                        self.model.setItem(i, resp.data[0]);
-                        self.grid.invalidateRow(i);
-                    }
-                    else {
-                        self.model.add_data(resp.data[0], i);
-                        self.grid.invalidateAllRows();
-                    }
+                    if (update)
+                        self.grid.setItem(i, resp.data[0]);
+                    else
+                        self.grid.addData(resp.data[0]);
                     
                     self.refresh(); 
-                    self.grid.render();
                     self.success('Updated row ' + i);
                 }
-                self.clear_row_selection();
+                //self.clear_row_selection();
             };
         };
 
@@ -478,7 +470,15 @@
                    
                     this.PagedGridModel = function(items, columns) {
                         this.items = ko.observableArray(items);
-                            
+                           
+                        this.setItem = function(i, item) {
+                            this.items()[i] = item;
+                        };
+
+                        this.addData = function(item) {
+                            this.items.unshift(item); 
+                        }
+
                         this.gridViewModel = new ko.chuchoGrid.viewModel({
                             data: this.items,
                             columns: columns
@@ -494,8 +494,9 @@
 
                             $(element).click(function() {
                                 if(clickTimeout !== false) {
+                                    var value = valueAccessor();
                                     console.log('double click edit');
-                                    self.edit_record(valueAccessor());
+                                    self.edit_record(value['row'], value['index']);
                                     clearTimeout(clickTimeout);
                                     clickTimeout = false;
                                 } else {
@@ -515,12 +516,6 @@
                     $(message_span).appendTo(self.getBtnPanel());
                      
                     /*
-                    // Add controls
-                    $(add_button).appendTo(self.grid.getTopPanel()); 
-                    $(refresh_button).appendTo(self.grid.getTopPanel());
-                    $(message_span).appendTo(self.grid.getTopPanel());
-                    
-                    self.grid.setSelectionModel(new Slick.RowSelectionModel());
                         
                     self.grid.onSort.subscribe(function(e, args) {
                         //var sign = args.sortAsc ? -1:1;
@@ -1064,6 +1059,7 @@
             var field = $(input).prev('span.field').text();
             row[field] = field_value(input);      
         });
+
         myGrid.add_row(row, index, updating);
     }
 

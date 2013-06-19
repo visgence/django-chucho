@@ -22,7 +22,7 @@
                         </thead>\
                         <tbody>\
                             {{each(i, row) data}}\
-                                <tr data-bind=\"clickHandler: row\"  class=\"${ i % 2 == 0 ? 'even' : 'odd' }\">\
+                                <tr data-bind=\"clickHandler: {row: row, index: i}\"  class=\"${ i % 2 == 0 ? 'even' : 'odd' }\">\
                                     {{each(j, columnDefinition) columns}}\
                                         <td>${ typeof columnDefinition.field == 'function' ? columnDefinition.field(row) : row[columnDefinition.field] }</td>\
                                     {{/each}}\
