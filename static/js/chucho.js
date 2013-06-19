@@ -89,6 +89,20 @@
             return columns;
         };
 
+        /** Return the column object by the given column id */
+        this.get_column_by_id = function(id) {
+            var result = $.grep(this.columns, function(e, i) {
+                if ( e.id == id )
+                    return true;
+                return false;
+            });
+            if (result.length === 0)
+                return null;
+            else if ( result.length > 1)
+                throw new Error('Found more than 1 column with the same id.');
+            return result[0];
+        };
+
         /** Return the columns allowed to filter by. */
         this.filter_columns = function() {
             var columns = $.map(this.columns, function(c, i) {
@@ -394,32 +408,70 @@
         this.add_filter_row = function() {
             var row = $('<tr>');
             var remove = $('<span>');
+            var self = this;
             remove.attr('onclick', 'remove_filter_row(this);')
                 .addClass('ui-icon').addClass('ui-icon-circle-close')
                 .addClass('chucho-remove-button')
                 .button();
-            var column = $('<select name="column">');
-            var operator = $('<select name="operator">');
-            var comparison = $('<input type="text" name="comparison-value">');
-
-            $(operator).append(option_element('', 'Select Operator', true));
-            $(column).append(option_element('', 'Select Column', true));
+            var column = $('<select>', {name: 'column'})
+                .change({self: self}, self.add_filter_row_options)
+                .append(option_element('', 'Select Column', true));
 
             $(row).append($('<td>').append($(remove)))
                 .append($('<td>').append(column))
-                .append($('<td>').append(operator))
-                .append($('<td>').append(comparison))
                 .addClass('grid-filter')
                 .appendTo($('#filter-table'));
 
-            $.each(this.filter_operators, function(i, name) {
-                var option = (option_element(name, name));
-                option.appendTo($(operator));
-            });
             $.each(this.filter_columns(), function(i, c) {
                 var option = (option_element(c.id, c.name));
                 option.appendTo($(column));
-            });            
+            });
+        };
+
+        /** This will append the operators and input box to the filter table */
+        this.add_filter_row_options = function(event) {
+            var row = $(event.target).parents('tr.grid-filter');
+            var operator = $('<select>', {name:'operator'});
+            var comparison;
+            var col_name = $(event.target).val();
+
+            row.find('select[name="operator"]').parent().remove();
+            row.find('input[name="comparison-value"]').parent().remove();
+
+            row.append($('<td>').append(operator));
+
+
+            if (event.data.self.get_column_by_id(col_name)._type == 'timestamp') {
+                comparison = $('<input>', {type:'hidden', name:'comparison-value'});
+                var picker = $('<input>', {type:'text', name:'comparison-picker'});
+                var td = $('<td>');
+                td.append(picker);
+                td.append(comparison);
+                row.append(td);
+                picker.change(function(event) {
+                    var d = new Date($(event.target).val());
+                    var value_e = null;
+                    if (!isNaN(d.valueOf()))
+                        value = d.valueOf()/1000;
+                    $(event.target).next().val(value);
+                });
+                $(picker).datetimepicker({
+                    showSecond: true,
+                    dateFormat: 'mm/dd/yy',
+                    timeFormat: 'hh:mm:ss'
+                });
+            }
+            else {
+                comparison = $('<input>', {type:'text', name:'comparison-value'});
+                row.append($('<td>').append(comparison));
+            }
+
+            $(operator).append(option_element('', 'Select Operator', true));
+
+            $.each(event.data.self.filter_operators, function(i, name) {
+                var option = (option_element(name, name));
+                option.appendTo($(operator));
+            });
         };
 
         /** Here we initialize our object. */
@@ -645,7 +697,7 @@
             return dateToString(time);
         }
         
-        return time
+        return time;
     } 
 
     /** Custom formatter for Foreign Key columns in the data grid */
@@ -826,7 +878,7 @@
                         timeFormat: 'hh:mm:ss'
                     });
                    
-                    if(timestampstr != '')
+                    if(timestampstr !== '')
                         $(input_user).datetimepicker('setDate', timestampstr);
                 }
                 else {
@@ -1106,13 +1158,12 @@
         });
         if ( filter_data.length === 0 && $('#chucho-omni-filter').val() )
             filter_data.push({col: 'chucho-omni', val: $('#chucho-omni-filter').val()});
-
         return filter_data;
     }
 
     /** This will remove a filter from the filter table */
     function remove_filter_row(e) {
-        $(e).parent().parent().remove();
+        $(e).parents('tr.grid-filter').remove();
         myGrid.refresh();
     }
 
