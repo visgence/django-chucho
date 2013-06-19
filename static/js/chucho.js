@@ -78,6 +78,11 @@
         /** The column definition for the grid.  This is loaded via ajax. */
         this.columns = null;
 
+        /** Returns the button panel div element for the grid */
+        this.getBtnPanel = function() {
+            return $('#'+this.model_name+'_grid div.btnPanel');
+        };
+
         /** Return the columns to be displayed by slickgrid */
         this.grid_columns = function() {
             var columns = $.map(this.columns, function(c, i) {
@@ -121,7 +126,7 @@
 
         this.set_read_only = function(read_only) {
             this.read_only = read_only;
-            var panel = this.grid.getTopPanel();
+            var panel = this.getBtnPanel();
 
             var add = $(panel).children('input[value="Add"]');
             if(self.read_only) {
@@ -147,8 +152,8 @@
             };  
             $(spinner.el).css(styles);
             
-            //var panel = self.grid.getTopPanel();
-            //$(panel).append(spinner.el);
+            var panel = self.getBtnPanel();
+            $(panel).append(spinner.el);
 
             var result_info = {};
             if ( page )
@@ -187,7 +192,6 @@
                     console.log('model data');
                     console.log(resp.data);
                     self.set_read_only(resp.read_only);
-                    self.grid.invalidate();
                     if ( 'page_list' in resp ) {
                         $('#chucho_page_list').html(resp.page_list);
                         $('.chucho-button').button();
@@ -472,38 +476,45 @@
                     }
                     */   
                    
-                    console.log('grid columns');
-                    console.log(self.columns);
-                    
                     this.PagedGridModel = function(items, columns) {
                         this.items = ko.observableArray(items);
                             
-                        this.editRow = function(row) {
-                            console.log('clicked a row!!!');
-                            console.log(row.data());
-                            self.edit_record(row.data());
-                        };
-
                         this.gridViewModel = new ko.chuchoGrid.viewModel({
                             data: this.items,
-                            columns: columns,
-                            editRow: this.editRow
+                            columns: columns
                         });
                     };
 
-
                     self.grid = new PagedGridModel([], self.columns);
-                    ko.applyBindings(self.grid, $('#gridContainer')[0]);
 
+                    ko.bindingHandlers.clickHandler = {
+                        init: function(element, valueAccessor) {
+                            var delay = 200,
+                                clickTimeout = false;
+
+                            $(element).click(function() {
+                                if(clickTimeout !== false) {
+                                    console.log('double click edit');
+                                    self.edit_record(valueAccessor());
+                                    clearTimeout(clickTimeout);
+                                    clickTimeout = false;
+                                } else {
+                                    clickTimeout = setTimeout(function() {
+                                        console.log('single click selection');
+                                        clickTimeout = false;
+                                    }, delay);
+                                }
+                            });    
+                        }
+                    };
+                    
+                    ko.applyBindings(self.grid, $('#'+self.model_name+'_grid div.gridContainer')[0]);
+                   
+                    $(add_button).appendTo(self.getBtnPanel());
+                    $(refresh_button).appendTo(self.getBtnPanel());
+                    $(message_span).appendTo(self.getBtnPanel());
+                     
                     /*
-                    self.grid = new Slick.Grid("#" + self.model_name + "_grid", self.model,
-                                               self.grid_columns(), self.options);
-
-                    self.grid.onDblClick.subscribe(function(e, args) {
-                        if(!self.read_only)
-                            self.edit_record();
-                    });
-
                     // Add controls
                     $(add_button).appendTo(self.grid.getTopPanel()); 
                     $(refresh_button).appendTo(self.grid.getTopPanel());
@@ -733,6 +744,13 @@
      * */
     function get_grid_form(id, columns, record, title) 
     {
+        console.log('id');
+        console.log(id);
+        console.log('columns');
+        console.log(columns);
+        console.log('record');
+        console.log(record);
+
         var div_id = myGrid.model_name+"_add";
         var div = $("<div></div>")
             .attr("id", myGrid.model_name+'_add')
@@ -749,10 +767,6 @@
         var model_editable = false;
         $.each(columns, function(i, col) {
             
-            //continue if can't edit this one
-            //if (!col._editable)
-            //   return true;
-                
             model_editable = true;     
    
             //Set up html containers for the input
@@ -776,7 +790,11 @@
             //If updateing then we'll set the field with the current value
             if (record)
                 value = record[col.field];
-             
+            console.log('col field');
+            console.log(col.field);
+            console.log(record);
+            console.log('values');             
+            console.log(value);
             switch(col._type) {
             case 'password':
                 input = get_input('add_form_input', 'text', '');
@@ -1039,6 +1057,7 @@
      */
     function record_callback(index, updating) 
     {
+        //Collect data for new/updated row from dialog fields
         var row = {};
         $('.add_form_input').each(function(i, input) {
 

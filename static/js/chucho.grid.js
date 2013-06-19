@@ -6,7 +6,6 @@
         viewModel: function (configuration) {
             this.data = configuration.data;
             this.columns = configuration.columns;
-            this.editRow = configuration.editRow;
         }
     };
 
@@ -17,15 +16,15 @@
                         <thead>\
                             <tr>\
                                 {{each(i, columnDefinition) columns}}\
-                                    <th>${ columnDefinition.headerText }</th>\
+                                    <th>${ columnDefinition.name }</th>\
                                 {{/each}}\
                             </tr>\
                         </thead>\
                         <tbody>\
                             {{each(i, row) data}}\
-                                <tr data-bind=\"click: editRow\"  class=\"${ i % 2 == 0 ? 'even' : 'odd' }\">\
+                                <tr data-bind=\"clickHandler: row\"  class=\"${ i % 2 == 0 ? 'even' : 'odd' }\">\
                                     {{each(j, columnDefinition) columns}}\
-                                        <td>${ typeof columnDefinition.rowText == 'function' ? columnDefinition.rowText(row) : row[columnDefinition.rowText] }</td>\
+                                        <td>${ typeof columnDefinition.field == 'function' ? columnDefinition.field(row) : row[columnDefinition.field] }</td>\
                                     {{/each}}\
                                 </tr>\
                             {{/each}}\

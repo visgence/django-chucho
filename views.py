@@ -39,8 +39,8 @@ def genColumns(modelObj):
             continue
 
         field = {
-            'rowText': f.name,
-            'headerText': f.name.title(),
+            'field': f.name,
+            'name': f.name.title(),
             'id': f.name,
             'sortable': True,
             'grid_column': True
@@ -99,8 +99,8 @@ def genColumns(modelObj):
     
     for m in get_meta_m2m(modelObj):
         columns.append({
-            'rowText': m.name,
-            'headerText': m.name.title(),
+            'field': m.name,
+            'name': m.name.title(),
             'id': m.name,
             'model_name': m.rel.to.__name__,
             'app': m.rel.to._meta.app_label,
