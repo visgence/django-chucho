@@ -147,8 +147,8 @@
             };  
             $(spinner.el).css(styles);
             
-            var panel = self.grid.getTopPanel();
-            $(panel).append(spinner.el);
+            //var panel = self.grid.getTopPanel();
+            //$(panel).append(spinner.el);
 
             var result_info = {};
             if ( page )
@@ -162,7 +162,7 @@
             result_info.per_page = $('#pageSelect').val();
             result_info.filter_args = get_filter_data();
 
-            result_info.sort_columns = this.grid.getSortColumns();
+            //result_info.sort_columns = this.grid.getSortColumns();
 
             Dajaxice.chucho.read_source(
                 function(resp) {
@@ -183,6 +183,9 @@
                     }
                     
                     self.model.set_data(resp.data);
+                    self.grid.items(self.model.data)
+                    console.log('model data');
+                    console.log(resp.data);
                     self.set_read_only(resp.read_only);
                     self.grid.invalidate();
                     if ( 'page_list' in resp ) {
@@ -215,13 +218,14 @@
         };
 
         /** Method to edit a selected record in the grid. */
-        this.edit_record = function() {
-            var selected_index = this.grid.getSelectedRows();
-            var selected_row = this.model.getItem(selected_index);
+        this.edit_record = function(selected_row) {
+            //var selected_index = this.grid.getSelectedRows();
+            //var selected_row = this.model.getItem(selected_index);
 
             var form_id = get_grid_form(this.model_name+'_grid', this.columns, selected_row, 'Edit Record');
             if (form_id) {
-                var edit_callback = function() {record_callback(selected_index, true);};
+                var edit_callback = function() {console.log('edit callback');};
+                //var edit_callback = function() {record_callback(selected_index, true);};
                 confirm_dialog(form_id, 'Save', edit_callback, 'Cancel', null, true);
             }
             else
@@ -432,6 +436,7 @@
                     self.columns = resp;
 
                     // Add editors to columns
+                    /*
                     for ( var i = 0; i < self.columns.length; i++) {
                         switch (self.columns[i]._type) {
 
@@ -465,7 +470,32 @@
                         default:
                         }
                     }
-                        
+                    */   
+                   
+                    console.log('grid columns');
+                    console.log(self.columns);
+                    
+                    this.PagedGridModel = function(items, columns) {
+                        this.items = ko.observableArray(items);
+                            
+                        this.editRow = function(row) {
+                            console.log('clicked a row!!!');
+                            console.log(row.data());
+                            self.edit_record(row.data());
+                        };
+
+                        this.gridViewModel = new ko.chuchoGrid.viewModel({
+                            data: this.items,
+                            columns: columns,
+                            editRow: this.editRow
+                        });
+                    };
+
+
+                    self.grid = new PagedGridModel([], self.columns);
+                    ko.applyBindings(self.grid, $('#gridContainer')[0]);
+
+                    /*
                     self.grid = new Slick.Grid("#" + self.model_name + "_grid", self.model,
                                                self.grid_columns(), self.options);
 
@@ -511,7 +541,8 @@
 
                         $(serv_msg).html('');
                     });
-
+                    */
+                   
                     self.refresh();
                 },
                 {'app_name': self.app_name, 'model_name': self.model_name}
@@ -530,10 +561,12 @@
         };
 
         this.clear_row_selection = function() {
+            /*
             var panel = this.grid.getTopPanel();
             $(panel).find('input[value="Delete"]').remove(); 
             $(panel).find('input[value="Edit"]').remove(); 
             this.grid.resetActiveCell(); 
+            */
         };        
 
         this.init();
