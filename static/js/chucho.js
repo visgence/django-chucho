@@ -18,7 +18,7 @@
     var addButton = '<input type="button" class="chucho-add" value="Add"/>';
     var deleteButton = '<input type="button" class="chucho-delete" value="Delete"/>';
     var editButton = '<input type="button" class="chucho-edit" value="Edit"/>';
-    var refreshButton = '<input type="button" value="Refresh" onclick="myGrid.refresh();"/>';
+    var refreshButton = '<input type="button" class="chucho-refresh" value="Refresh"/>';
     var messageSpan = '<span id="server_messages" style="padding-left:1em"></span>';
 
     function option_element(value, text, is_selected) {
@@ -632,6 +632,10 @@
 
                     $(self.getBtnPanel()).on('click', 'input.chucho-delete', function() {
                         self.deleteRow();
+                    });
+
+                    $(self.getBtnPanel()).on('click', 'input.chucho-refresh', function() {
+                        self.refresh();
                     });
 
                     self.refresh();
