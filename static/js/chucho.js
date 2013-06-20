@@ -15,7 +15,7 @@
 
 (function($) {
     /* Extra html for grids  */
-    var addButton = '<input type="button" value="Add" onclick="myGrid.add_record();"/>';
+    var addButton = '<input type="button" class="chucho-add" value="Add"/>';
     var deleteButton = '<input type="button" value="Delete" onclick="myGrid.delete_row();"/>';
     var editButton = '<input type="button" class="chucho-edit" value="Edit"/>';
     var refreshButton = '<input type="button" value="Refresh" onclick="myGrid.refresh();"/>';
@@ -158,7 +158,7 @@
         /** Determines whether or not we want to allow the user to only view data or edit it. */
         this.readOnly = true;
 
-        this.set_readOnly = function(readOnly) {
+        this.setReadOnly = function(readOnly) {
             this.readOnly = readOnly;
             var panel = this.getBtnPanel();
 
@@ -223,8 +223,6 @@
                     
                     self.model.set_data(resp.data);
                     self.grid.items(self.model.data)
-                    console.log('model data');
-                    console.log(resp.data);
                     self.setReadOnly(resp.readOnly);
                     if ( 'page_list' in resp ) {
                         $('#chucho_page_list').html(resp.page_list);
@@ -241,10 +239,8 @@
         };
 
         /** Method to add a record */
-        this.add_record = function() {
+        this.addRecord = function() {
             self = this;
-            //Clear row selection
-            //this.clearRowSelection();
 
             var form_id = get_grid_form(this.modelName+'_grid', this.columns, null, 'Add Record');
             if (form_id) {
@@ -256,7 +252,7 @@
         };
 
         /** Method to edit a selected record in the grid. */
-        this.edit_record = function(selected_index) {
+        this.editRecord = function(selected_index) {
             var selected_row = this.grid.getRow(selected_index); 
 
             var form_id = get_grid_form(this.modelName+'_grid', this.columns, selected_row, 'Edit Record');
@@ -332,7 +328,7 @@
          *    update - Boolean for if this is an update or a new row.
          */
         this.save_row = function(i, row, update) {
-            
+             
             Dajaxice.chucho.update(this.save_callback(i, update), {
                 'app_name': this.appName,
                 'model_name': this.modelName, 
@@ -578,7 +574,7 @@
                                     $(element).addClass('selected');
 
                                     var value = valueAccessor();
-                                    self.edit_record(value);
+                                    self.editRecord(value);
                                     clearTimeout(clickTimeout);
                                     clickTimeout = false;
                                     
@@ -625,9 +621,13 @@
 
                     $(self.getBtnPanel()).on('click', 'input.chucho-edit', function() {
                         var selectedRow = self.getSelectedRow();
-                        self.edit_record($(selectedRow).data('row'));
+                        self.editRecord($(selectedRow).data('row'));
                     });
  
+                    $(self.getBtnPanel()).on('click', 'input.chucho-add', function() {
+                        self.addRecord();
+                    });
+
                     self.refresh();
                 },
                 {'app_name': self.appName, 'model_name': self.modelName}
@@ -809,12 +809,6 @@
      * */
     function get_grid_form(id, columns, record, title) 
     {
-        console.log('id');
-        console.log(id);
-        console.log('columns');
-        console.log(columns);
-        console.log('record');
-        console.log(record);
 
         var div_id = myGrid.modelName+"_add";
         var div = $("<div></div>")
@@ -855,11 +849,7 @@
             //If updateing then we'll set the field with the current value
             if (record)
                 value = record[col.field];
-            console.log('col field');
-            console.log(col.field);
-            console.log(record);
-            console.log('values');             
-            console.log(value);
+            
             switch(col._type) {
             case 'password':
                 input = get_input('add_form_input', 'text', '');
@@ -888,13 +878,13 @@
                 break;
 
             case 'foreignkey': 
-                input = get_pk_input('add_form_input foreignkey', value, col.modelName, col.app); 
+                input = get_pk_input('add_form_input foreignkey', value, col.model_name, col.app); 
                 td2.append(input);
                 td1.append(label);
                 break;
                 
             case 'm2m':
-                input = get_m2m_input('add_form_input m2m', value, col.modelName, col.app); 
+                input = get_m2m_input('add_form_input m2m', value, col.model_name, col.app); 
                 td2.append(input);
                 td1.append(label);
                 break;
@@ -1052,10 +1042,10 @@
     function get_pk_input (cls, value, modelName, appName) 
     {
         var input = $("<select></select>").attr({'class': cls});
-       
+        console.log('getting input');
         //Get all objects that the user can select from
         Dajaxice.chucho.read_source( function(resp) {
-
+            console.log(resp);
             $(resp.data).each(function(i, obj) {
                 var option = $("<option></option>")
                     .attr('class', obj.pk)
@@ -1068,7 +1058,7 @@
             });
         }, 
         {'app_name': appName, 'model_name': modelName, 'get_editable': false});
-
+        console.log('returning input');
         return input;
     }
 
