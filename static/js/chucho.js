@@ -17,7 +17,7 @@
     /* Extra html for grids  */
     var add_button = '<input type="button" value="Add" onclick="myGrid.add_record();"/>';
     var delete_button = '<input type="button" value="Delete" onclick="myGrid.delete_row();"/>';
-    var edit_button = '<input type="button" value="Edit" onclick="myGrid.edit_record();"/>';
+    var edit_button = '<input type="button" class="chucho-edit" value="Edit"/>';
     var refresh_button = '<input type="button" value="Refresh" onclick="myGrid.refresh();"/>';
     var message_span = '<span id="server_messages" style="padding-left:1em"></span>';
 
@@ -81,6 +81,16 @@
         /** Returns the button panel div element for the grid */
         this.getBtnPanel = function() {
             return $('#'+this.model_name+'_grid div.btnPanel');
+        };
+
+        /** Returns the table element for the grid */
+        this.getTable = function() {
+            return $('#'+this.model_name+'_grid table.chucho-grid');
+        };
+
+        /** Returns the currently selected row in the grid */
+        this.getSelectedRow = function() {
+            return $('#'+this.model_name+'_grid table.chucho-grid tr.selected').get(0);
         };
 
         /** Return the columns to be displayed by slickgrid */
@@ -222,7 +232,8 @@
         };
 
         /** Method to edit a selected record in the grid. */
-        this.edit_record = function(selected_row, selected_index) {
+        this.edit_record = function(selected_index) {
+            var selected_row = this.grid.getRow(selected_index); 
 
             var form_id = get_grid_form(this.model_name+'_grid', this.columns, selected_row, 'Edit Record');
             if (form_id) {
@@ -278,7 +289,7 @@
                     $('#'+self.model_name + '_add').dialog('close');
                     //Either add new row to beginning or update one.
                     if (update)
-                        self.grid.setItem(i, resp.data[0]);
+                        self.grid.setRow(i, resp.data[0]);
                     else
                         self.grid.addData(resp.data[0]);
                     
@@ -427,6 +438,7 @@
             this.model_name = $('#model_name').val();
             this.app_name = $('#app_name').val();
             self = this;
+            
             Dajaxice.chucho.get_columns(
                 function(resp) { 
                     self.columns = resp;
@@ -470,8 +482,12 @@
                    
                     this.PagedGridModel = function(items, columns) {
                         this.items = ko.observableArray(items);
-                           
-                        this.setItem = function(i, item) {
+                          
+                        this.getRow = function(i) {
+                            return this.items()[i];
+                        };
+
+                        this.setRow = function(i, item) {
                             this.items()[i] = item;
                         };
 
@@ -486,7 +502,8 @@
                     };
 
                     self.grid = new PagedGridModel([], self.columns);
-
+                    
+                    //Handle single and double clicks for rows
                     ko.bindingHandlers.clickHandler = {
                         init: function(element, valueAccessor) {
                             var delay = 200,
@@ -499,9 +516,11 @@
                                     $(element).addClass('selected');
 
                                     var value = valueAccessor();
-                                    self.edit_record(value['row'], value['index']);
+                                    self.edit_record(value);
                                     clearTimeout(clickTimeout);
                                     clickTimeout = false;
+                                    
+                                    $(this).trigger('rowSelectionChange');
                                 } 
                                 //Single click
                                 else {
@@ -509,6 +528,8 @@
                                         $('#'+self.model_name+'_grid table.chucho-grid tr.selected').removeClass('selected');
                                         $(element).addClass('selected');
                                         clickTimeout = false;
+                                        
+                                        $(this).trigger('rowSelectionChange');
                                     }, delay);
                                 }
                             });    
@@ -520,24 +541,10 @@
                     $(add_button).appendTo(self.getBtnPanel());
                     $(refresh_button).appendTo(self.getBtnPanel());
                     $(message_span).appendTo(self.getBtnPanel());
-                     
-                    /*
-                        
-                    self.grid.onSort.subscribe(function(e, args) {
-                        //var sign = args.sortAsc ? -1:1;
-                        //var sorter = sorters[args.sortCol.sorter];
-                        //var col = args.sortCol.field;
+                   
 
-                        //self.model.data.sort(function(row1, row2) {
-                        //    return sorter(row1, row2, sign, col);
-                        //}); 
-                        //self.grid.invalidate();
-                        self.refresh();
-                    });
-
-
-                    self.grid.getSelectionModel().onSelectedRangesChanged.subscribe(function(e, args) {
-                        var panel = self.grid.getTopPanel();
+                    $(this).on('rowSelectionChange', function() {
+                        var panel = self.getBtnPanel();
                         var serv_msg = $('#server_messages'); 
                         
                         //Only add these if user is allowed to edit the content
@@ -553,8 +560,12 @@
 
                         $(serv_msg).html('');
                     });
-                    */
-                   
+
+                    $(self.getBtnPanel()).on('click', 'input.chucho-edit', function() {
+                        var selectedRow = self.getSelectedRow();
+                        self.edit_record($(selectedRow).data('row'));
+                    });
+ 
                     self.refresh();
                 },
                 {'app_name': self.app_name, 'model_name': self.model_name}
