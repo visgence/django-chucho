@@ -3,6 +3,11 @@
     background: yellow;
 }
 
+table.chucho-grid .selected
+{
+    background: yellow;
+}
+
 .slick-header-column
 {
     text-align: center;

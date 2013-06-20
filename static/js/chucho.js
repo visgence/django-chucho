@@ -501,6 +501,8 @@
                                     clickTimeout = false;
                                 } else {
                                     clickTimeout = setTimeout(function() {
+                                        $('#'+self.model_name+'_grid table.chucho-grid tr.selected').removeClass('selected');
+                                        $(element).addClass('selected');
                                         console.log('single click selection');
                                         clickTimeout = false;
                                     }, delay);
