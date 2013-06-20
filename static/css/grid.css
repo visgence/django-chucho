@@ -3,10 +3,26 @@
     background: yellow;
 }
 
-table.chucho-grid .selected
+table.chucho-grid tr.selected
 {
     background: yellow;
 }
+
+table.chucho-grid thead tr
+{
+    background: black;
+}
+
+table.chucho-grid thead tr th
+{
+    color: white;
+}
+
+table.chucho-grid .even
+{
+    background: lightgrey;
+}
+
 
 .slick-header-column
 {
