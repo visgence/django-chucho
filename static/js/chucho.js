@@ -493,17 +493,21 @@
                                 clickTimeout = false;
 
                             $(element).click(function() {
+                                //Double click
                                 if(clickTimeout !== false) {
+                                    $('#'+self.model_name+'_grid table.chucho-grid tr.selected').removeClass('selected');
+                                    $(element).addClass('selected');
+
                                     var value = valueAccessor();
-                                    console.log('double click edit');
                                     self.edit_record(value['row'], value['index']);
                                     clearTimeout(clickTimeout);
                                     clickTimeout = false;
-                                } else {
+                                } 
+                                //Single click
+                                else {
                                     clickTimeout = setTimeout(function() {
                                         $('#'+self.model_name+'_grid table.chucho-grid tr.selected').removeClass('selected');
                                         $(element).addClass('selected');
-                                        console.log('single click selection');
                                         clickTimeout = false;
                                     }, delay);
                                 }
