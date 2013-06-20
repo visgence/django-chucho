@@ -226,8 +226,7 @@
                         $('#server_messages').html('');
                     }
                     
-                    self.model.set_data(resp.data);
-                    self.grid.items(self.model.data)
+                    self.grid.items(resp.data)
                     self.setReadOnly(resp.readOnly);
                     if ( 'page_list' in resp ) {
                         $('#chucho_page_list').html(resp.page_list);
@@ -286,7 +285,7 @@
           
             //Need pk if updating to know which object to update
             if(updating)
-                row.pk = self.model.get_pk(index);
+                row.pk = self.grid.getPk(index);
 
             self.save_row(index, row, updating);
         }; 
@@ -551,6 +550,10 @@
                         this.removeRowAtIndex = function(i) {
                             this.items.splice(i, 1);
                         };
+            
+                        this.getPk = function(i) {
+                            return this.items()[i].pk;
+                        };
 
                         this.gridViewModel = new ko.chuchoGrid.viewModel({
                             data: this.items,
@@ -618,6 +621,7 @@
                         $(serv_msg).html('');
                     });
 
+                    //Attach all needed event handlers to buttons and the like
                     $(self.getBtnPanel()).on('click', 'input.chucho-edit', function() {
                         var selectedRow = self.getSelectedRow();
                         if (selectedRow === null)
@@ -637,7 +641,16 @@
                     $(self.getBtnPanel()).on('click', 'input.chucho-refresh', function() {
                         self.refresh();
                     });
+   
+                    console.log('attaching to table...');
+                    console.log(self.getTable());
+                    //When we click on table headers we sort them if we're allowed to.
+                    $(self.getTable().get(0)).on('click', 'thead th', function(e, args) {
+                        console.log(e);
+                        console.log(args);
+                    });
 
+                    //Refresh will get the first wave of data
                     self.refresh();
                 },
                 {'app_name': self.appName, 'model_name': self.modelName}
@@ -656,7 +669,9 @@
         };
 
         this.init();
-    }
+
+    } // End DataGrid
+
 
     /** Use this function to pop up a modal dialog asking for user input.
      * Argurments action, action_func, cancel_func are optional.
@@ -714,36 +729,6 @@
         });
     }
 
-    // sorters = {
-    //     'numeric_sorter': numeric_sorter,
-    //     'alpha_sorter': alpha_sorter,
-    //     'date_sorter': date_sorter,
-    //     'boolean_sorter': boolean_sorter
-    // }
-
-    // /** Sorter for boolean values */
-    // function boolean_sorter(row1, row2, sign, col) {
-    //     var val1 = row1[col], val2 = row2[col];
-    //     return (val1 && !val2 ? -1:1) * sign;
-    // }
-
-    // /** Sorter for dates*/
-    // function date_sorter(row1, row2, sign, col) {
-    //     var val1 = new Date(row1[col]), val2 = new Date(row2[col]);
-    //     return (val1 > val2 ? -1:1) * sign;
-    // }
-
-    // /** Sorter for general alpha values (char's, text etc) */
-    // function alpha_sorter(row1, row2, sign, col) {
-    //     var val1 = row1[col].toLowerCase(), val2 = row2[col].toLowerCase();
-    //     return (val1 > val2 ? -1:1) * sign;
-    // }
-
-    // /** Sorter for general numeric values */
-    // function numeric_sorter(row1, row2, sign, col) {
-    //     var val1 = row1[col], val2 = row2[col];
-    //     return (val1 > val2 ? -1:1) * sign;
-    // }
 
     /** Custom formatter for columns that have a list of choices to choose from. */
     function choices_formatter (row, cell, columnDef, dataContext) {
