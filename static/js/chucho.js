@@ -16,7 +16,7 @@
 (function($) {
     /* Extra html for grids  */
     var addButton = '<input type="button" class="chucho-add" value="Add"/>';
-    var deleteButton = '<input type="button" value="Delete" onclick="myGrid.delete_row();"/>';
+    var deleteButton = '<input type="button" class="chucho-delete" value="Delete"/>';
     var editButton = '<input type="button" class="chucho-edit" value="Edit"/>';
     var refreshButton = '<input type="button" value="Refresh" onclick="myGrid.refresh();"/>';
     var messageSpan = '<span id="server_messages" style="padding-left:1em"></span>';
@@ -61,7 +61,7 @@
             set_data: function(new_data) {
                 this.data = new_data;
             },
-            addData: function(row, i) {
+            addRow: function(row, i) {
                 this.data.splice(i, 0, row); 
             },
             remove_data: function(i) {
@@ -88,9 +88,14 @@
             return $('#'+this.modelName+'_grid table.chucho-grid');
         };
 
-        /** Returns the currently selected row in the grid */
+        /** Returns the index of the currently selected row in the grid */
         this.getSelectedRow = function() {
-            return $('#'+this.modelName+'_grid table.chucho-grid tr.selected').get(0);
+            var selectedRow = $('#'+this.modelName+'_grid table.chucho-grid tr.selected');
+            if (selectedRow.length != 1) {
+                this.error("Error, we don't have exactly 1 data item selected!");
+                return null;
+            }
+            return $($(selectedRow).get(0)).data('row');
         };
 
         /** deselects any selected rows in the table and removes buttons from panel that appear when
@@ -311,7 +316,7 @@
                     if (update)
                         self.grid.setRow(i, resp.data[0]);
                     else
-                        self.grid.addData(resp.data[0]);
+                        self.grid.addRow(resp.data[0]);
                     
                     self.refresh(); 
                     self.success('Updated row ' + i);
@@ -335,26 +340,16 @@
                 'data': row
             });
         };
- 
-        /** Removes a row from the grid at a given index
-         *
-         *  Keyword Args
-         *      index - The index to remove the row from.*/
-        this.remove_row = function(index) {
-            this.model.remove_data(index);
-            this.grid.invalidate();
-        };
+
 
         /** Deletes a selected row from the grid and removes that object from the database. */
-        this.delete_row = function() {
+        this.deleteRow = function() {
             // get the selected row, right now assume only one.
-            var selected = this.grid.getSelectedRows();
-            if (selected.length != 1) {
-                this.error("Error, we don't have exactly 1 data item selected!");
+            var selected = this.getSelectedRow();
+            if (selected === null)
                 return;
-            }
 
-            var row = this.model.getItem(selected[0]);
+            var row = this.grid.getRow(selected);
 
             // If there is an id, send an ajax request to delete from server, otherwise, just
             // remove it from the grid.
@@ -369,7 +364,7 @@
                             }
                             else if ('success' in resp) {
                                 $('#delete_confirm').dialog('close');
-                                self.remove_row(selected);
+                                self.grid.removeRowAtIndex(selected);
                                 self.success(resp.success);
                                 self.clearRowSelection();
                             }
@@ -386,7 +381,7 @@
                 confirm_dialog('delete_confirm', 'Delete', delete_func);
             }
             else {
-                this.remove_row(selected);
+                this.grid.removeRowAtIndex(selected);
                 this.success('Locally removed row: ' + selected + '.');
             }
         };
@@ -546,12 +541,16 @@
                         };
 
                         this.setRow = function(i, item) {
-                            this.items()[i] = item;
+                            this.items.splice(i, 1, item);
                         };
 
-                        this.addData = function(item) {
+                        this.addRow = function(item) {
                             this.items.unshift(item); 
-                        }
+                        };
+
+                        this.removeRowAtIndex = function(i) {
+                            this.items.splice(i, 1);
+                        };
 
                         this.gridViewModel = new ko.chuchoGrid.viewModel({
                             data: this.items,
@@ -621,11 +620,18 @@
 
                     $(self.getBtnPanel()).on('click', 'input.chucho-edit', function() {
                         var selectedRow = self.getSelectedRow();
-                        self.editRecord($(selectedRow).data('row'));
+                        if (selectedRow === null)
+                            return;
+
+                        self.editRecord(selectedRow);
                     });
  
                     $(self.getBtnPanel()).on('click', 'input.chucho-add', function() {
                         self.addRecord();
+                    });
+
+                    $(self.getBtnPanel()).on('click', 'input.chucho-delete', function() {
+                        self.deleteRow();
                     });
 
                     self.refresh();
