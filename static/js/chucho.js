@@ -15,11 +15,11 @@
 
 (function($) {
     /* Extra html for grids  */
-    var add_button = '<input type="button" value="Add" onclick="myGrid.add_record();"/>';
+    var addButton = '<input type="button" value="Add" onclick="myGrid.add_record();"/>';
     var delete_button = '<input type="button" value="Delete" onclick="myGrid.delete_row();"/>';
     var edit_button = '<input type="button" class="chucho-edit" value="Edit"/>';
-    var refresh_button = '<input type="button" value="Refresh" onclick="myGrid.refresh();"/>';
-    var message_span = '<span id="server_messages" style="padding-left:1em"></span>';
+    var refreshButton = '<input type="button" value="Refresh" onclick="myGrid.refresh();"/>';
+    var messageSpan = '<span id="server_messages" style="padding-left:1em"></span>';
 
     function option_element(value, text, is_selected) {
         var option = $('<option>', {
@@ -61,7 +61,7 @@
             set_data: function(new_data) {
                 this.data = new_data;
             },
-            add_data: function(row, i) {
+            addData: function(row, i) {
                 this.data.splice(i, 0, row); 
             },
             remove_data: function(i) {
@@ -70,28 +70,38 @@
         };
 
         /** This is the name of the django model to we are creating the grid for. */
-        this.model_name = '';
+        this.modelName = '';
 
         /** This is the name of the django app that knows about the model */
-        this.app_name = '';
+        this.appName = '';
 
         /** The column definition for the grid.  This is loaded via ajax. */
         this.columns = null;
 
         /** Returns the button panel div element for the grid */
         this.getBtnPanel = function() {
-            return $('#'+this.model_name+'_grid div.btnPanel');
+            return $('#'+this.modelName+'_grid div.btnPanel');
         };
 
         /** Returns the table element for the grid */
         this.getTable = function() {
-            return $('#'+this.model_name+'_grid table.chucho-grid');
+            return $('#'+this.modelName+'_grid table.chucho-grid');
         };
 
         /** Returns the currently selected row in the grid */
         this.getSelectedRow = function() {
-            return $('#'+this.model_name+'_grid table.chucho-grid tr.selected').get(0);
+            return $('#'+this.modelName+'_grid table.chucho-grid tr.selected').get(0);
         };
+
+        /** deselects any selected rows in the table and removes buttons from panel that appear when
+         *  any row selection occurs. */
+        this.clearRowSelection = function() {
+            var panel = this.getBtnPanel();
+            (panel).find('input[value="Delete"]').remove(); 
+            $(panel).find('input[value="Edit"]').remove(); 
+            $(this.getTable()).find('tr.selected').removeClass('selected');
+        };        
+
 
         /** Return the columns to be displayed by slickgrid */
         this.grid_columns = function() {
@@ -132,27 +142,27 @@
         this.filter_operators = null;
 
         /** Determines whether or not we want to allow the user to only view data or edit it. */
-        this.read_only = true;
+        this.readOnly = true;
 
-        this.set_read_only = function(read_only) {
-            this.read_only = read_only;
+        this.set_readOnly = function(readOnly) {
+            this.readOnly = readOnly;
             var panel = this.getBtnPanel();
 
             var add = $(panel).children('input[value="Add"]');
-            if(self.read_only) {
+            if(self.readOnly) {
                 if($(add).length > 0)
                     $(add).remove();
             }
             else {
                 if($(add).length <= 0)
-                    $(add_button).prependTo(panel);
+                    $(addButton).prependTo(panel);
             }
         };
 
         /** Method to get data from server and refresh the grid.*/
         this.refresh = function(page) {
             self = this;
-            this.clear_row_selection();
+            this.clearRowSelection();
             
             var spinner = get_spinner();
             spinner.spin();
@@ -201,7 +211,7 @@
                     self.grid.items(self.model.data)
                     console.log('model data');
                     console.log(resp.data);
-                    self.set_read_only(resp.read_only);
+                    self.setReadOnly(resp.readOnly);
                     if ( 'page_list' in resp ) {
                         $('#chucho_page_list').html(resp.page_list);
                         $('.chucho-button').button();
@@ -209,8 +219,8 @@
                     }
 
                     $(window).trigger('chucho-refreshed', cust_data);
-                },{'app_name': self.app_name,
-                   'model_name': self.model_name,
+                },{'app_name': self.appName,
+                   'model_name': self.modelName,
                    'get_editable': true,
                    'result_info': JSON.stringify(result_info)
                   });
@@ -220,9 +230,9 @@
         this.add_record = function() {
             self = this;
             //Clear row selection
-            //this.clear_row_selection();
+            //this.clearRowSelection();
 
-            var form_id = get_grid_form(this.model_name+'_grid', this.columns, null, 'Add Record');
+            var form_id = get_grid_form(this.modelName+'_grid', this.columns, null, 'Add Record');
             if (form_id) {
                 var add_callback = function() {record_callback(null, false);};
                 confirm_dialog(form_id, 'Add', add_callback, 'Cancel', null, true);
@@ -235,7 +245,7 @@
         this.edit_record = function(selected_index) {
             var selected_row = this.grid.getRow(selected_index); 
 
-            var form_id = get_grid_form(this.model_name+'_grid', this.columns, selected_row, 'Edit Record');
+            var form_id = get_grid_form(this.modelName+'_grid', this.columns, selected_row, 'Edit Record');
             if (form_id) {
                 var edit_callback = function() {record_callback(selected_index, true);};
                 confirm_dialog(form_id, 'Save', edit_callback, 'Cancel', null, true);
@@ -286,7 +296,7 @@
                     return;
                 }
                 else {
-                    $('#'+self.model_name + '_add').dialog('close');
+                    $('#'+self.modelName + '_add').dialog('close');
                     //Either add new row to beginning or update one.
                     if (update)
                         self.grid.setRow(i, resp.data[0]);
@@ -296,7 +306,7 @@
                     self.refresh(); 
                     self.success('Updated row ' + i);
                 }
-                //self.clear_row_selection();
+                self.clearRowSelection();
             };
         };
 
@@ -310,8 +320,8 @@
         this.save_row = function(i, row, update) {
             
             Dajaxice.chucho.update(this.save_callback(i, update), {
-                'app_name': this.app_name,
-                'model_name': this.model_name, 
+                'app_name': this.appName,
+                'model_name': this.modelName, 
                 'data': row
             });
         };
@@ -351,14 +361,14 @@
                                 $('#delete_confirm').dialog('close');
                                 self.remove_row(selected);
                                 self.success(resp.success);
-                                self.clear_row_selection();
+                                self.clearRowSelection();
                             }
                             else
                                 self.error('Unknown error has occurred on delete.');
                         },
                         {
-                            'app_name': self.app_name,
-                            'model_name': self.model_name,
+                            'app_name': self.appName,
+                            'model_name': self.modelName,
                             'data': self.model.getItem(selected)
                         }
                     );
@@ -435,8 +445,8 @@
 
         /** Here we initialize our object. */
         this.init = function() {
-            this.model_name = $('#model_name').val();
-            this.app_name = $('#app_name').val();
+            this.modelName = $('#model_name').val();
+            this.appName = $('#app_name').val();
             self = this;
             
             Dajaxice.chucho.get_columns(
@@ -512,7 +522,7 @@
                             $(element).click(function() {
                                 //Double click
                                 if(clickTimeout !== false) {
-                                    $('#'+self.model_name+'_grid table.chucho-grid tr.selected').removeClass('selected');
+                                    $('#'+self.modelName+'_grid table.chucho-grid tr.selected').removeClass('selected');
                                     $(element).addClass('selected');
 
                                     var value = valueAccessor();
@@ -525,7 +535,7 @@
                                 //Single click
                                 else {
                                     clickTimeout = setTimeout(function() {
-                                        $('#'+self.model_name+'_grid table.chucho-grid tr.selected').removeClass('selected');
+                                        $('#'+self.modelName+'_grid table.chucho-grid tr.selected').removeClass('selected');
                                         $(element).addClass('selected');
                                         clickTimeout = false;
                                         
@@ -536,11 +546,11 @@
                         }
                     };
                     
-                    ko.applyBindings(self.grid, $('#'+self.model_name+'_grid div.gridContainer')[0]);
+                    ko.applyBindings(self.grid, $('#'+self.modelName+'_grid div.gridContainer')[0]);
                    
-                    $(add_button).appendTo(self.getBtnPanel());
-                    $(refresh_button).appendTo(self.getBtnPanel());
-                    $(message_span).appendTo(self.getBtnPanel());
+                    $(addButton).appendTo(self.getBtnPanel());
+                    $(refreshButton).appendTo(self.getBtnPanel());
+                    $(messageSpan).appendTo(self.getBtnPanel());
                    
 
                     $(this).on('rowSelectionChange', function() {
@@ -548,7 +558,7 @@
                         var serv_msg = $('#server_messages'); 
                         
                         //Only add these if user is allowed to edit the content
-                        if(!self.read_only) {
+                        if(!self.readOnly) {
                             //Add delete button if it's not in panel            
                             if($(panel).has('input[value="Delete"]').length <= 0)
                                 $(serv_msg).before(delete_button);
@@ -568,7 +578,7 @@
  
                     self.refresh();
                 },
-                {'app_name': self.app_name, 'model_name': self.model_name}
+                {'app_name': self.appName, 'model_name': self.modelName}
             );
 
             // Populate the filter options.
@@ -582,15 +592,6 @@
                 }
             );
         };
-
-        this.clear_row_selection = function() {
-            /*
-            var panel = this.grid.getTopPanel();
-            $(panel).find('input[value="Delete"]').remove(); 
-            $(panel).find('input[value="Edit"]').remove(); 
-            this.grid.resetActiveCell(); 
-            */
-        };        
 
         this.init();
     }
@@ -763,9 +764,9 @@
         console.log('record');
         console.log(record);
 
-        var div_id = myGrid.model_name+"_add";
+        var div_id = myGrid.modelName+"_add";
         var div = $("<div></div>")
-            .attr("id", myGrid.model_name+'_add')
+            .attr("id", myGrid.modelName+'_add')
             .attr('title', title);
         var table = $("<table></table>");
 
@@ -835,13 +836,13 @@
                 break;
 
             case 'foreignkey': 
-                input = get_pk_input('add_form_input foreignkey', value, col.model_name, col.app); 
+                input = get_pk_input('add_form_input foreignkey', value, col.modelName, col.app); 
                 td2.append(input);
                 td1.append(label);
                 break;
                 
             case 'm2m':
-                input = get_m2m_input('add_form_input m2m', value, col.model_name, col.app); 
+                input = get_m2m_input('add_form_input m2m', value, col.modelName, col.app); 
                 td2.append(input);
                 td1.append(label);
                 break;
@@ -992,11 +993,11 @@
      * Keyword Args
      *    cls        - The class to give the input field.
      *    value      - The value to give to the input field to start with if any.
-     *    model_name - The model name to fetch the objects from for the select field.
+     *    modelName - The model name to fetch the objects from for the select field.
      *
      * Return: The newly created select field
      */
-    function get_pk_input (cls, value, model_name, app_name) 
+    function get_pk_input (cls, value, modelName, appName) 
     {
         var input = $("<select></select>").attr({'class': cls});
        
@@ -1014,7 +1015,7 @@
 
             });
         }, 
-        {'app_name': app_name, 'model_name': model_name, 'get_editable': false});
+        {'app_name': appName, 'model_name': modelName, 'get_editable': false});
 
         return input;
     }
@@ -1027,11 +1028,11 @@
      * Keyword Args
      *    cls        - The class to give the input field.
      *    value      - The value to give to the input field to start with if any.
-     *    model_name - The model name to fetch the objects from for the select field.
+     *    modelName - The model name to fetch the objects from for the select field.
      *
      * Return: The newly created select multiple field
      */
-    function get_m2m_input (cls, value, model_name, app_name) 
+    function get_m2m_input (cls, value, modelName, appName) 
     {
         var div = $('<div></div>').attr({'class': cls});
         var ul = $('<ul></ul>').css('list-style', 'none');                   
@@ -1056,7 +1057,7 @@
                 li.append(checkbox);
                 checkbox.after(label);
             });
-        }, {'app_name': app_name, 'model_name': model_name, 'get_editable': false});
+        }, {'app_name': appName, 'model_name': modelName, 'get_editable': false});
 
         return div;
     }
