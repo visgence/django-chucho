@@ -21,7 +21,7 @@
     // Templates used to render the grid
     var templateEngine = new ko.jqueryTmplTemplateEngine();
     templateEngine.addTemplate("ko_chuchoGrid_grid", "\
-                    <table class=\"chucho-grid\" cellspacing=\"0\">\
+                    <table class=\"chucho-grid table table-bordered\" cellspacing=\"0\">\
                         <thead>\
                             <tr>\
                                 {{each(i, columnDefinition) columns}}\
