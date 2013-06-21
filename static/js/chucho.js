@@ -45,39 +45,6 @@
 
     /* Grid configuration */
     function DataGrid() {
-        /** This is the object that contains the data.  It allows for more
-         *  dynamic data in the grid.
-         */
-        this.model = {
-            data: [],
-            getItem: function(i) {
-                return this.data[i];
-            },
-            getItemMetaData: function(i) {
-                return null;
-            },
-            getLength: function() {
-                return this.data.length;
-            },
-            get_pk: function(i) {
-                return this.data[i].pk;
-            },
-            get_cell_data: function(i, j) {
-                return this.data[i][j];
-            },
-            setItem: function(i, item) {
-                this.data[i] = item;
-            },
-            set_data: function(new_data) {
-                this.data = new_data;
-            },
-            addRow: function(row, i) {
-                this.data.splice(i, 0, row); 
-            },
-            remove_data: function(i) {
-                this.data.splice(i, 1);
-            }
-        };
 
         /** This is the name of the django model to we are creating the grid for. */
         this.modelName = '';
@@ -87,21 +54,28 @@
 
         /** The column definition for the grid.  This is loaded via ajax. */
         this.columns = null;
+        
+        /** Holds an instance of the ko grid */
+        this.grid = null;
+
 
         /** Returns the button panel div element for the grid */
         this.getBtnPanel = function() {
             return $('#'+this.modelName+'_grid div.btnPanel');
         };
 
+
         /** Returns the grid container div element */
         this.getGridContainer = function() {
             return $('#'+this.modelName+'_grid div.gridContainer');
         };
 
+
         /** Returns the table element for the grid */
         this.getTable = function() {
             return $('#'+this.modelName+'_grid table.chucho-grid');
         };
+
 
         /** Returns the index of the currently selected row in the grid */
         this.getSelectedRow = function() {
@@ -113,6 +87,8 @@
             return $($(selectedRow).get(0)).data('row');
         };
 
+
+        /** Returns a dictionary containing the current column that is sorted or to be sorted and null otherwise */
         this.getSortColumns = function() {
             var sortedCol = this.grid.sortedCol();
             if (sortedCol['column'] === null || sortedCol['asc'] === null)
@@ -120,6 +96,7 @@
 
             return {'columnId': sortedCol['column'], 'sortAsc': sortedCol['asc']};
         };
+
 
         /** deselects any selected rows in the table and removes buttons from panel that appear when
          *  any row selection occurs. */
@@ -142,6 +119,7 @@
             return columns;
         };
 
+
         /** Return the column object by the given column id */
         this.get_column_by_id = function(id) {
             var result = $.grep(this.columns, function(e, i) {
@@ -156,6 +134,7 @@
             return result[0];
         };
 
+
         /** Return the columns allowed to filter by. */
         this.filter_columns = function() {
             var columns = $.map(this.columns, function(c, i) {
@@ -167,18 +146,6 @@
             });
             return columns;
         };
-
-        /** These are the slickGrid options.*/
-        this.options = {
-            enableCellNavigation: true,
-            forceFitColumns: true,
-            enableColumnReorder: true,
-            fullWidthRows: true,
-            showTopPanel: true,
-            forceSyncScrolling: true
-        };
-
-        this.grid = null;
 
         /** The columns and operators that we can filter over for this grid. */
         this.filter_operators = null;
@@ -507,6 +474,37 @@
             });
         };
 
+
+        /** Custom formatter for Foreign Key columns in the data grid */
+        function foreignKeyFormatter(row, col) {
+            return row[col].__unicode__;
+        }
+
+
+        /** Custom formatter for epoch timestamp columns to display in human readable. */
+        function timestampFormatter(row, col) {
+            var data = row[col];
+            var time = '';
+            if(data) {
+                time =  new Date(data*1000);
+                return dateToString(time);
+            }
+            
+            return time;
+        } 
+
+        
+        /** Custom formatter for boolean columns in the data grid */
+        function booleanFormatter(row, col) {
+            if (row[col] === true)
+                return "<i class=\"icon-ok\"></i>";
+            else if(row[col] === false)
+                return "<i class=\"icon-remove\"></i>";
+            else
+                return $('<i></i>', {'class': "icon-question-sign"});
+        } 
+
+
         /** Here we initialize our object. */
         this.init = function() {
             this.modelName = $('#model_name').val();
@@ -518,29 +516,28 @@
                     self.columns = resp;
 
                     // Add editors to columns
-                    /*
                     for ( var i = 0; i < self.columns.length; i++) {
                         switch (self.columns[i]._type) {
-
+                            
                         case 'boolean':
-                            self.columns[i].formatter = Slick.Formatters.Checkmark;
+                            //self.columns[i].formatter = booleanFormatter;
                             break;
                             
                         case 'foreignkey':
-                            self.columns[i].formatter = foreign_key_formatter;
+                            self.columns[i].formatter = foreignKeyFormatter;
                             break;
                             
                         case 'm2m':
-                            self.columns[i].formatter = m2m_formatter;
+                            //self.columns[i].formatter = m2m_formatter;
                             break;
 
                         case 'choice':
-                            self.columns[i].formatter = choices_formatter;
+                            //self.columns[i].formatter = choices_formatter;
                             break;
 
                         case 'datetime':
                         case 'timestamp':
-                            self.columns[i].formatter = timestamp_formatter;
+                            self.columns[i].formatter = timestampFormatter;
                             break;
 
                         case 'date':
@@ -552,7 +549,6 @@
                         default:
                         }
                     }
-                    */   
                    
                     this.PagedGridModel = function(items, columns) {
                         this.items = ko.observableArray(items);
@@ -807,27 +803,6 @@
         return data.__unicode__;
     }
 
-    /** Custom formatter for epoch timestamp columns to display in human readable. */
-    function timestamp_formatter(row, cell, columnDef, dataContext) {
-     
-        var data = myGrid.model.get_cell_data(row, myGrid.grid.getColumns()[cell].field);
-        var time = '';
-        if(data) {
-            time =  new Date(data*1000);
-            return dateToString(time);
-        }
-        
-        return time;
-    } 
-
-    /** Custom formatter for Foreign Key columns in the data grid */
-    function foreign_key_formatter(row, cell, columnDef, dataContext) {
-        var grid = myGrid.grid;
-        var model = myGrid.model;
-        var col = grid.getColumns()[cell].field;
-        var data = model.get_cell_data(row, col);
-        return data.__unicode__;
-    }
 
     /** Custom formatter for Many to Many columns in the data grid */
     function m2m_formatter(row, cell, columnDef, dataContext) {
