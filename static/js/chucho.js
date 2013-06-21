@@ -114,25 +114,11 @@
         };
 
         this.getSortColumns = function() {
-            var sortHeaders = $(this.getTable()).find('thead th').map(function(i, header) {
-                var sortGlyph = $(header).data('sortGlyph');
-                if (sortGlyph === 'asc' || sortGlyph === 'desc') {
-                    console.log('the sort glyph');
-                    console.log(sortGlyph);
-                    var sortData = new Object();
-                    var colId = self.grid.getColumnId($(header).text());
-                    console.log(colId);
-                    console.log(sortGlyph);
-                    if (colId === null)
-                        return null;
-                    sortData['columnId'] = colId;
-                    sortData['sortAsc'] = sortGlyph === "asc" ? true : false;
-                    return sortData;
-                }
-
+            var sortedCol = this.grid.sortedCol();
+            if (sortedCol['column'] === null || sortedCol['asc'] === null)
                 return null;
-            });
-            console.log(sortHeaders);
+
+            return {'columnId': sortedCol['column'], 'sortAsc': sortedCol['asc']};
         };
 
         /** deselects any selected rows in the table and removes buttons from panel that appear when
@@ -242,8 +228,8 @@
 
             result_info.per_page = $('#pageSelect').val();
             result_info.filter_args = get_filter_data();
-            //result_info.sort_columns = this.getSortColumns();
-            this.getSortColumns();
+            result_info.sort_columns = this.getSortColumns();
+
             Dajaxice.chucho.read_source(
                 function(resp) {
                     spinner.stop();
@@ -261,7 +247,7 @@
                     else {
                         $('#server_messages').html('');
                     }
-                    
+
                     self.grid.items(resp.data)
                     self.setReadOnly(resp.readOnly);
                     if ( 'page_list' in resp ) {
@@ -575,6 +561,13 @@
                             return this.items()[i];
                         };
 
+                        this.setSortedCol = function(colId, asc) {
+                            this.sortedCol({
+                                'column': colId,
+                                'asc': asc
+                            });
+                        };
+
                         this.setRow = function(i, item) {
                             this.items.splice(i, 1, item);
                         };
@@ -605,10 +598,16 @@
                             });
                             return colId;
                         };
+
+                        this.sortedCol = ko.observable({
+                            'column': null,
+                            'asc': null
+                        });
                         
                         this.gridViewModel = new ko.chuchoGrid.viewModel({
                             data: this.items,
                             columns: columns,
+                            sortedCol: this.sortedCol
                         });
                     };
 
@@ -650,24 +649,24 @@
                     //Handle clicks to column headers and determine if it can be sorted or not.
                     ko.bindingHandlers.sortHandler = {
                         init: function(element, valueAccessor) {
-
+                            
                             $(element).click(function() {
                                 var colData = valueAccessor();
                                 if (colData.hasOwnProperty('sortable') === false || colData['sortable'] === false)
                                     return;
-
-                                var sortGlyph = '';
-                                if ($(element).data('sortGlyph') === undefined || $(element).data('sortGlyph') === "asc")
-                                    sortGlyph = 'desc';
-                                else if ($(element).data('sortGlyph') === "desc")
-                                    sortGlyph = 'asc';
+                                
+                                var currentSorted = self.grid.sortedCol();
+                                if (currentSorted['column'] === null || 
+                                    currentSorted['column'] !== colData['id'] ||
+                                    currentSorted['asc'] === true)
+                                    self.grid.setSortedCol(colData['id'], false);
+                                else if (currentSorted['asc'] === false)
+                                    self.grid.setSortedCol(colData['id'], true);
                                 else {
-                                    console.error('Could not recognize sort glyph: %s', $(element).data('sortGlyph'));
+                                    console.error('Un unexpected sorting condition occured!'+
+                                                  'Col: '+currentSorted['column']+'  Asc: '+currentSorted['asc']);
                                     return;
                                 }
-                                self.getTable().find('thead th').data('sortGlyph', undefined);
-                                $(element).data('sortGlyph', sortGlyph);
-
                                 self.refresh();
                             });
                         }
@@ -719,12 +718,6 @@
                         self.refresh();
                     });
                     
-                    /*
-                    //When we click on table headers we sort them if we're allowed to.
-                    $(self.getGridContainer).on('click', 'table thead th', function(e) {
-                        console.log(e);
-                    });*/
-
                     //Refresh will get the first wave of data
                     self.refresh();
                 },
@@ -1112,10 +1105,8 @@
     function get_pk_input (cls, value, modelName, appName) 
     {
         var input = $("<select></select>").attr({'class': cls});
-        console.log('getting input');
         //Get all objects that the user can select from
         Dajaxice.chucho.read_source( function(resp) {
-            console.log(resp);
             $(resp.data).each(function(i, obj) {
                 var option = $("<option></option>")
                     .attr('class', obj.pk)
@@ -1128,7 +1119,6 @@
             });
         }, 
         {'app_name': appName, 'model_name': modelName, 'get_editable': false});
-        console.log('returning input');
         return input;
     }
 

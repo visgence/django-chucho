@@ -15,13 +15,14 @@
         viewModel: function (configuration) {
             this.data = configuration.data;
             this.columns = configuration.columns;
+            this.sortedCol = configuration.sortedCol;
         }
     };
 
     // Templates used to render the grid
     var templateEngine = new ko.jqueryTmplTemplateEngine();
     templateEngine.addTemplate("ko_chuchoGrid_grid", "\
-                    <table class=\"chucho-grid table table-bordered\" cellspacing=\"0\">\
+                    <table class=\"chucho-grid table table-borded\" cellspacing=\"0\">\
                         <thead>\
                             <tr>\
                                 {{each(i, columnDefinition) columns}}\
@@ -51,8 +52,7 @@
                 ko.removeNode(element.firstChild);
 
             // Allow the default templates to be overridden
-            var gridTemplateName      = allBindings.chuchoGridTemplate || "ko_chuchoGrid_grid",
-                pageLinksTemplateName = allBindings.chuchoGridPagerTemplate || "ko_chuchoGrid_pageLinks";
+            var gridTemplateName = allBindings.chuchoGridTemplate || "ko_chuchoGrid_grid";
 
             // Render the main grid
             var gridContainer = element.appendChild(document.createElement("DIV"));
