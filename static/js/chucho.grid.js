@@ -1,5 +1,14 @@
-
-(function () {
+//This is to use AMD if we are running require.js 
+(function (factory){
+(function(window,document,navigator,$,ko,Spinner,undefined){
+!function(factory) {    
+    if (typeof define === 'function' && define.amd) {
+        define(['exports','jquery','knockout'],factory);
+    }
+    else {
+        factory(window['DataGrid'] = {},$,ko,Spinner);   
+    }
+}(function(exports,$,ko) {
 
     ko.chuchoGrid = {
         // Defines a view model class you can use to populate a grid
@@ -50,4 +59,6 @@
             ko.renderTemplate(gridTemplateName, viewModel, { templateEngine: templateEngine }, gridContainer, "replaceNode");
         }
     };
+});
+})(window,document,navigator,window["$"],window["ko"]);
 })();
