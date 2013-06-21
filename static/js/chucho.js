@@ -12,8 +12,21 @@
  * be instantiated for each different type of grid that is created.
  */
 
+//This is to use AMD if we are running require.js 
+(function (factory){
+(function(window,document,navigator,$,ko,Spinner,undefined){
+!function(factory) {    
+    if (typeof define === 'function' && define.amd) {
+        define(['jquery','knockout','spin.min','jquery-ui','chucho.grid','dajaxice.core'],factory);
+    }
+    else {
+        factory(window['DataGrid'] = {},$,ko,Spinner);   
+    }
+}(function(exports,$,ko,Spinner) {
+    console.log("chucho window");    
+    console.log(window);
+    console.log($);
 
-(function($) {
     /* Extra html for grids  */
     var addButton = '<input type="button" class="chucho-add" value="Add"/>';
     var deleteButton = '<input type="button" class="chucho-delete" value="Delete"/>';
@@ -1310,4 +1323,6 @@
         'remove_filter_row': remove_filter_row,
         'updateTimestampInput': updateTimestampInput
     });
-})(jQuery);
+});
+})(window,document,navigator,window["$"],window["ko"],window["Spinner"]);
+})();
