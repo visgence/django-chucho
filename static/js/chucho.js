@@ -83,6 +83,11 @@
             return $('#'+this.modelName+'_grid div.btnPanel');
         };
 
+        /** Returns the grid container div element */
+        this.getGridContainer = function() {
+            return $('#'+this.modelName+'_grid div.gridContainer');
+        };
+
         /** Returns the table element for the grid */
         this.getTable = function() {
             return $('#'+this.modelName+'_grid table.chucho-grid');
@@ -96,6 +101,28 @@
                 return null;
             }
             return $($(selectedRow).get(0)).data('row');
+        };
+
+        this.getSortColumns = function() {
+            var sortHeaders = $(this.getTable()).find('thead th').map(function(i, header) {
+                var sortGlyph = $(header).data('sortGlyph');
+                if (sortGlyph === 'asc' || sortGlyph === 'desc') {
+                    console.log('the sort glyph');
+                    console.log(sortGlyph);
+                    var sortData = new Object();
+                    var colId = self.grid.getColumnId($(header).text());
+                    console.log(colId);
+                    console.log(sortGlyph);
+                    if (colId === null)
+                        return null;
+                    sortData['columnId'] = colId;
+                    sortData['sortAsc'] = sortGlyph === "asc" ? true : false;
+                    return sortData;
+                }
+
+                return null;
+            });
+            console.log(sortHeaders);
         };
 
         /** deselects any selected rows in the table and removes buttons from panel that appear when
@@ -205,9 +232,8 @@
 
             result_info.per_page = $('#pageSelect').val();
             result_info.filter_args = get_filter_data();
-
-            //result_info.sort_columns = this.grid.getSortColumns();
-
+            //result_info.sort_columns = this.getSortColumns();
+            this.getSortColumns();
             Dajaxice.chucho.read_source(
                 function(resp) {
                     spinner.stop();
@@ -534,7 +560,7 @@
                    
                     this.PagedGridModel = function(items, columns) {
                         this.items = ko.observableArray(items);
-                          
+
                         this.getRow = function(i) {
                             return this.items()[i];
                         };
@@ -555,9 +581,24 @@
                             return this.items()[i].pk;
                         };
 
+                        this.getColumns = function() {
+                            return this.gridViewModel.columns;
+                        };
+
+                        this.getColumnId = function(text) {
+                            var colId = null;
+                            $.each(this.getColumns(), function(i, col) {
+                                if (col['name'] === text) {
+                                    colId = col['id'];
+                                    return;
+                                }
+                            });
+                            return colId;
+                        };
+                        
                         this.gridViewModel = new ko.chuchoGrid.viewModel({
                             data: this.items,
-                            columns: columns
+                            columns: columns,
                         });
                     };
 
@@ -595,7 +636,33 @@
                             });    
                         }
                     };
-                    
+                  
+                    //Handle clicks to column headers and determine if it can be sorted or not.
+                    ko.bindingHandlers.sortHandler = {
+                        init: function(element, valueAccessor) {
+
+                            $(element).click(function() {
+                                var colData = valueAccessor();
+                                if (colData.hasOwnProperty('sortable') === false || colData['sortable'] === false)
+                                    return;
+
+                                var sortGlyph = '';
+                                if ($(element).data('sortGlyph') === undefined || $(element).data('sortGlyph') === "asc")
+                                    sortGlyph = 'desc';
+                                else if ($(element).data('sortGlyph') === "desc")
+                                    sortGlyph = 'asc';
+                                else {
+                                    console.error('Could not recognize sort glyph: %s', $(element).data('sortGlyph'));
+                                    return;
+                                }
+                                self.getTable().find('thead th').data('sortGlyph', undefined);
+                                $(element).data('sortGlyph', sortGlyph);
+
+                                self.refresh();
+                            });
+                        }
+                    };
+
                     ko.applyBindings(self.grid, $('#'+self.modelName+'_grid div.gridContainer')[0]);
                    
                     $(addButton).appendTo(self.getBtnPanel());
@@ -641,14 +708,12 @@
                     $(self.getBtnPanel()).on('click', 'input.chucho-refresh', function() {
                         self.refresh();
                     });
-   
-                    console.log('attaching to table...');
-                    console.log(self.getTable());
+                    
+                    /*
                     //When we click on table headers we sort them if we're allowed to.
-                    $(self.getTable().get(0)).on('click', 'thead th', function(e, args) {
+                    $(self.getGridContainer).on('click', 'table thead th', function(e) {
                         console.log(e);
-                        console.log(args);
-                    });
+                    });*/
 
                     //Refresh will get the first wave of data
                     self.refresh();

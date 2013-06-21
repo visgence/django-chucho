@@ -16,7 +16,7 @@
                         <thead>\
                             <tr>\
                                 {{each(i, columnDefinition) columns}}\
-                                    <th>${ columnDefinition.name }</th>\
+                                    <th data-bind=\"sortHandler: columnDefinition\">${ columnDefinition.name }</th>\
                                 {{/each}}\
                             </tr>\
                         </thead>\
