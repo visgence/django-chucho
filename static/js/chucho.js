@@ -17,15 +17,12 @@
 (function(window,document,navigator,$,ko,Spinner,undefined){
 !function(factory) {    
     if (typeof define === 'function' && define.amd) {
-        define(['jquery','knockout','spin.min','jquery-ui','chucho.grid','dajaxice.core'],factory);
+        define(['exports','jquery','knockout','spin.min','jquery-ui','chucho.grid','dajaxice.core'],factory);
     }
     else {
         factory(window['DataGrid'] = {},$,ko,Spinner);   
     }
 }(function(exports,$,ko,Spinner) {
-    console.log("chucho window");    
-    console.log(window);
-    console.log($);
 
     /* Extra html for grids  */
     var addButton = '<input type="button" class="chucho-add" value="Add"/>';
