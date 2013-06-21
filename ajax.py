@@ -87,7 +87,7 @@ def read_source(request, app_name, model_name, get_editable, result_info=None):
     '                                     col  - Column name to filter on.
     '                                     oper - The filter operation to perform.
     '                                     val  - The value to filter against.
-    '                       sort_columns - A list of dictionaries with keys (directly from slick-grid):
+    '                       sort_columns - A dictionaries with keys (directly from slick-grid):
     '                                     'sortAsc'  - Sort ascending or descending
     '                                     'columnId' - Name of the column to sort on.
     '                       page - The page to data to return
@@ -140,11 +140,11 @@ def read_source(request, app_name, model_name, get_editable, result_info=None):
     extras['read_only'] = read_only
 
     # Order the data
-    if 'sort_columns' in result_info and len(result_info['sort_columns']) > 0:
-        if result_info['sort_columns'][0]['sortAsc']:
-            sort_arg = result_info['sort_columns'][0]['columnId']
+    if 'sort_columns' in result_info and result_info['sort_columns'] is not None:
+        if result_info['sort_columns']['sortAsc']:
+            sort_arg = result_info['sort_columns']['columnId']
         else:
-            sort_arg = '-' + result_info['sort_columns'][0]['columnId']
+            sort_arg = '-' + result_info['sort_columns']['columnId']
         objs = objs.order_by(sort_arg)
     
     # Break the data into pages
