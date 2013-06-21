@@ -497,11 +497,11 @@
         /** Custom formatter for boolean columns in the data grid */
         function booleanFormatter(row, col) {
             if (row[col] === true)
-                return "<i class=\"icon-ok\"></i>";
+                return '<i class="icon-ok"></i>';
             else if(row[col] === false)
-                return "<i class=\"icon-remove\"></i>";
+                return '<i class="icon-remove"></i>';
             else
-                return $('<i></i>', {'class': "icon-question-sign"});
+                return '<i class="icon-question-sign"></i>';
         } 
 
 
@@ -520,7 +520,7 @@
                         switch (self.columns[i]._type) {
                             
                         case 'boolean':
-                            //self.columns[i].formatter = booleanFormatter;
+                            self.columns[i].formatter = booleanFormatter;
                             break;
                             
                         case 'foreignkey':
