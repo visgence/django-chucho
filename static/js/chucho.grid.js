@@ -34,8 +34,7 @@
                             {{each(i, row) data}}\
                                 <tr data-row=\"${i}\" data-bind=\"clickHandler: i\"  class=\"${ i % 2 == 0 ? 'odd' : 'even' }\">\
                                     {{each(j, columnDefinition) columns}}\
-                                        <td>${ typeof columnDefinition.formatter == 'function' ? \
-                                               columnDefinition.formatter(row, columnDefinition.field) : row[columnDefinition.field] }</td>\
+                                        <td>{{html typeof columnDefinition.formatter == 'function' ? columnDefinition.formatter(row, columnDefinition.field) : row[columnDefinition.field] }}</td>\
                                     {{/each}}\
                                 </tr>\
                             {{/each}}\
