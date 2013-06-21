@@ -409,7 +409,7 @@
                         {
                             'app_name': self.appName,
                             'model_name': self.modelName,
-                            'data': self.model.getItem(selected)
+                            'data': self.grid.getRow(selected)
                         }
                     );
                 };
