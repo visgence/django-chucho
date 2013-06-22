@@ -481,6 +481,32 @@
         }
 
 
+        /** Custom formatter for Many to Many columns in the data grid */
+        function m2mFormatter(row, col, rowIndex, colIndex) {
+            var data = row[col];
+            
+            var m_input = ""; 
+            if(data.length > 0) {
+                //Create div used for dialog when viewing m2m data
+                var div = "<div id='m2m_"+rowIndex+"_"+colIndex+"' style='display:none'>";
+                
+                var ul = "<ul>";
+                for (var i = 0; i < data.length; i++) {
+                    var li = "<li>"+data[i].__unicode__+"</li>";
+                    ul += li;
+                }
+                ul += "</ul>";
+                div += ul + "</div>"; 
+                
+                //Make button that triggers dialog
+                var onclick = "confirm_dialog('m2m_" + rowIndex + "_" + colIndex + "', null, null, 'Ok');";
+                m_input = '<span onclick="' + onclick + '" class="chucho-clickable">View</span>' + div;
+            }
+
+            return m_input;
+        }
+
+
         /** Custom formatter for epoch timestamp columns to display in human readable. */
         function timestampFormatter(row, col, rowIndex, colIndex) {
             var data = row[col];
@@ -528,7 +554,7 @@
                             break;
                             
                         case 'm2m':
-                            //self.columns[i].formatter = m2m_formatter;
+                            self.columns[i].formatter = m2mFormatter;
                             break;
 
                         case 'choice':
