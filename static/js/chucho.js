@@ -476,13 +476,13 @@
 
 
         /** Custom formatter for Foreign Key columns in the data grid */
-        function foreignKeyFormatter(row, col) {
+        function foreignKeyFormatter(row, col, rowIndex, colIndex) {
             return row[col].__unicode__;
         }
 
 
         /** Custom formatter for epoch timestamp columns to display in human readable. */
-        function timestampFormatter(row, col) {
+        function timestampFormatter(row, col, rowIndex, colIndex) {
             var data = row[col];
             var time = '';
             if(data) {
@@ -495,7 +495,7 @@
 
         
         /** Custom formatter for boolean columns in the data grid */
-        function booleanFormatter(row, col) {
+        function booleanFormatter(row, col, rowIndex, colIndex) {
             if (row[col] === true)
                 return '<i class="icon-ok"></i>';
             else if(row[col] === false)
@@ -803,34 +803,6 @@
         return data.__unicode__;
     }
 
-
-    /** Custom formatter for Many to Many columns in the data grid */
-    function m2m_formatter(row, cell, columnDef, dataContext) {
-        var grid = myGrid.grid;
-        var model = myGrid.model;
-        var col = grid.getColumns()[cell].field;
-        var data = model.get_cell_data(row, col);
-        
-        var m_input = ""; 
-        if(data.length > 0) {
-            //Create div used for dialog when viewing m2m data
-            var div = "<div id='m2m_"+row+"_"+cell+"' style='display:none'>";
-            
-            var ul = "<ul>";
-            for (var i = 0; i < data.length; i++) {
-                var li = "<li>"+data[i].__unicode__+"</li>";
-                ul += li;
-            }
-            ul += "</ul>";
-            div += ul + "</div>"; 
-            
-            //Make button that triggers dialog
-            var onclick = "confirm_dialog('m2m_" + row + "_" + cell + "', null, null, 'Ok');";
-            m_input = '<span onclick="' + onclick + '" class="chucho-clickable">View</span>' + div;
-        }
-
-        return m_input;
-    }
 
     /** Creates a hidden div structure filled with various input fields to be shown by a dialog.
      * 
