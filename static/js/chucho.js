@@ -506,6 +506,12 @@
             return m_input;
         }
 
+        
+        /** Custom formatter for columns that have a list of choices to choose from. */
+        function choicesFormatter (row, col, rowIndex, colIndex) {
+            return row[col].__unicode__;
+        }
+
 
         /** Custom formatter for epoch timestamp columns to display in human readable. */
         function timestampFormatter(row, col, rowIndex, colIndex) {
@@ -558,7 +564,7 @@
                             break;
 
                         case 'choice':
-                            //self.columns[i].formatter = choices_formatter;
+                            self.columns[i].formatter = choicesFormatter;
                             break;
 
                         case 'datetime':
@@ -817,16 +823,6 @@
             },  
             buttons: buttons
         });
-    }
-
-
-    /** Custom formatter for columns that have a list of choices to choose from. */
-    function choices_formatter (row, cell, columnDef, dataContext) {
-        var grid = myGrid.grid;
-        var model = myGrid.model;
-        var col = grid.getColumns()[cell].field;
-        var data = model.get_cell_data(row, col);
-        return data.__unicode__;
     }
 
 
