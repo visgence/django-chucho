@@ -26,13 +26,13 @@
                         <thead>\
                             <tr>\
                                 {{each(i, columnDefinition) columns}}\
-                                    <th data-bind=\"sortHandler: columnDefinition\">${ columnDefinition.name }\
-                                        {{if sortedCol()['column'] === columnDefinition.id}}\
-                                            {{if sortedCol()['asc'] === true}}\
-                                                <i class=\"icon-chevron-up\"></i>\
-                                            {{else sortedCol()['asc'] === false}}\
-                                                <i class=\"icon-chevron-down\"></i>\
-                                            {{/if}}\
+                                    <th data-bind=\"sortHandler: columnDefinition\">\
+                                        {{if sortedCol()['column'] === columnDefinition.id && sortedCol()['asc'] === true}}\
+                                            ${ columnDefinition.name } <i class=\"icon-chevron-up\"></i>\
+                                        {{else sortedCol()['column'] === columnDefinition.id && sortedCol()['asc'] === false}}\
+                                            ${ columnDefinition.name } <i class=\"icon-chevron-down\"></i>\
+                                        {{else}}\
+                                            ${ columnDefinition.name }\
                                         {{/if}}\
                                     </th>\
                                 {{/each}}\

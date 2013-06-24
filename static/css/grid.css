@@ -83,7 +83,15 @@ table.chucho-grid tbody tr.selected:hover > td {
     text-transform: capitalize;
 }
 
+table.chucho-grid
+{
+    max-width: 100%;
+}
 
+div.grid
+{
+    max-width: 100%;
+}
 
 
 
