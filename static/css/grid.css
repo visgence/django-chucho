@@ -86,6 +86,8 @@ table.chucho-grid tbody tr.selected:hover > td {
 table.chucho-grid
 {
     max-width: 100%;
+    table-layout: fixed;
+    word-wrap: break-word;
 }
 
 div.grid
