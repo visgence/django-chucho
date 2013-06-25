@@ -1273,8 +1273,16 @@
          $(e).nextAll('.add_form_input').val(value);
     }
 
+    function loadModelGrid(app, model) {
+        var url = "/chucho/model_editor/"+app+"/"+model+"/";
+        $.get(url, {}, function(data) {
+            $('#chuchoGridContainer').html(data);  
+        });
+    }
+
     $.extend(window, {
         'DataGrid': DataGrid,
+        'loadModelGrid': loadModelGrid,
         'confirm_dialog': confirm_dialog,
         'remove_filter_row': remove_filter_row,
         'updateTimestampInput': updateTimestampInput
