@@ -9,30 +9,26 @@
 """
 
 # System imports
-try:
-    import simplejson as json
-except ImportError:
-    import json
+from datetime import datetime
+from calendar import timegm
+from sys import stderr
+import json
 
+# Django imports
 from dajaxice.decorators import dajaxice_register
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import models, transaction
 from django.template import Context, loader
 from django.utils.timezone import utc, make_naive,  make_aware, is_aware, get_current_timezone
-from datetime import datetime
-from calendar import timegm
-from sys import stderr
+from django.conf import settings
 
 # Local imports
-from settings import get_permission_obj, DT_FORMAT, D_FORMAT
-try:
-    from settings import USE_TZ
-except:
-    USE_TZ = False
-AuthUser = get_permission_obj()
 from views import genColumns
 from check_access import check_access
+
+# Settings
+AuthUser = settings.GET_PERMISSION_OBJ()
 
 filter_operators = {
     '=': 'exact',
@@ -245,16 +241,16 @@ def update(request, app_name, model_name, data):
 
                 elif field['_type'] == 'datetime':
                     dt_obj = None
-                    if USE_TZ and data[field['field']] not in (None, u""):
+                    if settings.USE_TZ and data[field['field']] not in (None, u""):
                         dt_obj = make_aware(datetime.utcfromtimestamp(float(data[field['field']])), utc)
-                    elif not USE_TZ and data[field['field']] not in (None, u""):
+                    elif not settings.USE_TZ and data[field['field']] not in (None, u""):
                         aware_dt_obj = make_aware(datetime.utcfromtimestamp(float(data[field['field']])), utc)
                         dt_obj = make_naive(aware_dt_obj, get_current_timezone())
 
                     setattr(obj, field['field'], dt_obj)
 
                 elif field['_type'] == 'date':
-                    dt_obj = datetime.strptime(data[field['field']], D_FORMAT)
+                    dt_obj = datetime.strptime(data[field['field']], settings.D_FORMAT)
                     setattr(obj, field['field'], dt_obj.date())
 
                 elif field['_type'] == 'password':
@@ -436,10 +432,10 @@ def serialize_model_objs(objs, extras):
             elif isinstance(f, models.fields.DateTimeField):
                 dt_obj = f.value_from_object(obj)
                 if dt_obj is not None:
-                    if not USE_TZ and not is_aware(dt_obj):
+                    if not settings.USE_TZ and not is_aware(dt_obj):
                         aware_dt_obj = make_aware(dt_obj, get_current_timezone())
                         obj_dict[f.name] = timegm(aware_dt_obj.utctimetuple())
-                    elif USE_TZ and is_aware(dt_obj):
+                    elif settings.USE_TZ and is_aware(dt_obj):
                         obj_dict[f.name] = timegm(dt_obj.utctimetuple())
                     else:
                         error = "There is a datetime that is aware while USE_TZ is false! or vice-versa"
@@ -448,7 +444,7 @@ def serialize_model_objs(objs, extras):
             elif isinstance(f, models.fields.DateField):
                 d_obj = f.value_from_object(obj)
                 if d_obj is not None:
-                    obj_dict[f.name] = d_obj.strftime(D_FORMAT)
+                    obj_dict[f.name] = d_obj.strftime(settings.D_FORMAT)
 
             # Types that need to be returned as strings
             elif type(obj_dict[f.name]) not in [dict, list, unicode, int, long, float, bool, type(None)]:
