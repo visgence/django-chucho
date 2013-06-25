@@ -9,30 +9,34 @@
 """
 
 # System imports
-try:
-    import simplejson as json
-except ImportError:
-    import json
+from datetime import datetime
+from calendar import timegm
+from sys import stderr
+import json
 
+# Django imports
 from dajaxice.decorators import dajaxice_register
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import models, transaction
 from django.template import Context, loader
 from django.utils.timezone import utc, make_naive,  make_aware, is_aware, get_current_timezone
-from datetime import datetime
-from calendar import timegm
-from sys import stderr
+from django.conf import settings
 
 # Local imports
-from settings import get_permission_obj, DT_FORMAT, D_FORMAT
-try:
-    from settings import USE_TZ
-except:
-    USE_TZ = False
-AuthUser = get_permission_obj()
 from views import genColumns
 from check_access import check_access
+
+# Settings
+AuthUser = settings.GET_PERMISSION_OBJ()
+try:
+    if settings.USER_TZ is None:
+        USE_TZ = False
+    else:
+        USE_TZ = True
+except AttributeError:
+    USE_TZ = False
+    
 
 filter_operators = {
     '=': 'exact',
@@ -254,7 +258,7 @@ def update(request, app_name, model_name, data):
                     setattr(obj, field['field'], dt_obj)
 
                 elif field['_type'] == 'date':
-                    dt_obj = datetime.strptime(data[field['field']], D_FORMAT)
+                    dt_obj = datetime.strptime(data[field['field']], settings.D_FORMAT)
                     setattr(obj, field['field'], dt_obj.date())
 
                 elif field['_type'] == 'password':
@@ -448,7 +452,7 @@ def serialize_model_objs(objs, extras):
             elif isinstance(f, models.fields.DateField):
                 d_obj = f.value_from_object(obj)
                 if d_obj is not None:
-                    obj_dict[f.name] = dt_obj.strftime(D_FORMAT)
+                    obj_dict[f.name] = dt_obj.strftime(settings.D_FORMAT)
 
             # Types that need to be returned as strings
             elif type(obj_dict[f.name]) not in [dict, list, unicode, int, long, float, bool, type(None)]:
