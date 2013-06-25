@@ -8,15 +8,18 @@
 """
 
 # System Imports
+from django.conf import settings
 from django.db import models
 from django.http import HttpResponse
 from django.template import RequestContext, loader
 import re
 
 # Local Imports
-from settings import get_permission_obj
-AuthUser = get_permission_obj()
 from check_access import check_access
+
+
+AuthUser = settings.GET_PERMISSION_OBJ()
+
 
 def model_grid(request, app_name, model_name):
     '''

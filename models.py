@@ -1,7 +1,16 @@
+'''
+' chucho/models.py
+' Contributing Authors:
+'    Jeremiah Davis (Visgence, Inc.)
+'    Bretton Murphy (Visgence, Inc.)
+'
+' (c) 2013 Visgence, Inc.
+'''
+
 from django.db import models
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
-from settings import get_permission_obj
+from django.conf import settings
 import re
 
 class ChuchoManager(models.Manager):
@@ -60,7 +69,7 @@ class ChuchoManager(models.Manager):
         ' Return:  True if user is allowed to edit objects of this model and False otherwise
         '''
 
-        if not isinstance(user, get_permission_obj()):
+        if not isinstance(user, settings.GET_PERMISSION_OBJ()):
             raise TypeError('%s is not an auth user' % str(user))
         
         for f in user._meta.fields:
@@ -86,7 +95,7 @@ class ChuchoManager(models.Manager):
         ' Return: QuerySet of viewable instances for a specified user.
         '''
                 
-        if not isinstance(user, get_permission_obj()):
+        if not isinstance(user, settings.GET_PERMISSION_OBJ()):
             raise TypeError("%s is not an Auth User" % str(user))
 
         for f in user._meta.fields:
@@ -117,7 +126,7 @@ class ChuchoManager(models.Manager):
         ' Return: QuerySet of editable instances for a specified user.
         '''
 
-        if not isinstance(user, get_permission_obj()):
+        if not isinstance(user, settings.GET_PERMISSION_OBJ()):
             raise TypeError("%s is not an Auth User" % str(user))
 
         for f in user._meta.fields:
@@ -143,7 +152,7 @@ class ChuchoManager(models.Manager):
         '
         ' Return: Model instance identified by pk if user can edit it, otherwise None.
         '''
-        if not isinstance(user, get_permission_obj()):
+        if not isinstance(user, settings.GET_PERMISSION_OBJ()):
             raise TypeError('%s is not an Auth User' % str(user))
 
         for f in user._meta.fields:
