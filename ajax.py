@@ -29,14 +29,6 @@ from check_access import check_access
 
 # Settings
 AuthUser = settings.GET_PERMISSION_OBJ()
-try:
-    if settings.USER_TZ is None:
-        USE_TZ = False
-    else:
-        USE_TZ = True
-except AttributeError:
-    USE_TZ = False
-    
 
 filter_operators = {
     '=': 'exact',
@@ -249,9 +241,9 @@ def update(request, app_name, model_name, data):
 
                 elif field['_type'] == 'datetime':
                     dt_obj = None
-                    if USE_TZ and data[field['field']] not in (None, u""):
+                    if settings.USE_TZ and data[field['field']] not in (None, u""):
                         dt_obj = make_aware(datetime.utcfromtimestamp(float(data[field['field']])), utc)
-                    elif not USE_TZ and data[field['field']] not in (None, u""):
+                    elif not settings.USE_TZ and data[field['field']] not in (None, u""):
                         aware_dt_obj = make_aware(datetime.utcfromtimestamp(float(data[field['field']])), utc)
                         dt_obj = make_naive(aware_dt_obj, get_current_timezone())
 
@@ -440,10 +432,10 @@ def serialize_model_objs(objs, extras):
             elif isinstance(f, models.fields.DateTimeField):
                 dt_obj = f.value_from_object(obj)
                 if dt_obj is not None:
-                    if not USE_TZ and not is_aware(dt_obj):
+                    if not settings.USE_TZ and not is_aware(dt_obj):
                         aware_dt_obj = make_aware(dt_obj, get_current_timezone())
                         obj_dict[f.name] = timegm(aware_dt_obj.utctimetuple())
-                    elif USE_TZ and is_aware(dt_obj):
+                    elif settings.USE_TZ and is_aware(dt_obj):
                         obj_dict[f.name] = timegm(dt_obj.utctimetuple())
                     else:
                         error = "There is a datetime that is aware while USE_TZ is false! or vice-versa"
