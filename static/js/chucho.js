@@ -150,15 +150,14 @@
         /** The columns and operators that we can filter over for this grid. */
         this.filter_operators = null;
 
-        /** Determines whether or not we want to allow the user to only view data or edit it. */
-        this.readOnly = true;
-
         this.setReadOnly = function(readOnly) {
-            this.readOnly = readOnly;
+            console.log('inside set read only');
+            console.log(readOnly);
+            this.grid.readOnly = readOnly;
             var panel = this.getBtnPanel();
 
             var add = $(panel).children('input[value="Add"]');
-            if(self.readOnly) {
+            if(this.grid.readOnly) {
                 if($(add).length > 0)
                     $(add).remove();
             }
@@ -216,7 +215,7 @@
                     }
 
                     self.grid.items(resp.data)
-                    self.setReadOnly(resp.readOnly);
+                    self.setReadOnly(resp.read_only);
                     if ( 'page_list' in resp ) {
                         $('#chucho_page_list').html(resp.page_list);
                         $('.chucho-button').button();
@@ -584,6 +583,9 @@
                    
                     this.PagedGridModel = function(items, columns) {
                         this.items = ko.observableArray(items);
+        
+                        /** Determines whether or not we want to allow the user to only view data or edit it. */
+                        this.readOnly = true;
 
                         this.getRow = function(i) {
                             return this.items()[i];
@@ -653,8 +655,10 @@
                                     $('#'+self.modelName+'_grid table.chucho-grid tr.selected').removeClass('selected');
                                     $(element).addClass('selected');
 
-                                    var value = valueAccessor();
-                                    self.editRecord(value);
+                                    if(!self.grid.readOnly) {
+                                        var value = valueAccessor();
+                                        self.editRecord(value);
+                                    }
                                     clearTimeout(clickTimeout);
                                     clickTimeout = false;
                                     
@@ -705,14 +709,13 @@
                     $(addButton).appendTo(self.getBtnPanel());
                     $(refreshButton).appendTo(self.getBtnPanel());
                     $(messageSpan).appendTo(self.getBtnPanel());
-                   
+                  
 
                     $(this).on('rowSelectionChange', function() {
                         var panel = self.getBtnPanel();
                         var serv_msg = $('#server_messages'); 
-                        
                         //Only add these if user is allowed to edit the content
-                        if(!self.readOnly) {
+                        if(!self.grid.readOnly) {
                             //Add delete button if it's not in panel            
                             if($(panel).has('input[value="Delete"]').length <= 0)
                                 $(serv_msg).before(deleteButton);
