@@ -151,8 +151,6 @@
         this.filter_operators = null;
 
         this.setReadOnly = function(readOnly) {
-            console.log('inside set read only');
-            console.log(readOnly);
             this.grid.readOnly = readOnly;
             var panel = this.getBtnPanel();
 
