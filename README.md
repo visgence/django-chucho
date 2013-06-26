@@ -28,11 +28,11 @@ http://twitter.github.io/bootstrap/index.html
 
 NOTE: There is a specific order which should be obeyed when importing the needed js files.
 
-Jquery
-Jquery.tmpl
-Knockout
-chucho/static/js/chucho.grid.js
-chucho/static/js/chucho.js
+Jquery  
+Jquery.tmpl  
+Knockout  
+chucho/static/js/chucho.grid.js  
+chucho/static/js/chucho.js  
 
 1) Install Chucho into your project as a git submodule.
 
@@ -40,7 +40,7 @@ chucho/static/js/chucho.js
 
 2) Configure settings file to use with Chucho and Dajaxice.
   
-First follow the instructions for installing Dajaxice into your projects which can be found here:\n
+First follow the instructions for installing Dajaxice into your projects which can be found here:  
 http://django-dajaxice.readthedocs.org/en/latest/installation.html#installing-dajaxice
 
 INSTALLED_APPS:
@@ -50,15 +50,15 @@ Add 'chucho' to the end after 'dajaxice'
 Add the following settings.
     
 ```python
-    D_FORMAT = "%m/%d/%Y"
+D_FORMAT = "%m/%d/%Y"
 
-    def GET_PERMISSION_OBJ(): 
-        '''
-        ' This function should be modified to return the object that is used to verify permissions in the
-        ' object managers.  This is required for the chucho interface.
-        '''
-        from django.contrib.auth import get_user_model
-        return get_user_model()
+def GET_PERMISSION_OBJ(): 
+    '''
+    ' This function should be modified to return the object that is used to verify permissions in the
+    ' object managers.  This is required for the chucho interface.
+    '''
+    from django.contrib.auth import get_user_model
+    return get_user_model()
 ```
 
 3) Add Chucho url to root urls.py
