@@ -1126,8 +1126,8 @@
                 });
 
                 ul.append(li);
-                li.append(checkbox);
-                checkbox.after(label);
+                li.append(label);
+                label.prepend(checkbox);
             });
         }, {'app_name': appName, 'model_name': modelName, 'get_editable': false});
 
