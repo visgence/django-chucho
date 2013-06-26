@@ -56,16 +56,15 @@ def GET_PERMISSION_OBJ():
     from django.contrib.auth import get_user_model
     return get_user_model()
 
+...
+
+INSTALLED_APPS = (
     ...
+    'chucho',
+    'dajaxice'
+)
 
-    INSTALLED_APPS = (
-        ...
-
-        'chucho',
-        'dajaxice'
-    )
-
-    ...
+...
 
 ```
 
