@@ -22,8 +22,7 @@ chucho/static/js/chucho.grid.js
 chucho/static/js/chucho.js  
 chucho/static/css/grid.css  
 
-While it is not strictly necessary it is recommended that you also use the Twitter Bootstrap css found at:
-
+While it is not strictly necessary it is recommended that you also use the Twitter Bootstrap css found at:  
 http://twitter.github.io/bootstrap/index.html
 
 **NOTE:** There is a specific order which should be obeyed when importing the needed js files.
@@ -102,7 +101,7 @@ all lower case.
 
 Example:
 ```python
-    loadModelGrid('people_app', 'person_model'); 
+loadModelGrid('people_app', 'person_model'); 
 ```
 
 ##Overriding Managers
