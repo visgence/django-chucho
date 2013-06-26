@@ -1,38 +1,38 @@
-#django-chucho
+#Django-Chucho
 
 An Ajax CRUD system for Django models based on SlickGrid and JQuery UI
 
 
 ##Dependencies
 
-Jquery 1.10.1
-Jquery-tmpl 1.0.0pre
-Jquery-ui 1.10.1
-jquery-ui-timepicker-addon
-Knockout 2.2.1
-Django-Dajaxice
-spin.js
+- Jquery 1.10.1  
+- Jquery-tmpl 1.0.0pre  
+- Jquery-ui 1.10.1  
+- jquery-ui-timepicker-addon  
+- Knockout 2.2.1  
+- Django-Dajaxice  
+- spin.js  
 
 
 ##Installation
 
-The required files from chucho that must be loaded are the following:
+The `required files` from chucho that must be loaded are the following:
 
-chucho/static/js/chucho.grid.js
-chucho/static/js/chucho.js
-chucho/static/css/grid.css
+chucho/static/js/chucho.grid.js  
+chucho/static/js/chucho.js  
+chucho/static/css/grid.css  
 
 While it is not strictly necessary it is recommended that you also use the Twitter Bootstrap css found at:
 
 http://twitter.github.io/bootstrap/index.html
 
-NOTE: There is a specific order which should be obeyed when importing the needed js files.
+**NOTE:** There is a specific order which should be obeyed when importing the needed js files.
 
-Jquery  
-Jquery.tmpl  
-Knockout  
-chucho/static/js/chucho.grid.js  
-chucho/static/js/chucho.js  
+- Jquery  
+- Jquery.tmpl  
+- Knockout  
+- chucho/static/js/chucho.grid.js  
+- chucho/static/js/chucho.js  
 
 1) Install Chucho into your project as a git submodule.
 
@@ -43,11 +43,8 @@ chucho/static/js/chucho.js
 First follow the instructions for installing Dajaxice into your projects which can be found here:  
 http://django-dajaxice.readthedocs.org/en/latest/installation.html#installing-dajaxice
 
-INSTALLED_APPS:
-    
-Add 'chucho' to the end after 'dajaxice'
 
-Add the following settings.
+Add the following to settings.
     
 ```python
 D_FORMAT = "%m/%d/%Y"
@@ -59,12 +56,28 @@ def GET_PERMISSION_OBJ():
     '''
     from django.contrib.auth import get_user_model
     return get_user_model()
+
+    ...
+
+    INSTALLED_APPS = (
+        ...
+
+        'chucho',
+        'dajaxice'
+    )
+
+    ...
+
 ```
+
+**NOTE:** The 'chucho' and 'dajaxice' in `INSTALLED_APPS` should be put last and need to be in the order shown.
 
 3) Add Chucho url to root urls.py
 
-Add this url to your url patterns inside the root url.py of your project
+Add this url to your url patterns inside the root url.py of your project  
+```python
 url(r'^chucho/', include('chucho.urls')),
+```
 
 
 5) Import ChuchoManager and ChuchoUserManager
@@ -88,9 +101,9 @@ Second you need to make a call to loadModelGrid() and pass it the django app you
 all lower case.
 
 Example:
-    '''python
+```python
     loadModelGrid('people_app', 'person_model'); 
-    '''
+```
 
 ##Overriding Managers
 
