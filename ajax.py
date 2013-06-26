@@ -9,80 +9,61 @@
 """
 
 # System imports
-try:
-    import simplejson as json
-except ImportError:
-    import json
+from datetime import datetime
+from calendar import timegm
+from sys import stderr
+import json
 
+# Django imports
 from dajaxice.decorators import dajaxice_register
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import models, transaction
 from django.template import Context, loader
-from django.utils.timezone import utc
-from datetime import datetime
-from sys import stderr
+from django.utils.timezone import utc, make_naive,  make_aware, is_aware, get_current_timezone
+from django.conf import settings
 
 # Local imports
-from settings import get_permission_obj, DT_FORMAT, D_FORMAT
-AuthUser = get_permission_obj()
 from views import genColumns
 from check_access import check_access
+
+# Settings
+AuthUser = settings.GET_PERMISSION_OBJ()
 
 filter_operators = {
     '=': 'exact',
     '= (no case)': 'iexact',
-    'contains string': 'contains',
-    'contains (no case)': 'icontains',
-    'starts with string': 'startswith',
-    'starts with (no case)': 'istartswith',
-    'ends with string': 'endswith',
-    'ends with (no case)': 'iendswith',
-    'element in': 'in',
+    'Contains String': 'contains',
+    'Contains (No Case)': 'icontains',
+    'Starts With String': 'startswith',
+    'Starts With (No Case)': 'istartswith',
+    'Ends With String': 'endswith',
+    'Ends With (No Case)': 'iendswith',
+    'Element In': 'in',
     '>': 'gt',
     '>=': 'gte',
     '<': 'lt',
     '<=': 'lte',
-    'is null': 'isnull',
-    'regular expression': 'regex',
-    'regular expression (no case)': 'iregex'
+    'Is Null': 'isnull',
+    'Regular Expression': 'regex',
+    'Regular Expression (No Case)': 'iregex'
     }
 
 
 @dajaxice_register
-def get_filter_options(request, app_name, model_name):
+def get_filter_operators(request):
     '''
     ' Return JSON dump of dict of list of select option elements.
     ' This is used by the filter tool in the ui.
     '''
-    print app_name
-    print model_name
     user = check_access(request)
     if user is None:
         errors = 'User is not logged in properly.'
         return json.dumps({'errors': errors})
-    t = loader.get_template('select_options.html')
+
     operators = filter_operators.keys()
     operators.sort()
-    c_operators = Context({'select_title': 'Select Operator', 'options': operators})
-
-    cls = models.loading.get_model(app_name, model_name)
-    try:
-        columns = cls.filter_columns
-        columns.sort()
-        c_columns = Context({'select_title': 'Select Column', 'options': columns})
-    except AttributeError:
-        columns = [f.name for f in cls._meta.fields]
-        print columns
-        columns.sort()
-        print columns
-        c_columns = Context({'select_title': 'Select Column', 'options': columns})
-    options = {
-        'operators': t.render(c_operators),
-        'columns': t.render(c_columns)
-        }
-    return json.dumps(options)
-
+    return json.dumps(operators)
 
 @dajaxice_register
 def read_source(request, app_name, model_name, get_editable, result_info=None):
@@ -102,7 +83,7 @@ def read_source(request, app_name, model_name, get_editable, result_info=None):
     '                                     col  - Column name to filter on.
     '                                     oper - The filter operation to perform.
     '                                     val  - The value to filter against.
-    '                       sort_columns - A list of dictionaries with keys (directly from slick-grid):
+    '                       sort_columns - A dictionaries with keys (directly from slick-grid):
     '                                     'sortAsc'  - Sort ascending or descending
     '                                     'columnId' - Name of the column to sort on.
     '                       page - The page to data to return
@@ -126,11 +107,16 @@ def read_source(request, app_name, model_name, get_editable, result_info=None):
         filter_args = None
         
     kwargs = None    
+    omni = None
     if filter_args is not None:
         kwargs = {}
         for i in filter_args:
-            keyword = i['col'] + '__' + filter_operators[i['oper']]
-            kwargs[keyword] = i['val']
+            if i['col'] == 'chucho-omni':
+                omni = i['val']
+            else:
+                keyword = i['col'] + '__' + filter_operators[i['oper']]
+                kwargs[keyword] = i['val']
+            
 
     cls = models.loading.get_model(app_name, model_name)
 
@@ -138,9 +124,9 @@ def read_source(request, app_name, model_name, get_editable, result_info=None):
     try:
         #Only get the objects that can be edited by the user logged in
         if get_editable and cls.objects.can_edit(user):
-            objs = cls.objects.get_editable(user, kwargs)
+            objs = cls.objects.get_editable(user, kwargs, omni)
         else:
-            objs = cls.objects.get_viewable(user, kwargs)
+            objs = cls.objects.get_viewable(user, kwargs, omni)
             read_only = True
     except Exception as e:
         stderr.write('Unknown error occurred in read_source: %s: %s\n' % (type(e), e.message))
@@ -150,11 +136,11 @@ def read_source(request, app_name, model_name, get_editable, result_info=None):
     extras['read_only'] = read_only
 
     # Order the data
-    if 'sort_columns' in result_info and len(result_info['sort_columns']) > 0:
-        if result_info['sort_columns'][0]['sortAsc']:
-            sort_arg = result_info['sort_columns'][0]['columnId']
+    if 'sort_columns' in result_info and result_info['sort_columns'] is not None:
+        if result_info['sort_columns']['sortAsc']:
+            sort_arg = result_info['sort_columns']['columnId']
         else:
-            sort_arg = '-' + result_info['sort_columns'][0]['columnId']
+            sort_arg = '-' + result_info['sort_columns']['columnId']
         objs = objs.order_by(sort_arg)
     
     # Break the data into pages
@@ -237,7 +223,7 @@ def update(request, app_name, model_name, data):
                     continue
 
                 # Handle empy data
-                elif data[field['field']] in [None, ''] and field['_type'] != 'auth_password':
+                elif data[field['field']] in [None, ''] and field['_type'] != 'password':
                     if field['_type'] in ['text', 'char', 'color']:
                         setattr(obj, field['field'], '')
                     else:
@@ -254,16 +240,20 @@ def update(request, app_name, model_name, data):
                         return json.dumps({'errors': error})
 
                 elif field['_type'] == 'datetime':
-                    dt_obj = datetime.strptime(data[field['field']], DT_FORMAT)
-                    dt_obj = dt_obj.replace(tzinfo=utc)
+                    dt_obj = None
+                    if settings.USE_TZ and data[field['field']] not in (None, u""):
+                        dt_obj = make_aware(datetime.utcfromtimestamp(float(data[field['field']])), utc)
+                    elif not settings.USE_TZ and data[field['field']] not in (None, u""):
+                        aware_dt_obj = make_aware(datetime.utcfromtimestamp(float(data[field['field']])), utc)
+                        dt_obj = make_naive(aware_dt_obj, get_current_timezone())
+
                     setattr(obj, field['field'], dt_obj)
 
                 elif field['_type'] == 'date':
-                    dt_obj = datetime.strptime(data[field['field']], D_FORMAT)
-                    dt_obj = dt_obj.replace(tzinfo=utc)
+                    dt_obj = datetime.strptime(data[field['field']], settings.D_FORMAT)
                     setattr(obj, field['field'], dt_obj.date())
 
-                elif field['_type'] == 'auth_password':
+                elif field['_type'] == 'password':
                     if data[field['field']] not in [None, '']:
                         obj.set_password(data[field['field']])
 
@@ -327,6 +317,7 @@ def update(request, app_name, model_name, data):
 
 
 @dajaxice_register
+@transaction.commit_manually
 def destroy(request, app_name, model_name, data):
     '''
     ' Receive a model_name and data object via ajax, and remove that item,
@@ -334,6 +325,7 @@ def destroy(request, app_name, model_name, data):
     '''
     user = check_access(request)
     if user is None:
+        transaction.rollback()
         errors = 'User is not logged in properly.'
         return json.dumps({'errors': errors})
 
@@ -341,13 +333,22 @@ def destroy(request, app_name, model_name, data):
     try:
         obj = cls.objects.get_editable_by_pk(user, data['pk'])
         if obj is None:
+            transaction.rollback()
             error = "User %s does not have permission to delete this object." % user
             return json.dumps({'errors': error})
     except Exception as e:
+        transaction.rollback()
         error = "There was an error for user %s trying to delete this object: %s" % (user, str(e))
         return json.dumps({'errors': error})
 
-    obj.delete()
+    try:
+        obj.delete()
+    except Exception as e:
+        transaction.rollback()
+        error = "Unexpected error deleting object: %s: %s" % (type(e), e)
+        return json.dumps({'errors': error})
+
+    transaction.commit()
     return json.dumps({'success': 'Successfully deleted item with primary key: %s' % data['pk']})
 
 
@@ -431,11 +432,19 @@ def serialize_model_objs(objs, extras):
             elif isinstance(f, models.fields.DateTimeField):
                 dt_obj = f.value_from_object(obj)
                 if dt_obj is not None:
-                    obj_dict[f.name] = dt_obj.strftime(DT_FORMAT)
+                    if not settings.USE_TZ and not is_aware(dt_obj):
+                        aware_dt_obj = make_aware(dt_obj, get_current_timezone())
+                        obj_dict[f.name] = timegm(aware_dt_obj.utctimetuple())
+                    elif settings.USE_TZ and is_aware(dt_obj):
+                        obj_dict[f.name] = timegm(dt_obj.utctimetuple())
+                    else:
+                        error = "There is a datetime that is aware while USE_TZ is false! or vice-versa"
+                        return json.dumps({"errors": error}) 
+
             elif isinstance(f, models.fields.DateField):
                 d_obj = f.value_from_object(obj)
                 if d_obj is not None:
-                    obj_dict[f.name] = d_obj.strftime(D_FORMAT)
+                    obj_dict[f.name] = d_obj.strftime(settings.D_FORMAT)
 
             # Types that need to be returned as strings
             elif type(obj_dict[f.name]) not in [dict, list, unicode, int, long, float, bool, type(None)]:

@@ -3,9 +3,16 @@
     background: yellow;
 }
 
-.slick-cell.active
+
+table.chucho-grid tr.selected
 {
-    background: grey;
+    background: #FFF1A9;
+}
+
+
+table.chucho-grid thead tr
+{
+    background: black;
 }
 
 .slick-header-column
@@ -28,12 +35,66 @@
     z-index: 999998;
 }
 
-div#utilities-container div.grid
-{
-    height: 70%;
-}
-
 .slick-viewport
 {
     height: 650px;
 }
+
+.chucho-clickable
+{
+    cursor: pointer;
+    color: blue;
+}
+
+.chucho-clickable:hover
+{
+    color: red;
+}
+
+table.chucho-grid {
+    border-collapse: separate;
+    //border-color: gray;
+}
+
+table.chucho-grid tbody tr {
+    display: table-row;
+    background-color: #FFFFFF;
+}
+
+table.chucho-grid thead th {
+    font-weight: bold;
+    color: #1874CD;
+    background: linear-gradient(to bottom, #F0F8FF 0%, #F0F8FF   50%, #E5F3FF 51%, #E5F3FF 100%);
+}
+
+table.chucho-grid, table.chucho-grid thead th, table.chucho-grid tbody td {
+    font-size: 13px;
+}
+
+table.chucho-grid tbody tr:hover > td {
+  background-color: #f5f5f5;
+}
+
+table.chucho-grid tbody tr.selected:hover > td {
+    background: #FFF1A9;
+}
+
+.capitalize {
+    text-transform: capitalize;
+}
+
+table.chucho-grid
+{
+    max-width: 100%;
+    table-layout: fixed;
+    word-wrap: break-word;
+}
+
+div.grid
+{
+    max-width: 100%;
+}
+
+
+
+

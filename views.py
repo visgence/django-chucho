@@ -8,15 +8,18 @@
 """
 
 # System Imports
+from django.conf import settings
 from django.db import models
 from django.http import HttpResponse
 from django.template import RequestContext, loader
 import re
 
 # Local Imports
-from settings import get_permission_obj
-AuthUser = get_permission_obj()
 from check_access import check_access
+
+
+AuthUser = settings.GET_PERMISSION_OBJ()
+
 
 def model_grid(request, app_name, model_name):
     '''
@@ -31,13 +34,21 @@ def model_grid(request, app_name, model_name):
 
 def genColumns(modelObj):
     columns = []
+    column_options = get_column_options(modelObj)
     for f in get_meta_fields(modelObj):
 
         #We don't care about these fields
         if f.name.endswith('_ptr'):
             continue
 
-        field = {'field': f.name, 'name': f.name.title(), 'id': f.name}
+        field = {
+            'field': f.name,
+            'name': f.name.title(),
+            'id': f.name,
+            'sortable': True,
+            'grid_column': True
+            }
+
         #if f.name in ['name', 'id']:
         #    field['sortable'] = True
         # Make sure to give the type and other meta data for the columns.
@@ -63,46 +74,32 @@ def genColumns(modelObj):
                 field['choices'].append(choice)
         elif isinstance(f, models.BooleanField):
             field['_type'] = 'boolean'
-            field['sorter'] = 'boolean_sorter'
-            field['sortable'] = 'true'
         elif isinstance(f, models.IntegerField) or isinstance(f, models.AutoField):
             field['_type'] = 'integer'
-            field['sorter'] = 'numeric_sorter'
-            field['sortable'] = 'true'
         elif isinstance(f, models.DecimalField) or isinstance(f, models.FloatField):
             field['_type'] = 'decimal'
-            field['sorter'] = 'numeric_sorter'
-            field['sortable'] = 'true'
         elif isinstance(f, models.DateTimeField):
             field['_type'] = 'datetime'
-            field['sorter'] = 'date_sorter'
-            field['sortable'] = 'true'
         elif isinstance(f, models.DateField):
             field['_type'] = 'date'
-            field['sorter'] = 'date_sorter'
-            field['sortable'] = 'true'
         elif isinstance(f, models.TextField):
             field['_type'] = 'text'
-            field['sorter'] = 'alpha_sorter'
-            field['sortable'] = 'true'
         elif isinstance(f, models.CharField):
-            # See if this is a password field.
-            if f.model == AuthUser and f.name == 'password':
-                field['_type'] = 'auth_password'
             #Try and see if this field was meant to hold colors
-            elif re.match('color$', f.name.lower()):
+            if re.match('color$', f.name.lower()):
                 field['_type'] = 'color'
-                field['sorter'] = 'alpha_sorter'
-                field['sortable'] = 'true'
             else:
                 field['_type'] = 'char'
-                field['sorter'] = 'alpha_sorter'
-                field['sortable'] = 'true'
 
-        else:
+        elif f.name not in column_options:
             raise Exception("In genColumns: The field type %s is not handled." % type(f))
 
+        # Apply any custom options for the field.
+        if f.name in column_options:
+            field.update(column_options[f.name])
+
         columns.append(field)
+    
     for m in get_meta_m2m(modelObj):
         columns.append({
             'field': m.name,
@@ -111,7 +108,8 @@ def genColumns(modelObj):
             'model_name': m.rel.to.__name__,
             'app': m.rel.to._meta.app_label,
             '_type': 'm2m',
-            '_editable': True
+            '_editable': True,
+            'grid_column': True
         })
 
     return columns
@@ -129,3 +127,12 @@ def get_meta_m2m(cls):
     ' Use a model class to get the _meta ManyToMany fields
     '''
     return cls._meta.many_to_many
+
+def get_column_options(cls):
+    '''
+    ' Use a model class to get the _meta.column_options, if they exist.
+    '''
+    try:
+        return cls.column_options
+    except:
+        return {}
