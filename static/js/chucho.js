@@ -1117,7 +1117,7 @@
                 
                 var li = $('<li></li>');
                 var checkbox = get_input('', 'checkbox', obj.pk);
-                var label = $('<label></label>').text(obj.__unicode__);
+                var label = $('<label></label>').text(" "+obj.__unicode__);
 
                  //Pre-select appropriate objects
                 $(value).each(function(i, val) {
