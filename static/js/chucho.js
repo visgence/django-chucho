@@ -911,7 +911,7 @@
                 break;
 
             case 'foreignkey': 
-                input = get_pk_input('add_form_input foreignkey', value, col.model_name, col.app); 
+                input = get_pk_input('add_form_input foreignkey', value, col); 
                 td2.append(input);
                 td1.append(label);
                 break;
@@ -1068,19 +1068,23 @@
      * Keyword Args
      *    cls        - The class to give the input field.
      *    value      - The value to give to the input field to start with if any.
-     *    modelName - The model name to fetch the objects from for the select field.
+     *    col        - The column definition for this field (from this.column
      *
      * Return: The newly created select field
      */
-    function get_pk_input (cls, value, modelName, appName) 
+    function get_pk_input (cls, value, col) 
     {
         var input = $("<select></select>").attr({'class': cls});
         //Get all objects that the user can select from
         Dajaxice.chucho.read_source( function(resp) {
+            if (col.blank) {
+                var null_option = $('<option>', {text:'(null)'});
+                null_option.val('null');
+                input.append(null_option);
+            }
             $(resp.data).each(function(i, obj) {
-                var option = $("<option></option>")
-                    .attr('class', obj.pk)
-                    .text(obj.__unicode__);
+                var option = $("<option>", {text: obj.__unicode__})
+                    .val(obj.pk);
 
                 if(value !== '' && obj.pk == value.pk) 
                     option.attr('selected', 'selected');
@@ -1088,7 +1092,8 @@
 
             });
         }, 
-        {'app_name': appName, 'model_name': modelName, 'get_editable': false});
+        {'app_name': col.app, 'model_name': col.model_name, 'get_editable': false});
+
         return input;
     }
 
@@ -1163,7 +1168,11 @@
     function field_value (input) 
     {
         if($(input).hasClass('foreignkey')) {
-            return {'pk': $(':selected', input).attr('class')};
+            var value = $(input).val();
+            if (value === 'null')
+                value = null;
+            
+            return {'pk': value};
         }
         else if($(input).hasClass('m2m')) {
             var array = [];
