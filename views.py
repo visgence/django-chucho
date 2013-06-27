@@ -59,6 +59,7 @@ def genColumns(modelObj):
             field['model_name'] = f.rel.to.__name__
             field['app'] = f.rel.to._meta.app_label
             field['_type'] = 'foreignkey'
+            field['blank'] = f.blank
         elif len(f.choices) > 0:
             field['_type'] = 'choice'
             field['choices'] = []
