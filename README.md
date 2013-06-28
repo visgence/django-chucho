@@ -1,6 +1,6 @@
 #Django-Chucho
 
-An Ajax CRUD system for Django models based on SlickGrid and JQuery UI
+An Ajax CRUD system for Django models based on Knockout and JQuery UI
 
 
 ##Dependencies
