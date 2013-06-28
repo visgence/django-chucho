@@ -231,8 +231,12 @@ def update(request, app_name, model_name, data):
 
                 elif field['_type'] == 'foreignkey':
                     rel_cls = models.loading.get_model(field['app'], field['model_name'])
-                    rel_obj = rel_cls.objects.get(pk=data[field['field']]['pk'])
-                    if rel_obj.can_view(user):
+                    if data[field['field']]['pk'] is None:
+                        rel_obj = None
+                    else:
+                        rel_obj = rel_cls.objects.get(pk=data[field['field']]['pk'])
+
+                    if rel_obj is None or rel_obj.can_view(user):
                         setattr(obj, field['field'], rel_obj)
                     else:
                         transaction.rollback()
