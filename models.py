@@ -11,6 +11,7 @@ from django.db import models
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
+from decimal import Decimal
 import re
 
 class ChuchoManager(models.Manager):
@@ -23,14 +24,14 @@ class ChuchoManager(models.Manager):
     def search(self, search_str, operator=None, column=None):
         q_list = []
         q_list += self.search_all(search_str, operator, column)
-
+    
         q_all = None
         for q in q_list:
             if q_all is None:
                 q_all = q
             else:
                 q_all |= q
-        
+
         return self.filter(q_all)
 
     def search_all(self, search_str, operator, column):
@@ -42,17 +43,24 @@ class ChuchoManager(models.Manager):
             fields = [f.name for f in o._meta.fields]
         q_list = []
         op = '__icontains'
+        numOp = '__iexact'
 
         for f in fields:
             f_attr = getattr(o, f)
-
-            if type(f_attr) == 'bool':
+            
+            if isinstance(f_attr, bool):
                 #Ignore booleans
                 pass
             elif isinstance(f_attr, models.Model):
                 # Is a foreign key
                 foreign_objs = f_attr.__class__.objects.search(search_str, operator, column)
                 q_list.append(Q(**{f + '__in': foreign_objs}))
+            elif isinstance(f_attr, float):
+                q_list.append(Q(**{f + numOp: search_str}))
+            elif isinstance(f_attr, int):
+                q_list.append(Q(**{f + numOp: search_str}))
+            elif isinstance(f_attr, Decimal):
+                q_list.append(Q(**{f + numOp: search_str}))
             else:
                 q_list.append(Q(**{f + op: search_str}))
 
@@ -179,7 +187,6 @@ class ChuchoUserManager(ChuchoManager):
         pattern_name2 = r'^\s*([a-z]+),\s*([a-z]+)\s*$'
         pattern_username = r'^\s*(\w+)\s*$'
         pattern_email = r'^\s*(\w+@\w+\.\w+)\s*$'
-        result = self.none()
         
         q_list = []
         m = re.match(pattern_name1, search_str, re.I)
@@ -201,8 +208,11 @@ class ChuchoUserManager(ChuchoManager):
                 q_all = q
             else:
                 q_all |= q
-
-        return self.filter(q_all)
+        
+        if q_all is not None:
+            return self.filter(q_all)
+        
+        return self.none()
 
     def search_name(self, first, last):
         op = '__icontains'
