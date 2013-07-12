@@ -64,7 +64,7 @@ def model_grid(request, app_name, model_name):
     return HttpResponse(t.render(c), content_type="text/html")
 
 
-def api_view(request, app_name, model_name):
+def api_view(request, app_name, model_name, id=None):
     '''
     ' Router view for the RESTful api portion of Chucho.  All RESTFull requests come through here
     ' and gets routed to the appropriate functions when requests are for managing the data of the models.
@@ -86,7 +86,7 @@ def api_view(request, app_name, model_name):
     if request.method == "POST":
         return update(request, app_name, model_name, user)
     if request.method == "PUT":
-        pass
+        return update(request, app_name, model_name, user, id)
     if request.method == "DELETE":
         pass
 
@@ -120,23 +120,20 @@ def read_source(request, app_name, model_name, user):
     '                       page - The page to data to return
     '                       per_page - The number of items on a page.
     '''
-    
-    result_info = {
-        'sort_columns': None         
-    }
 
-    page = request.GET.get('page', None)
-    per_page = request.GET.get('per_page', None)
-    sortAsc = request.GET.get('sort_columns[sortAsc]', None)
-    sortId = request.GET.get('sort_columns[columnId]', None)
-    get_editable = request.GET.get('get_editable', 'false')
     
-    if sortAsc is not None and sortId is not None:
-        result_info['sort_columns'] = {'sortAsc': sortAsc, 'columnId': sortId}
-    if page is not None and per_page is not None:
-        result_info['page'] = page
-        result_info['per_page'] = per_page
-
+    result_info = {} 
+    get_editable = False
+    try:
+        jsonData = json.loads(request.GET.get('jsonData'))
+    except:
+        print "No valid json data found"
+    else:
+        if 'result_info' in jsonData:
+            result_info = jsonData['result_info']
+        if 'get_editable' in jsonData:
+            get_editable = jsonData['get_editable']
+ 
     if 'filter_args' in result_info:
         filter_args = result_info['filter_args']
     else:
@@ -159,7 +156,7 @@ def read_source(request, app_name, model_name, user):
     read_only = False
     try:
         #Only get the objects that can be edited by the user logged in
-        if get_editable.lower() == 'true' and cls.objects.can_edit(user):
+        if get_editable and cls.objects.can_edit(user):
             objs = cls.objects.get_editable(user, kwargs, omni)
         else:
             objs = cls.objects.get_viewable(user, kwargs, omni)
@@ -173,8 +170,8 @@ def read_source(request, app_name, model_name, user):
     extras = {'read_only': read_only}
 
     # Order the data
-    if result_info['sort_columns'] is not None:
-        if result_info['sort_columns']['sortAsc'].lower() == 'true':
+    if 'sort_columns' in result_info and result_info['sort_columns'] is not None:
+        if result_info['sort_columns']['sortAsc']:
             sort_arg = result_info['sort_columns']['columnId']
         else:
             sort_arg = '-' + result_info['sort_columns']['columnId']
@@ -209,7 +206,7 @@ def read_source(request, app_name, model_name, user):
 
 
 @transaction.commit_manually
-def update(request, app_name, model_name, user):
+def update(request, app_name, model_name, user, id=None):
     '''
     ' Modifies a model object with the given data, saves it to the db and
     ' returns it as serialized json.
@@ -221,19 +218,14 @@ def update(request, app_name, model_name, user):
     ' Returns:
     '    The modified object serialized as json.
     '''
-   
-    print request.POST
-    print request.body
+
     try:
         data = json.loads(request.body)
-        print "data"
-        print data
     except:
         transaction.rollback()
         dump = json.dumps({'errors': 'Error loading json'}, indent=4)
         return HttpResponse(dump, content_type="application/json")
     
-    print data
     cls = models.loading.get_model(app_name, model_name)
     if 'pk' not in data:
         if not cls.objects.can_edit(user):

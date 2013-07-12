@@ -209,14 +209,11 @@
             result_info.per_page = $('#pageSelect').val();
             result_info.filter_args = get_filter_data();
             result_info.sort_columns = this.getSortColumns();
-            result_info.get_editable = true
+            get_editable = true
 
-            $.ajax({
-                 url: '/chucho/'+self.appName+'/'+self.modelName+'/'
-                
-                ,type: 'GET'
-                ,data: result_info
-                ,success: function(resp) {
+            $.get( '/chucho/'+self.appName+'/'+self.modelName+'/'
+                  ,{'jsonData': JSON.stringify({'get_editable': get_editable, 'result_info': result_info})}
+                  ,function(resp) {
 
                     spinner.stop();
                     //In case some additional data gets loaded into the response object from 
@@ -243,14 +240,12 @@
                     }
 
                     $(window).trigger('chucho-refreshed', cust_data);
-                 }
-                ,error: function() {
+            })
+            .fail(function() {
                     spinner.stop();
                     self.error("Something unexpected occured!");
                     return;
-                }
-
-            });    
+            });
         };
 
 
@@ -317,6 +312,8 @@
             self = this;
 
             return function(resp) {
+                console.log('resp');
+                console.log(resp);
                 //Reset server message
                 $('#server_messages').html('');
 
@@ -349,13 +346,21 @@
          */
         this.save_row = function(i, row, update) {
             var csrftoken = this.getCookie('csrftoken');
+            var url = '/chucho/'+this.appName+'/'+this.modelName+'/'; 
+            var type = 'POST';
+            
+            if(row.hasOwnProperty('pk')) {
+                url += row['pk']+'/';
+                type = 'PUT';
+            }
 
+            console.log(row);
             $.ajax({
-                 url: '/chucho/'+this.appName+'/'+this.modelName+'/'
+                 url: url
                 ,beforeSend: function(xhr) {
                     xhr.setRequestHeader("X-CSRFToken", csrftoken);
                  }
-                ,type: 'POST'
+                ,type: type
                 ,contentType: 'application/json'
                 ,processData: false
                 ,data: JSON.stringify(row)
@@ -1119,13 +1124,11 @@
     {
         var input = $("<select></select>").attr({'class': cls});
         //Get all objects that the user can select from
-        $.ajax({
-             url: '/chucho/'+col.app+'/'+col.model_name+'/'
-            
-            ,type: 'GET'
-            ,data: {'get_editable': false}
-            ,success: function(resp) {
-            
+
+        $.get( '/chucho/'+col.app+'/'+col.model_name+'/'
+              ,{'jsonData': JSON.stringify({'get_editable': false})}
+              ,function(resp) {
+
                 if (col.blank) {
                     var null_option = $('<option>', {text:'(null)'});
                     null_option.val('null');
@@ -1140,7 +1143,6 @@
                     input.append(option);
 
                 });
-            }
         });
 
         return input;

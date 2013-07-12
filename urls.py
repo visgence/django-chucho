@@ -7,5 +7,6 @@ urlpatterns = patterns(
     
     ,url(r'filters/$', 'get_filter_operators', name="chucho-filter-operators")
     ,url(r'columns/(?P<app_name>.+)/(?P<model_name>.+)/$', 'get_columns', name="chucho-columns")
+    ,url(r'(?P<app_name>.+)/(?P<model_name>.+)/(?P<id>.+)/$', 'api_view', name="chucho-api")
     ,url(r'(?P<app_name>.+)/(?P<model_name>.+)/$', 'api_view', name="chucho-api")
 )
