@@ -108,7 +108,7 @@
         };        
 
 
-        /** Return the columns to be displayed by slickgrid */
+        /** Return the columns to be displayed by the grid */
         this.grid_columns = function() {
             var columns = $.map(this.columns, function(c, i) {
                 if ( c.grid_column)
@@ -639,7 +639,7 @@
                         });
                     };
 
-                    self.grid = new PagedGridModel([], self.columns);
+                    self.grid = new PagedGridModel([], self.grid_columns());
                     
                     //Handle single and double clicks for rows
                     ko.bindingHandlers.clickHandler = {
