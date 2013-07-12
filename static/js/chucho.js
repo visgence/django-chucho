@@ -17,7 +17,7 @@
 (function(window,document,navigator,$,ko,Spinner,undefined){
 !function(factory) {    
     if (typeof define === 'function' && define.amd) {
-        define(['exports','jquery','knockout','spin.min','jquery-ui','chucho.grid','dajaxice.core'],factory);
+        define(['exports','jquery','knockout','spin.min','jquery-ui','chucho.grid'],factory);
     }
     else {
         factory(window['DataGrid'] = {},$,ko,Spinner);   
@@ -354,7 +354,6 @@
                 type = 'PUT';
             }
 
-            console.log(row);
             $.ajax({
                  url: url
                 ,beforeSend: function(xhr) {
@@ -383,8 +382,16 @@
             if ('pk' in row) {
                 self = this;
                 var delete_func = function() {
-                    Dajaxice.chucho.destroy(
-                        function(resp) {
+
+                    var csrftoken = self.getCookie('csrftoken');
+                    $.ajax({
+                         url: '/chucho/'+self.appName+'/'+self.modelName+'/'+row['pk']+'/' 
+                        ,beforeSend: function(xhr) {
+                            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                         }
+                        ,type: 'DELETE'
+                        ,success: function(resp) {
+
                             if ('errors' in resp) {
                                 self.error(resp.errors);
                                 return;
@@ -397,13 +404,8 @@
                             }
                             else
                                 self.error('Unknown error has occurred on delete.');
-                        },
-                        {
-                            'app_name': self.appName,
-                            'model_name': self.modelName,
-                            'data': self.grid.getRow(selected)
                         }
-                    );
+                    });
                 };
                 confirm_dialog('delete_confirm', 'Delete', delete_func);
             }
@@ -1167,12 +1169,10 @@
         div.append(ul);
 
         //Get all objects that the user can select from
-        $.ajax({
-             url: '/chucho/'+col.app+'/'+col.model_name+'/'
-            
-            ,type: 'GET'
-            ,data: {'get_editable': false}
-            ,success: function(resp) {
+        $.get( '/chucho/'+col.app+'/'+col.model_name+'/'
+              ,{'jsonData': JSON.stringify({'get_editable': false})}
+              ,function(resp) {
+
                 $(resp.data).each(function(i, obj) { 
                     
                     var li = $('<li></li>');
@@ -1189,7 +1189,6 @@
                     li.append(label);
                     label.prepend(checkbox);
                 });
-            }
         });
 
         return div;

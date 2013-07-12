@@ -72,6 +72,7 @@ def api_view(request, app_name, model_name, id=None):
     ' Keyword Args:
     '   app_name   - (string) The application the desired model resides in
     '   model_name - (string) The model name to get serialized data from or save to
+    '   id         - (string) The id of an object to delete/update for DELETE/PUSH 
     '
     ' Returns: HttpResponse with serialized json data
     '''
@@ -88,7 +89,7 @@ def api_view(request, app_name, model_name, id=None):
     if request.method == "PUT":
         return update(request, app_name, model_name, user, id)
     if request.method == "DELETE":
-        pass
+        return destroy(request, app_name, model_name, user, id)
 
 
 def read_source(request, app_name, model_name, user):
@@ -102,23 +103,6 @@ def read_source(request, app_name, model_name, user):
     '    app_name     - (string) The application the desired model resides in
     '    model_name   - (string) The model name to get serialized data from
     '    user         - (AuthUser) The authenticated AuthUser object making the request
-    '
-    ' JSON Data (Optional): From the request.body if there is json data the following keys are expected if any.
-    '
-    '    get_editable - True if you are getting the editable objects, false if only the viewable. 
-    '                   Should this not exist False will be assumed.
-    '
-    '    result_info  - This optional serialized json should contain a dictionary with
-    '                   the following possible keys:
-    '                       filter_args - A list of dictionaries with keys:
-    '                                     col  - Column name to filter on.
-    '                                     oper - The filter operation to perform.
-    '                                     val  - The value to filter against.
-    '                       sort_columns - A dictionaries with keys (directly from slick-grid):
-    '                                     'sortAsc'  - Sort ascending or descending
-    '                                     'columnId' - Name of the column to sort on.
-    '                       page - The page to data to return
-    '                       per_page - The number of items on a page.
     '''
 
     
@@ -227,7 +211,7 @@ def update(request, app_name, model_name, user, id=None):
         return HttpResponse(dump, content_type="application/json")
     
     cls = models.loading.get_model(app_name, model_name)
-    if 'pk' not in data:
+    if id is None:
         if not cls.objects.can_edit(user):
             transaction.rollback()
             dump = json.dumps({'errors': 'User %s does not have permission to add to this table.' % str(user)}, indent=4)
@@ -235,7 +219,7 @@ def update(request, app_name, model_name, user, id=None):
         obj = cls()
     else:
         try:
-            obj = cls.objects.get_editable_by_pk(user, pk=data['pk'])
+            obj = cls.objects.get_editable_by_pk(user, pk=id)
             if obj is None:
                 transaction.rollback()
                 dump = json.dumps({'errors': 'User %s does not have permission to edit this object' % str(user)}, indent=4)
@@ -358,6 +342,37 @@ def update(request, app_name, model_name, user, id=None):
     return HttpResponse(serialized_model, content_type="application/json")
 
 
+@transaction.commit_manually
+def destroy(request, app_name, model_name, user, id=None):
+    '''
+    ' Receive a model_name and data object via ajax, and remove that item,
+    ' returning either a success or error message.
+    '''
+
+    cls = models.loading.get_model(app_name, model_name)
+    try:
+        obj = cls.objects.get_editable_by_pk(user, id)
+        if obj is None:
+            transaction.rollback()
+            error = "User %s does not have permission to delete this object." % user
+            return HttpResponse(json.dumps({'errors': error}, indent=4), content_type="application/json")
+    except Exception as e:
+        transaction.rollback()
+        error = "There was an error for user %s trying to delete this object: %s" % (user, str(e))
+        return HttpResponse(json.dumps({'errors': error}, indent=4), content_type="application/json")
+
+    try:
+        obj.delete()
+    except Exception as e:
+        transaction.rollback()
+        error = "Unexpected error deleting object: %s: %s" % (type(e), e)
+        return HttpResponse(json.dumps({'errors': error}, indent=4), content_type="application/json")
+
+    transaction.commit()
+    dump = json.dumps({'success': 'Successfully deleted item with primary key: %s' % id}, indent=4)
+    return HttpResponse(dump, content_type="application/json")
+
+
 def get_columns(request, app_name, model_name):
     '''
     ' Return a HttpResponse with JSON serialized column list for rendering a grid representing a
@@ -391,5 +406,7 @@ def get_filter_operators(request):
     operators = filter_operators.keys()
     operators.sort()
     return HttpResponse(json.dumps(operators, indent=4), content_type="application/json")
+
+
 
 
