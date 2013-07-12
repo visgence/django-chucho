@@ -45,7 +45,6 @@
 
     /* Grid configuration */
     function DataGrid() {
-
         /** This is the name of the django model to we are creating the grid for. */
         this.modelName = '';
 
@@ -97,6 +96,22 @@
             return {'columnId': sortedCol['column'], 'sortAsc': sortedCol['asc']};
         };
 
+        /** Gets cookie so that we may get csrf token from it */
+        this.getCookie = function(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie != '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
 
         /** deselects any selected rows in the table and removes buttons from panel that appear when
          *  any row selection occurs. */
@@ -165,6 +180,7 @@
             }
         };
 
+
         /** Method to get data from server and refresh the grid.*/
         this.refresh = function(page) {
             self = this;
@@ -193,9 +209,15 @@
             result_info.per_page = $('#pageSelect').val();
             result_info.filter_args = get_filter_data();
             result_info.sort_columns = this.getSortColumns();
+            result_info.get_editable = true
 
-            Dajaxice.chucho.read_source(
-                function(resp) {
+            $.ajax({
+                 url: '/chucho/'+self.appName+'/'+self.modelName+'/'
+                
+                ,type: 'GET'
+                ,data: result_info
+                ,success: function(resp) {
+
                     spinner.stop();
                     //In case some additional data gets loaded into the response object from 
                     //outside of chucho, grab it to be sent off.
@@ -221,12 +243,16 @@
                     }
 
                     $(window).trigger('chucho-refreshed', cust_data);
-                },{'app_name': self.appName,
-                   'model_name': self.modelName,
-                   'get_editable': true,
-                   'result_info': JSON.stringify(result_info)
-                  });
+                 }
+                ,error: function() {
+                    spinner.stop();
+                    self.error("Something unexpected occured!");
+                    return;
+                }
+
+            });    
         };
+
 
         /** Method to add a record */
         this.addRecord = function() {
@@ -241,6 +267,7 @@
                 console.log('no editable columns');
         };
 
+
         /** Method to edit a selected record in the grid. */
         this.editRecord = function(selected_index) {
             var selected_row = this.grid.getRow(selected_index); 
@@ -253,6 +280,7 @@
             else
                 this.error('This grid is not editable.');
         };
+
 
         /** Method to add a row to the grid.
          *
@@ -275,6 +303,7 @@
 
             self.save_row(index, row, updating);
         }; 
+
 
         /** Callback method for save_row when a server response has been recieved.
          *
@@ -310,6 +339,7 @@
             };
         };
 
+
         /** Saves or updates a specified row at a given index
          *
          * Keyword Args
@@ -318,13 +348,20 @@
          *    update - Boolean for if this is an update or a new row.
          */
         this.save_row = function(i, row, update) {
-             
-            Dajaxice.chucho.update(this.save_callback(i, update), {
-                'app_name': this.appName,
-                'model_name': this.modelName, 
-                'data': row
+            var csrftoken = this.getCookie('csrftoken');
+
+            $.ajax({
+                 url: '/chucho/'+this.appName+'/'+this.modelName+'/'
+                ,beforeSend: function(xhr) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                 }
+                ,type: 'POST'
+                ,contentType: 'application/json'
+                ,processData: false
+                ,data: JSON.stringify(row)
+                ,success: this.save_callback(i, update)
             });
-        };
+        }
 
 
         /** Deletes a selected row from the grid and removes that object from the database. */
@@ -370,7 +407,8 @@
                 this.success('Locally removed row: ' + selected + '.');
             }
         };
-       
+
+
         /** Shows a dialog to the user for the given error message.
          *
          * Keyword Args
@@ -395,11 +433,13 @@
             }
         };
 
+
         /** Stuff to do on success. */
         this.success = function(msg) {
             console.log('Success: ' + msg);
             $('#server_messages').html(msg).css('color','green');
         };
+
 
         /** This will append a filter to the filter table.*/
         this.add_filter_row = function() {
@@ -424,6 +464,7 @@
                 option.appendTo($(column));
             });
         };
+
 
         /** This will append the operators and input box to the filter table */
         this.add_filter_row_options = function(event) {
@@ -540,8 +581,10 @@
             this.appName = $('#app_name').val();
             self = this;
             
-            Dajaxice.chucho.get_columns(
-                function(resp) { 
+            $.ajax({
+                 url: '/chucho/columns/'+self.appName+'/'+self.modelName+'/'
+                ,type: 'GET'
+                ,success: function(resp) {
                     self.columns = resp;
 
                     // Add editors to columns
@@ -637,9 +680,9 @@
                             columns: columns,
                             sortedCol: this.sortedCol
                         });
-                    };
+                    }; // End PagedGridModel
 
-                    self.grid = new PagedGridModel([], self.columns);
+                    self.grid = new this.PagedGridModel([], self.columns);
                     
                     //Handle single and double clicks for rows
                     ko.bindingHandlers.clickHandler = {
@@ -660,7 +703,7 @@
                                     clearTimeout(clickTimeout);
                                     clickTimeout = false;
                                     
-                                    $(this).trigger('rowSelectionChange');
+                                    $(self).trigger('rowSelectionChange');
                                 } 
                                 //Single click
                                 else {
@@ -669,7 +712,7 @@
                                         $(element).addClass('selected');
                                         clickTimeout = false;
                                         
-                                        $(this).trigger('rowSelectionChange');
+                                        $(self).trigger('rowSelectionChange');
                                     }, delay);
                                 }
                             });    
@@ -709,7 +752,7 @@
                     $(messageSpan).appendTo(self.getBtnPanel());
                   
 
-                    $(this).on('rowSelectionChange', function() {
+                    $(self).on('rowSelectionChange', function() {
                         var panel = self.getBtnPanel();
                         var serv_msg = $('#server_messages'); 
                         //Only add these if user is allowed to edit the content
@@ -749,24 +792,24 @@
                     
                     //Refresh will get the first wave of data
                     self.refresh();
-                },
-                {'app_name': self.appName, 'model_name': self.modelName}
-            );
+                } // End Success Callback
+            });
 
-            // Populate the filter options.
-            Dajaxice.chucho.get_filter_operators(
-                function(resp) {
+            $.ajax({
+                 url: '/chucho/filters/'
+                ,type: 'GET'
+                ,success: function(resp) {
                     if ('errors' in resp) {
                         self.error(resp.errors);
                         return;
                     }
                     self.filter_operators = resp;
                 }
-            );
-        };
+            });
+
+        }; // End init
 
         this.init();
-
     } // End DataGrid
 
 
@@ -1076,23 +1119,29 @@
     {
         var input = $("<select></select>").attr({'class': cls});
         //Get all objects that the user can select from
-        Dajaxice.chucho.read_source( function(resp) {
-            if (col.blank) {
-                var null_option = $('<option>', {text:'(null)'});
-                null_option.val('null');
-                input.append(null_option);
+        $.ajax({
+             url: '/chucho/'+col.app+'/'+col.model_name+'/'
+            
+            ,type: 'GET'
+            ,data: {'get_editable': false}
+            ,success: function(resp) {
+            
+                if (col.blank) {
+                    var null_option = $('<option>', {text:'(null)'});
+                    null_option.val('null');
+                    input.append(null_option);
+                }
+                $(resp.data).each(function(i, obj) {
+                    var option = $("<option>", {text: obj.__unicode__})
+                        .val(obj.pk);
+
+                    if(value !== '' && obj.pk == value.pk) 
+                        option.attr('selected', 'selected');
+                    input.append(option);
+
+                });
             }
-            $(resp.data).each(function(i, obj) {
-                var option = $("<option>", {text: obj.__unicode__})
-                    .val(obj.pk);
-
-                if(value !== '' && obj.pk == value.pk) 
-                    option.attr('selected', 'selected');
-                input.append(option);
-
-            });
-        }, 
-        {'app_name': col.app, 'model_name': col.model_name, 'get_editable': false});
+        });
 
         return input;
     }
@@ -1116,25 +1165,30 @@
         div.append(ul);
 
         //Get all objects that the user can select from
-        Dajaxice.chucho.read_source( function(resp) {
+        $.ajax({
+             url: '/chucho/'+col.app+'/'+col.model_name+'/'
+            
+            ,type: 'GET'
+            ,data: {'get_editable': false}
+            ,success: function(resp) {
+                $(resp.data).each(function(i, obj) { 
+                    
+                    var li = $('<li></li>');
+                    var checkbox = get_input('', 'checkbox', obj.pk);
+                    var label = $('<label></label>').text(" "+obj.__unicode__);
 
-            $(resp.data).each(function(i, obj) { 
-                
-                var li = $('<li></li>');
-                var checkbox = get_input('', 'checkbox', obj.pk);
-                var label = $('<label></label>').text(" "+obj.__unicode__);
+                     //Pre-select appropriate objects
+                    $(value).each(function(i, val) {
+                        if(val !== '' && obj.pk == val.pk) 
+                            checkbox.prop('checked', true);
+                    });
 
-                 //Pre-select appropriate objects
-                $(value).each(function(i, val) {
-                    if(val !== '' && obj.pk == val.pk) 
-                        checkbox.prop('checked', true);
+                    ul.append(li);
+                    li.append(label);
+                    label.prepend(checkbox);
                 });
-
-                ul.append(li);
-                li.append(label);
-                label.prepend(checkbox);
-            });
-        }, {'app_name': appName, 'model_name': modelName, 'get_editable': false});
+            }
+        });
 
         return div;
     }
