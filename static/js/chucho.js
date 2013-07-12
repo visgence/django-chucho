@@ -1169,7 +1169,7 @@
         div.append(ul);
 
         //Get all objects that the user can select from
-        $.get( '/chucho/'+col.app+'/'+col.model_name+'/'
+        $.get( '/chucho/'+appName+'/'+modelName+'/'
               ,{'jsonData': JSON.stringify({'get_editable': false})}
               ,function(resp) {
 
