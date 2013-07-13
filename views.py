@@ -327,7 +327,7 @@ def update(request, app_name, model_name, user, id=None):
         for field_name, error_messages in e.message_dict.items():
             errors += ' ::Field: %s: Errors: %s ' % (field_name, ','.join(error_messages))
 
-        return HttpResponse(json.dumps({'errors': error}, indent=4), content_type="application/json")
+        return HttpResponse(json.dumps({'errors': errors}, indent=4), content_type="application/json")
 
     try:
         serialized_model = serialize_model_objs([obj.__class__.objects.get(pk=obj.pk)], {'read_only':True})
