@@ -8,7 +8,7 @@
 '''
 
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, fields
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from decimal import Decimal
@@ -33,6 +33,7 @@ class ChuchoManager(models.Manager):
                 q_all |= q
 
         return self.filter(q_all)
+
 
     def search_all(self, search_str, operator, column):
         # get an object of type to get the search fields
@@ -65,6 +66,24 @@ class ChuchoManager(models.Manager):
                 q_list.append(Q(**{f + op: search_str}))
 
         return q_list
+
+
+    def advanced_search(self, **filter_args):
+        o = self.all()[0]
+        obj_fields = {}
+        for f in o._meta.fields:
+            obj_fields[f.name] = f
+
+        q_list = []
+        for q, val in filter_args.iteritems():
+            name = q.split('__')[0]
+            
+            if isinstance(obj_fields[name], fields.related.ForeignKey):
+                pass
+            else:
+                q_list.append(self.filter(**{q:val}))
+       
+        print q_list 
 
     def can_edit(self, user):
         '''
@@ -140,6 +159,8 @@ class ChuchoManager(models.Manager):
         for f in user._meta.fields:
             if f.name == "is_superuser" and user.is_superuser:
                 if filter_args is not None and len(filter_args) > 0:
+                    print filter_args
+                    self.advanced_search(**filter_args)
                     return self.filter(**filter_args)
                 elif omni is not None:
                     return self.search(omni)
