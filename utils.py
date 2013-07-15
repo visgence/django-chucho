@@ -54,6 +54,10 @@ def gen_columns(modelObj):
             'sortable': True,
             'grid_column': True
             }
+        
+        if hasattr(modelObj, 'search_fields') and f.name not in modelObj.search_fields:
+            field['filter_column'] = False
+
 
         #if f.name in ['name', 'id']:
         #    field['sortable'] = True
