@@ -312,8 +312,6 @@
             self = this;
 
             return function(resp) {
-                console.log('resp');
-                console.log(resp);
                 //Reset server message
                 $('#server_messages').html('');
 
@@ -628,7 +626,7 @@
                         default:
                         }
                     }
-                   
+                    
                     this.PagedGridModel = function(items, columns) {
                         this.items = ko.observableArray(items);
         
@@ -689,7 +687,8 @@
                         });
                     }; // End PagedGridModel
 
-                    self.grid = new this.PagedGridModel([], self.columns);
+                    var gridCols = self.grid_columns();
+                    self.grid = new this.PagedGridModel([], gridCols);
                     
                     //Handle single and double clicks for rows
                     ko.bindingHandlers.clickHandler = {
