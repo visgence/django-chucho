@@ -1409,11 +1409,7 @@
      */
     function dateToString(date)
     {
-        dStr = String(date.getMonth() + 1) + '/' + String(date.getDate()) + '/' + String(date.getFullYear());
-        dStr += ' ' + String(date.getHours()) + ':' + String(date.getMinutes()) + ':';
-        if (date.getSeconds() < 10)
-            dStr += '0';
-        dStr += String(date.getSeconds());
+        dStr = date.toLocaleDateString() + " " + date.toLocaleTimeString();
         return dStr;
     }
 
