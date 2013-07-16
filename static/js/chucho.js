@@ -437,6 +437,10 @@
             }
         };
 
+        
+        this.toTitleCase = function(str) {
+            return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+        };
 
         /** Stuff to do on success. */
         this.success = function(msg) {
@@ -472,7 +476,7 @@
                     //self.add_filter_row_options(event)
                 })
                 .addClass('grid-filter-columns')
-                .append(option_element('', 'Select Column', true));
+                .append(option_element('', 'Select '+self.toTitleCase(self.modelName)+' Column', true));
 
             $(row).append($('<td>').append($(remove)))
                   .append($('<td>').append(column))
@@ -517,8 +521,8 @@
                     $(event.target).find(':selected').trigger('select');
                 })
                 .addClass('grid-filter-columns')
-                .append(option_element('', 'Select Column', true));
-
+                .append(option_element('', 'Select '+self.toTitleCase($(selectedOption).val())+' Column', true));
+                
             $.each(newOptions, function(i, c) {
                 var option = (option_element(c.id, c.name));
                 var related_columns = [];
@@ -1353,6 +1357,7 @@
                                                                                                                                            
         return new Spinner(opts);
     } 
+
 
     function get_filter_data() {
         var filter_data = [];
