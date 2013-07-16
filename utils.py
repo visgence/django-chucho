@@ -97,7 +97,10 @@ def gen_columns(modelObj, search_filtering=False):
 
         #Figure out what each field is and store that type
         if isinstance(f, models.ForeignKey):
-            field['filter_column']['related'] = gen_columns(f.related.parent_model, True)
+            
+            if 'filter_column' in field:
+                field['filter_column']['related'] = gen_columns(f.related.parent_model, True)
+
             field['model_name'] = f.rel.to.__name__
             field['app'] = f.rel.to._meta.app_label
             field['_type'] = 'foreignkey'
