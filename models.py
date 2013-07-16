@@ -31,7 +31,7 @@ class ChuchoManager(models.Manager):
                 q_all = q
             else:
                 q_all |= q
-
+        
         return self.filter(q_all)
 
 
@@ -55,7 +55,7 @@ class ChuchoManager(models.Manager):
             elif isinstance(f_attr, models.Model):
                 # Is a foreign key
                 foreign_objs = f_attr.__class__.objects.search(search_str, operator, column)
-                q_list.append(Q(**{f + '__in': foreign_objs}))
+                q_list.append(Q(**{f + '__in': list(foreign_objs)}))
             elif isinstance(f_attr, float):
                 q_list.append(Q(**{f + numOp: search_str}))
             elif isinstance(f_attr, int):
@@ -83,7 +83,7 @@ class ChuchoManager(models.Manager):
             else:
                 print "Found field %s" % name
                 q_list.append(Q(**{filter_arg: filter_str}))
-      
+
         q_all = None
         for q in q_list:
             if q_all is None:
