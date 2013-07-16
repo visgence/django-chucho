@@ -38,6 +38,27 @@ def get_column_options(cls):
         return {}
 
 
+def gen_fk_filter_cols(model):
+
+    rel_cols = []
+    fields = get_meta_fields(model)
+    if hasattr(model, 'search_fields'):
+        fields = [f for f in fields if f.name in model.search_fields]
+    
+    for f in fields:
+        rel_col = {
+            'name': f.name,
+            'related': []
+        }         
+        
+        if isinstance(f, models.ForeignKey):
+            rel_col['related'] = gen_fk_filter_cols(f.related.parent_model)
+
+        rel_cols.append(rel_col)
+
+    return rel_cols
+
+
 def gen_columns(modelObj):
     columns = []
     column_options = get_column_options(modelObj)
@@ -52,11 +73,15 @@ def gen_columns(modelObj):
             'name': f.name.title(),
             'id': f.name,
             'sortable': True,
-            'grid_column': True
+            'grid_column': True,
+            'filter_column': {
+                'name': f.name,
+                'related': []
             }
+        }
         
         if hasattr(modelObj, 'search_fields') and f.name not in modelObj.search_fields:
-            field['filter_column'] = False
+            del field['filter_column']
 
 
         #if f.name in ['name', 'id']:
@@ -69,6 +94,7 @@ def gen_columns(modelObj):
 
         #Figure out what each field is and store that type
         if isinstance(f, models.ForeignKey):
+            field['filter_column']['related'] = gen_fk_filter_cols(f.related.parent_model)
             field['model_name'] = f.rel.to.__name__
             field['app'] = f.rel.to._meta.app_label
             field['_type'] = 'foreignkey'
