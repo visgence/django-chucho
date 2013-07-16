@@ -131,8 +131,23 @@ def read_source(request, app_name, model_name, user):
             if i['col'] == 'chucho-omni':
                 omni = i['val']
             else:
-                keyword = i['col'] + '__' + filter_operators[i['oper']]
-                kwargs[keyword] = i['val']
+                cols = i['col'].split('|')
+                if len(cols) > 1:
+                    keyword = cols[0] + '__' + filter_operators[i['oper']]
+                    tmp = {}
+                    kwargs[keyword] = tmp
+
+                    for index, c in enumerate(cols[1:], start=1):
+                        keyword = c + '__' + filter_operators[i['oper']]
+                        if index < len(cols) - 1:
+                            tmp[keyword] = {}
+                            tmp = tmp[keyword]
+                        else:
+                            tmp[keyword] = i['val']
+
+                else:
+                    keyword = i['col'] + '__' + filter_operators[i['oper']]
+                    kwargs[keyword] = i['val']
             
 
     cls = models.loading.get_model(app_name, model_name)

@@ -59,7 +59,7 @@ def gen_fk_filter_cols(model):
     return rel_cols
 
 
-def gen_columns(modelObj):
+def gen_columns(modelObj, search_filtering=False):
     columns = []
     column_options = get_column_options(modelObj)
     for f in get_meta_fields(modelObj):
@@ -83,6 +83,9 @@ def gen_columns(modelObj):
         if hasattr(modelObj, 'search_fields') and f.name not in modelObj.search_fields:
             del field['filter_column']
 
+            if search_filtering:
+                continue
+
 
         #if f.name in ['name', 'id']:
         #    field['sortable'] = True
@@ -94,7 +97,7 @@ def gen_columns(modelObj):
 
         #Figure out what each field is and store that type
         if isinstance(f, models.ForeignKey):
-            field['filter_column']['related'] = gen_fk_filter_cols(f.related.parent_model)
+            field['filter_column']['related'] = gen_columns(f.related.parent_model, True)
             field['model_name'] = f.rel.to.__name__
             field['app'] = f.rel.to._meta.app_label
             field['_type'] = 'foreignkey'
@@ -148,7 +151,7 @@ def gen_columns(modelObj):
             '_editable': True,
             'grid_column': True
         })
-
+    
     return columns
 
 

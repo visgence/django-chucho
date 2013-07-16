@@ -153,11 +153,10 @@
         /** Return the columns allowed to filter by. */
         this.filter_columns = function() {
             var columns = $.map(this.columns, function(c, i) {
-                if ( c.filter_column === false )
+                if (c.hasOwnProperty('filter_column') === false)
                     return undefined;
-                else if ( c.filter_column || c.grid_column )
-                    return c;
-                return undefined;
+                
+                return c;
             });
             return columns;
         };
@@ -452,27 +451,100 @@
             var remove = $('<span>');
             var self = this;
             remove.attr('onclick', 'remove_filter_row(this);')
-                .addClass('ui-icon').addClass('ui-icon-circle-close')
-                .addClass('chucho-remove-button')
-                .button();
+                  .addClass('ui-icon').addClass('ui-icon-circle-close')
+                  .addClass('chucho-remove-button')
+                  .button();
+            
             var column = $('<select>', {name: 'column'})
-                .change({self: self}, self.add_filter_row_options)
+                .change(function(event) {
+                    
+                    //If user selectes 'Select Column' options remove all related select fields that come
+                    //after this one and quite early.
+                    if($(event.target).val() === '') {
+                        $(event.target).nextAll('select.grid-filter-columns').remove();
+                        $(event.target).parent('td').siblings('td.operator-td').remove();
+                        $(event.target).parent('td').siblings('td.comparison-td').remove();
+
+                        return;
+                    }
+
+                    $(event.target).find(':selected').trigger('select');
+                    //self.add_filter_row_options(event)
+                })
+                .addClass('grid-filter-columns')
                 .append(option_element('', 'Select Column', true));
 
             $(row).append($('<td>').append($(remove)))
-                .append($('<td>').append(column))
-                .addClass('grid-filter')
-                .appendTo($('#filter-table'));
-
+                  .append($('<td>').append(column))
+                  .addClass('grid-filter')
+                  .appendTo($('#filter-table'));
+            
+            
             $.each(this.filter_columns(), function(i, c) {
                 var option = (option_element(c.id, c.name));
+                var filter_column = c.filter_column;
+                $(option).on('select', function(event) {
+                    if(filter_column.related.length > 0) {
+                        $(event.target).parent('select').parent('td').siblings('td.operator-td').remove();
+                        $(event.target).parent('select').parent('td').siblings('td.comparison-td').remove();
+                        self.add_related_options(filter_column.related, event.target);
+                    }
+                    else {
+                        $(event.target).parent('select').nextAll('select.grid-filter-columns').remove();
+                        self.add_filter_row_options(event, self, c)  
+                    }
+                });
                 option.appendTo($(column));
             });
         };
 
 
+        this.add_related_options = function(newOptions, selectedOption) {
+            var self = this;
+
+            var column = $('<select>', {name: 'column'})
+                .change({self: self}, function(event) {
+                    
+                    //If user selectes 'Select Column' options remove all related select fields that come
+                    //after this one and quite early.
+                    if($(event.target).val() === '') {
+                        $(event.target).nextAll('select.grid-filter-columns').remove();
+                        $(event.target).parent('td').siblings('td.operator-td').remove();
+                        $(event.target).parent('td').siblings('td.comparison-td').remove();
+                        return;
+                    }
+
+                    $(event.target).find(':selected').trigger('select');
+                })
+                .addClass('grid-filter-columns')
+                .append(option_element('', 'Select Column', true));
+
+            $.each(newOptions, function(i, c) {
+                var option = (option_element(c.id, c.name));
+                var related_columns = [];
+                if(c.hasOwnProperty('filter_column') === true)
+                    var related_columns = c.filter_column;
+
+                $(option).on('select', function(event) {
+                    if(related_columns.length > 0) {
+                        self.add_related_options(related_columns, event.target);
+                        $(event.target).parent('select').parent('td').siblings('td.operator-td').remove();
+                        $(event.target).parent('select').parent('td').siblings('td.comparison-td').remove();
+                    }
+                    else {
+                        $(event.target).parent('select').nextAll('select.grid-filter-columns').remove();
+                        self.add_filter_row_options(event, self, c)  
+                    }
+                });
+                option.appendTo($(column));
+            });
+
+            var parentSelect = $(selectedOption).parent('select');
+            $(parentSelect).after(column);
+        };
+
         /** This will append the operators and input box to the filter table */
-        this.add_filter_row_options = function(event) {
+        this.add_filter_row_options = function(event, context, col_data) {
             var row = $(event.target).parents('tr.grid-filter');
             var operator = $('<select>', {name:'operator'});
             var comparison;
@@ -481,13 +553,13 @@
             row.find('select[name="operator"]').parent().remove();
             row.find('input[name="comparison-value"]').parent().remove();
 
-            row.append($('<td>').append(operator));
+            row.append($('<td>').addClass('operator-td').append(operator));
+            console.log(context.get_column_by_id(col_name));
 
-
-            if (event.data.self.get_column_by_id(col_name)._type == 'timestamp') {
+            if (col_data._type == 'timestamp') {
                 comparison = $('<input>', {type:'hidden', name:'comparison-value'});
                 var picker = $('<input>', {type:'text', name:'comparison-picker'});
-                var td = $('<td>');
+                var td = $('<td>').addClass('comparison-td');
                 td.append(picker);
                 td.append(comparison);
                 row.append(td);
@@ -506,12 +578,12 @@
             }
             else {
                 comparison = $('<input>', {type:'text', name:'comparison-value'});
-                row.append($('<td>').append(comparison));
+                row.append($('<td>').addClass('comparison-td').append(comparison));
             }
 
             $(operator).append(option_element('', 'Select Operator', true));
 
-            $.each(event.data.self.filter_operators, function(i, name) {
+            $.each(context.filter_operators, function(i, name) {
                 var option = (option_element(name, name));
                 option.appendTo($(operator));
             });
@@ -1288,10 +1360,20 @@
         $(filters).each(function(i, e) {
             var temp_obj = {};
 
-            var temp = $(e).find('select[name="column"]').val();
+            var temp = $(e).find('select[name="column"]');
             if ( !temp )
                 return;
-            temp_obj.col = temp;
+           
+            if(temp.length > 1) {
+                $.each(temp, function(i, val) {
+                    if(i === 0)
+                        temp_obj.col = $(val).val();
+                    else
+                        temp_obj.col += "|" + $(val).val();
+                });
+            }
+            else
+                temp_obj.col = $(temp).val();
 
             temp = $(e).find('select[name="operator"]').val();
             if ( !temp )
@@ -1307,6 +1389,7 @@
         });
         if ( filter_data.length === 0 && $('#chucho-omni-filter').val() )
             filter_data.push({col: 'chucho-omni', val: $('#chucho-omni-filter').val()});
+        
         return filter_data;
     }
 
