@@ -244,7 +244,14 @@ def update(request, app_name, model_name, user, id=None):
             dump = json.dumps({'errors': 'Cannot load object to save: Exception: ' + e.message}, indent=4)
             return HttpResponse(dump, content_type="application/json")
 
-    fields = gen_columns(obj)
+    try:
+        fields = gen_columns(obj)
+    except Exception as e:
+        transaction.rollback()
+        dump = json.dumps({'errors': 'Error generating columns: ' + e.message}, indent=4)
+        return HttpResponse(dump, content_type="application/json")
+
+    
     m2m = []
     try:
         for field in fields:
