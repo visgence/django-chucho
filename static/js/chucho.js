@@ -487,6 +487,7 @@
             $.each(this.filter_columns(), function(i, c) {
                 var option = (option_element(c.id, c.name));
                 var filter_column = c.filter_column;
+                
                 $(option).on('select', function(event) {
                     if(filter_column.related.length > 0) {
                         $(event.target).parent('select').parent('td').siblings('td.operator-td').remove();
@@ -505,7 +506,7 @@
 
         this.add_related_options = function(newOptions, selectedOption) {
             var self = this;
-
+            
             var column = $('<select>', {name: 'column'})
                 .change({self: self}, function(event) {
                     
@@ -527,8 +528,8 @@
                 var option = (option_element(c.id, c.name));
                 var related_columns = [];
                 if(c.hasOwnProperty('filter_column') === true)
-                    var related_columns = c.filter_column;
-
+                    var related_columns = c.filter_column.related;
+                
                 $(option).on('select', function(event) {
                     if(related_columns.length > 0) {
                         self.add_related_options(related_columns, event.target);
@@ -558,7 +559,6 @@
             row.find('input[name="comparison-value"]').parent().remove();
 
             row.append($('<td>').addClass('operator-td').append(operator));
-            console.log(context.get_column_by_id(col_name));
 
             if (col_data._type == 'timestamp') {
                 comparison = $('<input>', {type:'hidden', name:'comparison-value'});
