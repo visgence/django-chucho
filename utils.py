@@ -38,7 +38,7 @@ def get_column_options(cls):
         return {}
 
 
-def gen_columns(modelObj, search_filtering=False):
+def gen_columns(modelObj, search_filtering=False, fk_filter_depth=None):
     columns = []
     column_options = get_column_options(modelObj)
     for f in get_meta_fields(modelObj):
@@ -78,7 +78,14 @@ def gen_columns(modelObj, search_filtering=False):
         if isinstance(f, models.ForeignKey):
             
             if 'filter_column' in field:
-                field['filter_column']['related'] = gen_columns(f.related.parent_model, True)
+                if fk_filter_depth is None or fk_filter_depth > 0:
+                
+                    if fk_filter_depth is not None:
+                        fk_filter_depth -= 1
+                    field['filter_column']['related'] = gen_columns(f.related.parent_model, True, fk_filter_depth)
+                
+                elif fk_filter_depth <= 0:
+                    continue
 
             field['model_name'] = f.rel.to.__name__
             field['app'] = f.rel.to._meta.app_label

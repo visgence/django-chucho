@@ -411,7 +411,12 @@ def get_columns(request, app_name, model_name):
         return HttpResponse(json.dumps({'errors': errors}, indent=4), content_type="application/json")
 
     cls = models.loading.get_model(app_name, model_name)
-    return HttpResponse(json.dumps(gen_columns(cls), indent=4), content_type="application/json")
+
+    filter_depth = None
+    if hasattr(cls, 'fk_filter_depth'):
+        filter_depth = cls.fk_filter_depth
+
+    return HttpResponse(json.dumps(gen_columns(cls, False, filter_depth), indent=4), content_type="application/json")
 
 
 def get_filter_operators(request):
