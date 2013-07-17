@@ -38,27 +38,6 @@ def get_column_options(cls):
         return {}
 
 
-def gen_fk_filter_cols(model):
-
-    rel_cols = []
-    fields = get_meta_fields(model)
-    if hasattr(model, 'search_fields'):
-        fields = [f for f in fields if f.name in model.search_fields]
-    
-    for f in fields:
-        rel_col = {
-            'name': f.name,
-            'related': []
-        }         
-        
-        if isinstance(f, models.ForeignKey):
-            rel_col['related'] = gen_fk_filter_cols(f.related.parent_model)
-
-        rel_cols.append(rel_col)
-
-    return rel_cols
-
-
 def gen_columns(modelObj, search_filtering=False):
     columns = []
     column_options = get_column_options(modelObj)
@@ -144,7 +123,7 @@ def gen_columns(modelObj, search_filtering=False):
         columns.append(field)
     
     for m in get_meta_m2m(modelObj):
-        columns.append({
+        field = {
             'field': m.name,
             'name': m.name.title(),
             'id': m.name,
@@ -153,7 +132,12 @@ def gen_columns(modelObj, search_filtering=False):
             '_type': 'm2m',
             '_editable': True,
             'grid_column': True
-        })
+        }
+        
+        if not m.editable:
+            field['_editable'] = False
+        print field
+        columns.append(field)
     
     return columns
 

@@ -970,8 +970,8 @@
 
         var div_id = myGrid.modelName+"_add";
         var div = $("<div></div>")
-            .attr("id", myGrid.modelName+'_add')
-            .attr('title', title);
+                   .attr("id", myGrid.modelName+'_add')
+                   .attr('title', title);
         var table = $("<table></table>");
 
         var msg_div = $('<div></div>').attr('id',  'dialogue_message');
@@ -983,7 +983,7 @@
         //If we cycle through all columns and none are editable we'll return null
         var model_editable = false;
         $.each(columns, function(i, col) {
-            
+          
             model_editable = true;     
    
             //Set up html containers for the input
@@ -1009,124 +1009,194 @@
                 value = record[col.field];
             
             switch(col._type) {
-            case 'password':
-                input = get_input('add_form_input', 'text', '');
-                td1.append(label);
-                td2.append(input);
-                break;
-
-            case 'integer':
-                if(col._editable) {
-                    input = get_input('add_form_input', 'text', value); 
-                    td2.append(input);
-                    //$(input).spinner();
-                }
-                else {
-                    input = $("<span></span>").append(value);
-                    td2.append(input);
-                }
-                td1.append(label);
-                break;
-
-            case 'decimal':
-                input = get_input('add_form_input', 'text', value); 
-                td2.append(input);
-                td1.append(label);
-                $(input).spinner();
-                break;
-
-            case 'foreignkey': 
-                input = get_pk_input('add_form_input foreignkey', value, col); 
-                td2.append(input);
-                td1.append(label);
-                break;
-                
-            case 'm2m':
-                input = get_m2m_input('add_form_input m2m', value, col.model_name, col.app); 
-                td2.append(input);
-                td1.append(label);
-                break;
-
-            case 'boolean':
-                input = get_input('add_form_input', 'checkbox', '');
-                if(value)
-                    input.prop('checked', true);
-                td2.append(input);
-                td1.append(label);
-                break;
-
-            case 'date':
-                input = get_input('add_form_input', 'text', value);
-                td2.append(input);
-                td1.append(label);
-
-                $(input).datepicker({
-                    dateFormat: 'mm/dd/yy'
-                });
-                $(input).datepicker('setDate', value); 
-                break;
- 
-            case 'datetime':
-            case 'timestamp':
-                var timestampval = '';
-                var timestampstr = '';
-                var timestamp = new Date(value*1000);
-                if(value !== null && value !== "" && !isNaN(timestamp.valueOf())) {
-                    timestampstr = dateToString(timestamp);
-                    timestampval = timestamp.valueOf()/1000;
-                }
-
-                if(col._editable) {
-                    input_user = get_input('', 'text', '');
-                   
-                    input = get_input('add_form_input', 'hidden', timestampval);
-                    $(input_user).attr('onchange', 'updateTimestampInput(this);');
-                    td2.append(input_user);
-                    td2.append(input);
+                case 'password':
+                    if(col._editable) 
+                        input = get_input('add_form_input', 'text', '');
+                    else
+                        input = $("<span>***************</span>");
                     
-                    $(input_user).datetimepicker({
-                        showSecond: true,
-                        dateFormat: 'mm/dd/yy',
-                        timeFormat: 'hh:mm:ss'
-                    });
-                   
-                    if(timestampstr !== '')
-                        $(input_user).datetimepicker('setDate', timestampstr);
-                }
-                else {
-                    input = $('<span>').text(timestampstr);
+                    td1.append(label);
                     td2.append(input);
-                }
-                td1.append(label);
-                break;
-                
-            case 'color':
-                input = get_input('add_form_input', 'text', value);
-                td2.append(input);
-                td1.append(label);
-                $(input).minicolors({
-                    control: 'wheel',
-                    defaultValue: value,
-                    position: 'top',
-                    theme: 'none'     
-                });
-                break;
+                    break;
 
-            case 'choice':
-                input = get_choices_input('add_form_input', value, col.choices);
-                td2.append(input);
-                td1.append(label);
-                break;
+                case 'integer':
+                    if(col._editable)
+                        input = get_input('add_form_input', 'text', value); 
+                    else {
+                        input = $("<span></span>").append(value);
+                        if(value === '' || value === null)
+                            input = $("<span><i>None</i></span>");
+                    }
+                    td2.append(input);
+                    td1.append(label);
+                    break;
 
-            default:
-                if(col._editable) {
-                    input = get_input('add_form_input', 'text', value);
-                }
-                else {
-                    input = $("<span></span>").append(value);
-                }
-                td2.append(input);
-                td1.append(label);
+                case 'decimal':
+                    if(col._editable) {
+                        input = get_input('add_form_input', 'text', value); 
+                        td2.append(input);
+                        $(input).spinner();
+                    }
+                    else {
+                        console.log(value);
+                        input = $("<span></span>").append(value);
+                        if(value === "" || value === null)
+                            input = $("<span></span>").append('<i>None</i>');
+
+                        td2.append(input);
+                    }
+                        
+                    td1.append(label);
+                    break;
+
+                case 'foreignkey': 
+                    if(col._editable)
+                        input = get_pk_input('add_form_input foreignkey', value, col); 
+                    else {
+                        input = $("<span></span>").append(value.__unicode__);
+                        if(value.__unicode__ === '')
+                            input = $("<span></span>").append('<i>None</i>');
+                    }
+
+                    td2.append(input);
+                    td1.append(label);
+                    break;
+                    
+                case 'm2m':
+                    if(col._editable)
+                        input = get_m2m_input('add_form_input m2m', value, col.model_name, col.app); 
+                    else {
+                        if(value.length > 0) {
+                            input = $('<ul></ul>');
+                            $(value).each(function(i, val) { 
+                                var li = $('<li></li>').append(val.__unicode__)
+                                $(input).append(li);
+                            });
+                        }
+                        else
+                            input = $('<span><i>None</i></span>');
+                    }
+
+                    td2.append(input);
+                    td1.append(label);
+                    break;
+
+                case 'boolean':
+                    if(col._editable) {
+                        input = get_input('add_form_input', 'checkbox', '');
+                        if(value === true)
+                            input.prop('checked', true);
+                    }
+                    else {
+                        input = $('<span></span>');
+                        if(value === false)
+                            input = $('<i class="icon-remove"></i>');
+                        else if(value === true)
+                            input = $('<i class="icon-ok"></i>');
+                    }
+                    td2.append(input);
+                    td1.append(label);
+                    break;
+
+                case 'date':
+                    if(col._editable) {
+                        input = get_input('add_form_input', 'text', value);
+                        td2.append(input);
+                        $(input).datepicker({
+                            dateFormat: 'mm/dd/yy'
+                        });
+                        $(input).datepicker('setDate', value); 
+                    }
+                    else {
+                        input = $('<span></span>').append(value);
+                        if(value === '' || value === null)
+                            input = $('<span><i>None</i></span>');
+                    }
+                        
+                    
+                    td1.append(label);
+                    break;
+     
+                case 'datetime':
+                case 'timestamp':
+                    var timestampval = '';
+                    var timestampstr = '';
+                    var timestamp = new Date(value*1000);
+                    if(value !== null && value !== "" && !isNaN(timestamp.valueOf())) {
+                        timestampstr = dateToString(timestamp);
+                        timestampval = timestamp.valueOf()/1000;
+                    }
+
+                    if(col._editable) {
+                        input_user = get_input('', 'text', '');
+                       
+                        input = get_input('add_form_input', 'hidden', timestampval);
+                        $(input_user).attr('onchange', 'updateTimestampInput(this);');
+                        td2.append(input_user);
+                        td2.append(input);
+                        
+                        $(input_user).datetimepicker({
+                            showSecond: true,
+                            dateFormat: 'mm/dd/yy',
+                            timeFormat: 'hh:mm:ss'
+                        });
+                       
+                        if(timestampstr !== '')
+                            $(input_user).datetimepicker('setDate', timestampstr);
+                    }
+                    else {
+                        input = $('<span>').text(timestampstr);
+                        if(timestampstr === '')
+                            input = $('<span><i>None</i></span>');
+                        td2.append(input);
+                    }
+                    td1.append(label);
+                    break;
+                    
+                case 'color':
+                    if(col._editable) {
+                        input = get_input('add_form_input', 'text', value);
+                        td2.append(input);
+                        $(input).minicolors({
+                            control: 'wheel',
+                            defaultValue: value,
+                            position: 'top',
+                            theme: 'none'     
+                        });
+                    }
+                    else {
+                        input = $('<span></span>').append(value);
+                        if(value === '' || value === null)
+                            input = $('<span><i>None</i></span>');
+                        td2.append(input);
+                    }
+
+                    td1.append(label);
+                    break;
+
+                case 'choice':
+                    if(col._editable)
+                        input = get_choices_input('add_form_input', value, col.choices);
+                    else {
+                        input = $('<span></span>').append(value.__unicode__);
+                        if(value.__unicode__ === '' || value === '')
+                            input = $('<span><i>None</i></span>');
+                    }
+
+                    td2.append(input);
+                    td1.append(label);
+                    break;
+
+                default:
+                    if(col._editable)
+                        input = get_input('add_form_input', 'text', value);
+                    else
+                        input = $("<span></span>").append(value);
+                        if(value === '' || value === null)
+                            input = $('<span><i>None</i></span>');
+                    
+                    td2.append(input);
+                    td1.append(label);
             }
 
             input.before(span);
