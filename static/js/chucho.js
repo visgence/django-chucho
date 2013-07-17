@@ -1190,10 +1190,11 @@
                 default:
                     if(col._editable)
                         input = get_input('add_form_input', 'text', value);
-                    else
+                    else {
                         input = $("<span></span>").append(value);
                         if(value === '' || value === null)
                             input = $('<span><i>None</i></span>');
+                    }
                     
                     td2.append(input);
                     td1.append(label);
