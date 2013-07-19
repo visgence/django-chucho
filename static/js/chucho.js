@@ -1479,7 +1479,7 @@
      */
     function dateToString(date)
     {
-        var newDate = date.getMonth() + "/" + date.getDay() + "/" + date.getFullYear(); 
+        var newDate = date.getMonth()+1 + "/" + date.getDate() + "/" + date.getFullYear(); 
         var hours = date.getHours();
         var minutes = date.getMinutes();
         var seconds = date.getSeconds();
@@ -1493,6 +1493,7 @@
 
         var newTime = hours + ":" + minutes + ":" + seconds; 
         var dStr = newDate + " " + newTime;
+        console.log(dStr);
         return dStr;
     }
 
