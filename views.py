@@ -170,12 +170,18 @@ def read_source(request, app_name, model_name, user):
 
     # Order the data
     if 'sort_columns' in result_info and result_info['sort_columns'] is not None:
-        if result_info['sort_columns']['sortAsc']:
-            sort_arg = result_info['sort_columns']['columnId']
+        sign = ""
+        sort_arg = result_info['sort_columns']['columnId']
+        if not result_info['sort_columns']['sortAsc']:
+            sign = "-"
+       
+        #Foreign Key relations get ordered normally. They throw an exception otherwise...
+        f, model, direct, m2m = cls._meta.get_field_by_name(sort_arg)
+        if not m2m and direct and isinstance(f, models.ForeignKey):
+            objs = objs.order_by(sign+sort_arg)
         else:
-            sort_arg = '-' + result_info['sort_columns']['columnId']
-        objs = objs.order_by(sort_arg)
-    
+            objs = objs.extra(select={'lower_'+sort_arg: 'lower('+sort_arg+')'}).order_by(sign+'lower_'+sort_arg)
+
     # Break the data into pages
     if 'page' in result_info and 'per_page' in result_info:
         paginator = Paginator(objs, result_info['per_page'])
