@@ -1038,7 +1038,6 @@
                         $(input).spinner();
                     }
                     else {
-                        console.log(value);
                         input = $("<span></span>").append(value);
                         if(value === "" || value === null)
                             input = $("<span></span>").append('<i>None</i>');
@@ -1480,7 +1479,20 @@
      */
     function dateToString(date)
     {
-        dStr = date.toLocaleDateString() + " " + date.toLocaleTimeString();
+        var newDate = date.getMonth() + "/" + date.getDay() + "/" + date.getFullYear(); 
+        var hours = date.getHours();
+        var minutes = date.getMinutes();
+        var seconds = date.getSeconds();
+
+        if(hours < 10)
+            hours = '0' + hours;
+        if(minutes < 10)
+            minutes = '0' + minutes;
+        if(seconds < 10)
+            seconds = '0' + seconds;
+
+        var newTime = hours + ":" + minutes + ":" + seconds; 
+        var dStr = newDate + " " + newTime;
         return dStr;
     }
 
