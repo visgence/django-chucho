@@ -1493,7 +1493,6 @@
 
         var newTime = hours + ":" + minutes + ":" + seconds; 
         var dStr = newDate + " " + newTime;
-        console.log(dStr);
         return dStr;
     }
 
