@@ -648,11 +648,11 @@
         /** Custom formatter for boolean columns in the data grid */
         function booleanFormatter(row, col, rowIndex, colIndex) {
             if (row[col] === true)
-                return '<i class="icon-ok"></i>';
+                return '<span class="glyphicon glyphicon-ok"></span>';
             else if(row[col] === false)
-                return '<i class="icon-remove"></i>';
+                return '<span class="glyphicon glyphicon-remove"></span>';
             else
-                return '<i class="icon-question-sign"></i>';
+                return '<span class="glyphicon glyphicon-question-sign"></span>';
         } 
 
 
@@ -1089,9 +1089,9 @@
                     else {
                         input = $('<span></span>');
                         if(value === false)
-                            input = $('<i class="icon-remove"></i>');
+                            input = $('<span class="glyphicon glyphicon-remove"></span>');
                         else if(value === true)
-                            input = $('<i class="icon-ok"></i>');
+                            input = $('<span class="glyphicon glyphicon-ok"></span>');
                     }
                     td2.append(input);
                     td1.append(label);
