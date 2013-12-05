@@ -11,6 +11,7 @@ from django.db import models
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
+from decimal import Decimal
 import re
 
 class ChuchoManager(models.Manager):
@@ -23,7 +24,7 @@ class ChuchoManager(models.Manager):
     def search(self, search_str, operator=None, column=None):
         q_list = []
         q_list += self.search_all(search_str, operator, column)
-
+    
         q_all = None
         for q in q_list:
             if q_all is None:
@@ -32,6 +33,7 @@ class ChuchoManager(models.Manager):
                 q_all |= q
         
         return self.filter(q_all)
+
 
     def search_all(self, search_str, operator, column):
         # get an object of type to get the search fields
@@ -42,21 +44,55 @@ class ChuchoManager(models.Manager):
             fields = [f.name for f in o._meta.fields]
         q_list = []
         op = '__icontains'
+        numOp = '__iexact'
 
         for f in fields:
             f_attr = getattr(o, f)
-
-            if type(f_attr) == 'bool':
+            
+            if isinstance(f_attr, bool):
                 #Ignore booleans
                 pass
             elif isinstance(f_attr, models.Model):
                 # Is a foreign key
                 foreign_objs = f_attr.__class__.objects.search(search_str, operator, column)
-                q_list.append(Q(**{f + '__in': foreign_objs}))
+                q_list.append(Q(**{f + '__in': list(foreign_objs)}))
+            elif isinstance(f_attr, float):
+                q_list.append(Q(**{f + numOp: search_str}))
+            elif isinstance(f_attr, int):
+                q_list.append(Q(**{f + numOp: search_str}))
+            elif isinstance(f_attr, Decimal):
+                q_list.append(Q(**{f + numOp: search_str}))
             else:
                 q_list.append(Q(**{f + op: search_str}))
 
         return q_list
+
+
+    def advanced_search(self, **filter_args):
+        o = self.all()[0]
+
+        q_list = []
+        for filter_arg, filter_str in filter_args.iteritems():
+            name = filter_arg.split('__')[0]
+            f_attr = getattr(o, name)
+            
+            if isinstance(f_attr, models.Model):
+                print "Found FK field %s" % name
+                foreign_objs = f_attr.__class__.objects.advanced_search(**filter_args[filter_arg])
+                q_list.append(Q(**{name + '__in': foreign_objs}))
+            else:
+                print "Found field %s" % name
+                q_list.append(Q(**{filter_arg: filter_str}))
+
+        q_all = None
+        for q in q_list:
+            if q_all is None:
+                q_all = q
+            else:
+                q_all &= q
+
+        return self.filter(q_all)
+
 
     def can_edit(self, user):
         '''
@@ -101,7 +137,7 @@ class ChuchoManager(models.Manager):
         for f in user._meta.fields:
             if f.name == "is_superuser" and user.is_superuser:
                 if filter_args is not None and len(filter_args) > 0:
-                    return self.filter(**filter_args)
+                    return self.advanced_search(**filter_args)
                 elif omni is not None:
                     return self.search(omni)
                 else:
@@ -132,7 +168,8 @@ class ChuchoManager(models.Manager):
         for f in user._meta.fields:
             if f.name == "is_superuser" and user.is_superuser:
                 if filter_args is not None and len(filter_args) > 0:
-                    return self.filter(**filter_args)
+                    print filter_args
+                    return self.advanced_search(**filter_args)
                 elif omni is not None:
                     return self.search(omni)
                 else:
@@ -172,23 +209,24 @@ class ChuchoUserManager(ChuchoManager):
     '   In the future, this may be expanded to include default methods for all necessary
     '   chucho manager methods.
     '''
+    
     def search(self, search_str, operator=None, column=None):
-
+ 
         # Regexes to trigger different kinds of searches.
         pattern_name1 = r'^\s*([a-z]+)\s+([a-z]+)\s*$'
         pattern_name2 = r'^\s*([a-z]+),\s*([a-z]+)\s*$'
         pattern_username = r'^\s*(\w+)\s*$'
-        pattern_email = r'^\s*(\w+@\w+\.\w+)\s*$'
-        result = self.none()
-        
+        #TODO: implement email searching
+        #pattern_email = r'^\s*(\w+@\w+\.\w+)\s*$'
+
         q_list = []
         m = re.match(pattern_name1, search_str, re.I)
         if m is not None:
-            q_list += self.search_name(m.group(1), m.group(2))
+            q_list += self.search_name(m.group(1), m.group(2), '__icontains')
 
         m = re.match(pattern_name2, search_str, re.I)
         if m is not None:
-            q_list += self.search_name(m.group(2), m.group(1))
+            q_list += self.search_name(m.group(2), m.group(1), '__icontains')
 
         m = re.match(pattern_username, search_str, re.I)
         if m is not None:
@@ -201,11 +239,40 @@ class ChuchoUserManager(ChuchoManager):
                 q_all = q
             else:
                 q_all |= q
+        
+        if q_all is not None:
+            return self.filter(q_all)
+        
+        return self.none()
+
+    
+    def advanced_search(self, **filter_args):
+        o = self.all()[0]
+        
+        q_list = []
+        for filter_arg, filter_str in filter_args.iteritems():
+            name = filter_arg.split('__')[0]
+            f_attr = getattr(o, name)
+            
+            if isinstance(f_attr, models.Model):
+                print "Found FK field %s" % name
+                foreign_objs = f_attr.__class__.objects.advanced_search(**filter_args[filter_arg])
+                q_list.append(Q(**{name + '__in': foreign_objs}))
+            else:
+                print "Found field %s" % name
+                q_list.append(Q(**{filter_arg: filter_str}))
+      
+        q_all = None
+        for q in q_list:
+            if q_all is None:
+                q_all = q
+            else:
+                q_all &= q
 
         return self.filter(q_all)
 
-    def search_name(self, first, last):
-        op = '__icontains'
+
+    def search_name(self, first, last, op):
         filter_args = {
             name_fields['first']  + op: first,
             name_fields['last'] + op: last
@@ -217,7 +284,7 @@ class ChuchoUserManager(ChuchoManager):
         q_list = []
         try:
             o = self.all()[0]
-        except Exception as e:
+        except Exception:
             print 'No objects exist for this model'
             return q_list
         try:
@@ -225,9 +292,10 @@ class ChuchoUserManager(ChuchoManager):
         except AttributeError:
             print 'No USERNAME_FIELD defined, trying to use "username".'
             try:
-                u = o.username
+                #TODO: Use this or delete it
+                #u = o.username
                 username = 'username'
-            except Exception as e:
+            except Exception:
                 print 'Do not know what username field to use, not searching on username.'
                 return q_list
         
