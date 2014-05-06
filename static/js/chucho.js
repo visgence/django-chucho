@@ -644,6 +644,11 @@
             return time;
         } 
 
+
+        function colorFormatter(row, col, rowIndex, colIndex) {
+            var data = row[col];
+            return '<span class="badge" style="background-color: '+data+'">&nbsp;</span>';
+        };
         
         /** Custom formatter for boolean columns in the data grid */
         function booleanFormatter(row, col, rowIndex, colIndex) {
@@ -692,6 +697,9 @@
                         case 'timestamp':
                             self.columns[i].formatter = timestampFormatter;
                             break;
+
+                        case 'color':
+                            self.columns[i].formatter = colorFormatter;
 
                         case 'date':
                         case 'number':
@@ -1153,23 +1161,21 @@
                     break;
                     
                 case 'color':
-                    if(col._editable) {
-                        input = get_input('add_form_input', 'text', value);
-                        td2.append(input);
-                        $(input).minicolors({
-                            control: 'wheel',
-                            defaultValue: value,
-                            position: 'top',
-                            theme: 'none'     
-                        });
-                    }
-                    else {
-                        input = $('<span></span>').append(value);
-                        if(value === '' || value === null)
-                            input = $('<span><i>None</i></span>');
-                        td2.append(input);
-                    }
+                    var div = $('<div class="minicolors minicolors-theme-bootstrap"></div>');
+                    input = get_input('add_form_input minicolors-input', 'text', value);
+                    
+                    if(!col._editable)
+                        $(input).attr('disabled', '');
 
+                    td2.append(div);
+                    div.append(input);
+                    $(input).minicolors({
+                        control: 'wheel',
+                        defaultValue: value,
+                        position: 'top',
+                        theme: 'none'     
+                    });
+                    
                     td1.append(label);
                     break;
 
@@ -1218,9 +1224,10 @@
      */
     function get_input(cls, type, value) 
     {
+        var inputCls = type === "checkbox" ? cls : "form-control " + cls;
         var input = $("<input/>").val(value)
                                  .attr({ 
-                                     'class': cls,
+                                     'class': inputCls,
                                      'type' : type 
                                  });
 
@@ -1240,7 +1247,8 @@
      */
     function get_choices_input (cls, value, choices) 
     {
-        var input = $("<select></select>").attr({'class': cls});
+        var inputCls = "form-control " + cls
+        var input = $("<select></select>").attr({'class': inputCls});
        
         $(choices).each(function(i, c) {
             var option = $("<option></option>")
