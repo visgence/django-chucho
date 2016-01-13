@@ -18,6 +18,7 @@ from django.utils.timezone import utc, make_naive,  make_aware, get_current_time
 from django.template import RequestContext, loader, Context
 from django.http import HttpResponse
 from django.db import models, transaction
+from django.apps import apps
 try:
     import simplejson as json
 except ImportError:
@@ -150,7 +151,7 @@ def read_source(request, app_name, model_name, user):
                     kwargs[keyword] = i['val']
             
 
-    cls = models.loading.get_model(app_name, model_name)
+    cls = apps.get_model(app_name, model_name)
 
     read_only = False
     try:
@@ -210,7 +211,7 @@ def read_source(request, app_name, model_name, user):
     return HttpResponse(serialize_model_objs(objs, extras), content_type="application/json")
 
 
-@transaction.commit_manually
+#@transaction.commit_manually
 def update(request, app_name, model_name, user, id=None):
     '''
     ' Modifies a model object with the given data, saves it to the db and
@@ -231,7 +232,7 @@ def update(request, app_name, model_name, user, id=None):
         dump = json.dumps({'errors': 'Error loading json'}, indent=4)
         return HttpResponse(dump, content_type="application/json")
     
-    cls = models.loading.get_model(app_name, model_name)
+    cls = apps.get_model(app_name, model_name)
     if id is None:
         if not cls.objects.can_edit(user):
             transaction.rollback()
@@ -280,7 +281,7 @@ def update(request, app_name, model_name, user, id=None):
                         setattr(obj, field['field'], None)
 
                 elif field['_type'] == 'foreignkey':
-                    rel_cls = models.loading.get_model(field['app'], field['model_name'])
+                    rel_cls = apps.get_model(field['app'], field['model_name'])
                     if data[field['field']]['pk'] is None:
                         rel_obj = None
                     else:
@@ -318,7 +319,7 @@ def update(request, app_name, model_name, user, id=None):
         try:
             #Get all respective objects for many to many fields and add them in.
             for m in m2m:
-                cls = models.loading.get_model(m['app'], m['model_name'])
+                cls = apps.get_model(m['app'], m['model_name'])
                 m2m_objs = []
                 for m2m_obj in data[m['field']]:
                     rel_obj = cls.objects.get(pk=m2m_obj['pk'])
@@ -370,14 +371,14 @@ def update(request, app_name, model_name, user, id=None):
     return HttpResponse(serialized_model, content_type="application/json")
 
 
-@transaction.commit_manually
+#@transaction.commit_manually
 def destroy(request, app_name, model_name, user, id=None):
     '''
     ' Receive a model_name and data object via ajax, and remove that item,
     ' returning either a success or error message.
     '''
 
-    cls = models.loading.get_model(app_name, model_name)
+    cls = apps.get_model(app_name, model_name)
     try:
         obj = cls.objects.get_editable_by_pk(user, id)
         if obj is None:
@@ -416,7 +417,7 @@ def get_columns(request, app_name, model_name):
         errors = 'User is not logged in properly.'
         return HttpResponse(json.dumps({'errors': errors}, indent=4), content_type="application/json")
 
-    cls = models.loading.get_model(app_name, model_name)
+    cls = apps.get_model(app_name, model_name)
 
     filter_depth = None
     if hasattr(cls, 'fk_filter_depth'):
