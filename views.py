@@ -19,6 +19,7 @@ from django.template import RequestContext, loader, Context
 from django.http import HttpResponse
 from django.db import models, transaction
 from django.apps import apps
+from django.shortcuts import render
 try:
     import simplejson as json
 except ImportError:
@@ -63,7 +64,7 @@ def model_grid(request, app_name, model_name):
     t = loader.get_template('chucho.html')
     c = RequestContext(request, {'model_name': model_name, 'app_name': app_name})
     # return HttpResponse(t.render(c), content_type="text/html")
-    return render(request, 'chucho.html', request)
+    return render(request, 'chucho.html', {'model_name': model_name, 'app_name': app_name})
 
 
 def api_view(request, app_name, model_name, id=None):
@@ -84,6 +85,8 @@ def api_view(request, app_name, model_name, id=None):
         errors = 'Sorry, but you must be logged in.'
         return HttpResponse(json.dumps({'errors': errors}, indent=4), content_type="application/json")
 
+    print "app_name = {}".format(app_name)
+    print "model_name = {}".format(model_name)
     if request.method == "GET":
         return read_source(request, app_name, model_name, user)
     if request.method == "POST":
@@ -106,7 +109,6 @@ def read_source(request, app_name, model_name, user):
     '    model_name   - (string) The model name to get serialized data from
     '    user         - (AuthUser) The authenticated AuthUser object making the request
     '''
-
 
     result_info = {}
     get_editable = False
@@ -151,12 +153,11 @@ def read_source(request, app_name, model_name, user):
                     keyword = i['col'] + '__' + filter_operators[i['oper']]
                     kwargs[keyword] = i['val']
 
-
     cls = apps.get_model(app_name, model_name)
 
     read_only = False
     try:
-        #Only get the objects that can be edited by the user logged in
+        # Only get the objects that can be edited by the user logged in
         if get_editable and cls.objects.can_edit(user):
             objs = cls.objects.get_editable(user, kwargs, omni)
         else:
