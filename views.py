@@ -62,7 +62,8 @@ def model_grid(request, app_name, model_name):
         return HttpResponse('User not authenticated.')
     t = loader.get_template('chucho.html')
     c = RequestContext(request, {'model_name': model_name, 'app_name': app_name})
-    return HttpResponse(t.render(c), content_type="text/html")
+    # return HttpResponse(t.render(c), content_type="text/html")
+    return render(request, 'chucho.html', request)
 
 
 def api_view(request, app_name, model_name, id=None):
@@ -73,7 +74,7 @@ def api_view(request, app_name, model_name, id=None):
     ' Keyword Args:
     '   app_name   - (string) The application the desired model resides in
     '   model_name - (string) The model name to get serialized data from or save to
-    '   id         - (string) The id of an object to delete/update for DELETE/PUSH 
+    '   id         - (string) The id of an object to delete/update for DELETE/PUSH
     '
     ' Returns: HttpResponse with serialized json data
     '''
@@ -106,8 +107,8 @@ def read_source(request, app_name, model_name, user):
     '    user         - (AuthUser) The authenticated AuthUser object making the request
     '''
 
-    
-    result_info = {} 
+
+    result_info = {}
     get_editable = False
     try:
         jsonData = json.loads(request.GET.get('jsonData'))
@@ -118,13 +119,13 @@ def read_source(request, app_name, model_name, user):
             result_info = jsonData['result_info']
         if 'get_editable' in jsonData:
             get_editable = jsonData['get_editable']
- 
+
     if 'filter_args' in result_info:
         filter_args = result_info['filter_args']
     else:
         filter_args = None
-        
-    kwargs = None    
+
+    kwargs = None
     omni = None
     if filter_args is not None:
         kwargs = {}
@@ -149,7 +150,7 @@ def read_source(request, app_name, model_name, user):
                 else:
                     keyword = i['col'] + '__' + filter_operators[i['oper']]
                     kwargs[keyword] = i['val']
-            
+
 
     cls = apps.get_model(app_name, model_name)
 
@@ -175,7 +176,7 @@ def read_source(request, app_name, model_name, user):
         sort_arg = result_info['sort_columns']['columnId']
         if not result_info['sort_columns']['sortAsc']:
             sign = "-"
-       
+
         #Foreign Key relations get ordered normally. They throw an exception otherwise...
         f, model, direct, m2m = cls._meta.get_field_by_name(sort_arg)
         if isinstance(f, models.CharField) or isinstance(f, models.TextField):
@@ -203,7 +204,7 @@ def read_source(request, app_name, model_name, user):
                 if len(pages) > 0 and i - 1 > pages[-1]:
                     pages.append(-1)
                 pages.append(i)
-            
+
         t_pages = loader.get_template('page_list.html')
         c_pages = Context({'curr_page': objs, 'pages': pages})
         extras['page_list'] = t_pages.render(c_pages)
@@ -231,7 +232,7 @@ def update(request, app_name, model_name, user, id=None):
         transaction.rollback()
         dump = json.dumps({'errors': 'Error loading json'}, indent=4)
         return HttpResponse(dump, content_type="application/json")
-    
+
     cls = apps.get_model(app_name, model_name)
     if id is None:
         if not cls.objects.can_edit(user):
@@ -258,7 +259,7 @@ def update(request, app_name, model_name, user, id=None):
         dump = json.dumps({'errors': 'Error generating columns: ' + e.message}, indent=4)
         return HttpResponse(dump, content_type="application/json")
 
-    
+
     m2m = []
     try:
         for field in fields:
@@ -337,7 +338,7 @@ def update(request, app_name, model_name, user, id=None):
             error = 'Error setting ManyToMany fields: %s: %s' % (type(e), e.message)
             stderr.write(error)
             stderr.flush()
-            transaction.rollback() 
+            transaction.rollback()
             return HttpResponse(json.dumps({'errors': error}, indent=4), content_type="application/json")
 
     except Exception as e:
