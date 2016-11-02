@@ -82,9 +82,8 @@ def gen_columns(modelObj, search_filtering=False, fk_filter_depth=None):
 
                     if fk_filter_depth is not None:
                         fk_filter_depth -= 1
-                    if not f.remote_field.is_relation:
+                    if f.remote_field.is_relation:
                         field['filter_column']['remote_field'] = gen_columns(f.remote_field.parent_model, True, fk_filter_depth)
-
                 elif fk_filter_depth <= 0:
                     continue
 
