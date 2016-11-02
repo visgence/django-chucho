@@ -54,16 +54,12 @@ filter_operators = {
     }
 
 
-
 def model_grid(request, app_name, model_name):
     '''
     ' View to return the html that will hold a models chucho.
     '''
     if check_access(request) is None:
         return HttpResponse('User not authenticated.')
-    t = loader.get_template('chucho.html')
-    c = RequestContext(request, {'model_name': model_name, 'app_name': app_name})
-    # return HttpResponse(t.render(c), content_type="text/html")
     return render(request, 'chucho.html', {'model_name': model_name, 'app_name': app_name})
 
 
@@ -178,7 +174,7 @@ def read_source(request, app_name, model_name, user):
         if not result_info['sort_columns']['sortAsc']:
             sign = "-"
 
-        #Foreign Key relations get ordered normally. They throw an exception otherwise...
+        # Foreign Key relations get ordered normally. They throw an exception otherwise...
         f, model, direct, m2m = cls._meta.get_field_by_name(sort_arg)
         if isinstance(f, models.CharField) or isinstance(f, models.TextField):
             objs = objs.extra(select={'lower_'+sort_arg: 'lower('+sort_arg+')'}).order_by(sign+'lower_'+sort_arg)
@@ -213,7 +209,7 @@ def read_source(request, app_name, model_name, user):
     return HttpResponse(serialize_model_objs(objs, extras), content_type="application/json")
 
 
-#@transaction.commit_manually
+# @transaction.commit_manually
 def update(request, app_name, model_name, user, id=None):
     '''
     ' Modifies a model object with the given data, saves it to the db and
@@ -260,13 +256,12 @@ def update(request, app_name, model_name, user, id=None):
         dump = json.dumps({'errors': 'Error generating columns: ' + e.message}, indent=4)
         return HttpResponse(dump, content_type="application/json")
 
-
     m2m = []
     try:
         for field in fields:
             if field['_editable']:
 
-                #save inportant m2m stuff for after object save
+                # save inportant m2m stuff for after object save
                 if field['_type'] == 'm2m':
                     m2m.append({
                         'field': field['field'],
@@ -319,7 +314,7 @@ def update(request, app_name, model_name, user, id=None):
         obj.save()
 
         try:
-            #Get all respective objects for many to many fields and add them in.
+            # Get all respective objects for many to many fields and add them in.
             for m in m2m:
                 cls = apps.get_model(m['app'], m['model_name'])
                 m2m_objs = []
@@ -361,7 +356,7 @@ def update(request, app_name, model_name, user, id=None):
         return HttpResponse(json.dumps({'errors': errors}, indent=4), content_type="application/json")
 
     try:
-        serialized_model = serialize_model_objs([obj.__class__.objects.get(pk=obj.pk)], {'read_only':True})
+        serialized_model = serialize_model_objs([obj.__class__.objects.get(pk=obj.pk)], {'read_only': True})
     except Exception as e:
         transaction.rollback()
         error = 'In ajax update exception: %s: %s\n' % (type(e), e.message)
@@ -373,7 +368,7 @@ def update(request, app_name, model_name, user, id=None):
     return HttpResponse(serialized_model, content_type="application/json")
 
 
-#@transaction.commit_manually
+# @transaction.commit_manually
 def destroy(request, app_name, model_name, user, id=None):
     '''
     ' Receive a model_name and data object via ajax, and remove that item,
@@ -442,7 +437,3 @@ def get_filter_operators(request):
     operators = filter_operators.keys()
     operators.sort()
     return HttpResponse(json.dumps(operators, indent=4), content_type="application/json")
-
-
-
-
