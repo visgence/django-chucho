@@ -17,7 +17,7 @@
 (function(window,document,navigator,$,ko,Spinner,undefined){
 !function(factory) {
     if (typeof define === 'function' && define.amd) {
-        define(['exports','jquery','knockout','spin.min','jquery-ui','chucho.grid'],factory);
+        define(['exports','jquery','knockout','spin.min','chucho.grid'],factory);
     }
     else {
         factory(window['DataGrid'] = {},$,ko,Spinner);
@@ -455,7 +455,7 @@
             var remove = $('<span>');
             var self = this;
             remove.attr('onclick', 'remove_filter_row(this);')
-                  .addClass('ui-icon').addClass('ui-icon-circle-close')
+                  .addClass('glyphicon').addClass('glyphicon-minus')
                   .addClass('chucho-remove-button')
                   .button();
 
@@ -466,8 +466,8 @@
                     //after this one and quite early.
                     if($(event.target).val() === '') {
                         $(event.target).nextAll('select.grid-filter-columns').remove();
-                        $(event.target).parent('div class="col-md-3"').siblings('td.operator-td').remove();
-                        $(event.target).parent('div class="col-md-3"').siblings('td.comparison-td').remove();
+                        $(event.target).parent('div').siblings('div.operator-td').remove();
+                        $(event.target).parent('div').siblings('div.comparison-td').remove();
 
                         return;
                     }
@@ -490,8 +490,8 @@
 
                 $(option).on('select', function(event) {
                     if(filter_column.related.length > 0) {
-                        $(event.target).parent('select').parent('div').siblings('td.operator-td').remove();
-                        $(event.target).parent('select').parent('div').siblings('td.comparison-td').remove();
+                        $(event.target).parent('select').parent('div').siblings('div.operator-td').remove();
+                        $(event.target).parent('select').parent('div').siblings('div.comparison-td').remove();
                         self.add_related_options(filter_column.related, event.target);
                     }
                     else {
@@ -514,8 +514,8 @@
                     //after this one and quite early.
                     if($(event.target).val() === '') {
                         $(event.target).nextAll('select.grid-filter-columns').remove();
-                        $(event.target).parent('td').siblings('td.operator-td').remove();
-                        $(event.target).parent('td').siblings('td.comparison-td').remove();
+                        $(event.target).parent('div').siblings('div.operator-td').remove();
+                        $(event.target).parent('div').siblings('div.comparison-td').remove();
                         return;
                     }
 
@@ -533,12 +533,12 @@
                 $(option).on('select', function(event) {
                     if(related_columns.length > 0) {
                         self.add_related_options(related_columns, event.target);
-                        $(event.target).parent('select').parent('td').siblings('td.operator-td').remove();
-                        $(event.target).parent('select').parent('td').siblings('td.comparison-td').remove();
+                        $(event.target).parent('select').parent('div').siblings('div.operator-td').remove();
+                        $(event.target).parent('select').parent('div').siblings('div.comparison-td').remove();
                     }
                     else {
                         $(event.target).parent('select').nextAll('select.grid-filter-columns').remove();
-                        self.add_filter_row_options(event, self, c)
+                        self.add_filter_row_options(event, self, c);
                     }
                 });
                 option.appendTo($(column));
@@ -558,7 +558,7 @@
             row.find('select[name="operator"]').parent().remove();
             row.find('input[name="comparison-value"]').parent().remove();
 
-            row.append($('<div class="col-md-4">').addClass('operator-td').append(operator));
+            row.append($('<div class="col-md-3">').addClass('operator-td').append(operator));
 
             if (col_data._type == 'timestamp') {
                 comparison = $('<input>', {type:'hidden', name:'comparison-value'});
@@ -582,8 +582,10 @@
             }
             else {
                 comparison = $('<input>', {type:'text', name:'comparison-value'});
-                row.append($('<div class="col-md-4">').addClass('comparison-td').append(comparison));
+                row.append($('<div>').addClass('col-md-3 comparison-td').append(comparison));
+                console.log("there");
             }
+            console.log("here")
 
             $(operator).append(option_element('', 'Select Operator', true));
 
