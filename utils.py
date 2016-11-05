@@ -76,15 +76,11 @@ def gen_columns(modelObj, search_filtering=False, fk_filter_depth=None):
 
         #Figure out what each field is and store that type
         if isinstance(f, models.ForeignKey):
-
             if 'filter_column' in field:
                 if fk_filter_depth is None or fk_filter_depth > 0:
-
                     if fk_filter_depth is not None:
                         fk_filter_depth -= 1
-                    if not f.remote_field.is_relation or f.remote_field.many_to_one:
-                        field['filter_column']['remote_field'] = gen_columns(f.remote_field.parent_model, True, fk_filter_depth)
-
+                    field['filter_column']['related'] = gen_columns(f.remote_field.model, True, fk_filter_depth)
                 elif fk_filter_depth <= 0:
                     continue
 
