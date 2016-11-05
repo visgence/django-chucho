@@ -3,21 +3,23 @@
 <input type="hidden" id="app_name" value="{{app_name}}">
 <div>
     <div id="filter-div">
-        <span id="chucho-add-filter" class="ui-icon ui-icon-circle-plus" onclick="myGrid.add_filter_row();"
-              style="float: right">
-        </span>
+
         <table id="filter-table">
             <tr>
                 <td colspan="1">Filter:</td>
                 <td colspan="3">
                     <input type="text" id="chucho-omni-filter" style="width: 40em;" onchange="myGrid.refresh();">
                 </td>
+                <td>
+                    <span id="chucho-add-filter" class="ui-icon ui-icon-circle-plus" onclick="myGrid.add_filter_row();"></span>
+                </td>
             </tr>
         </table>
+
     </div>
     <div id="{{model_name}}_grid" class="grid">
         <div class="btnPanel"> </div>
-        <div class="gridContainer" data-bind='chuchoGrid: gridViewModel'> </div> 
+        <div class="gridContainer" data-bind='chuchoGrid: gridViewModel'> </div>
     </div>
     <div id="chucho_page_list"></div>
     <div id="pageSelectDiv" style="padding-top: .5em;">
