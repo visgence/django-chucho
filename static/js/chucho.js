@@ -25,10 +25,10 @@
 }(function(exports,$,ko,Spinner) {
 
     /* Extra html for grids  */
-    var addButton = '<input type="button" class="chucho-add" value="Add"/>';
-    var deleteButton = '<input type="button" class="chucho-delete" value="Delete"/>';
-    var editButton = '<input type="button" class="chucho-edit" value="Edit"/>';
-    var refreshButton = '<input type="button" class="chucho-refresh" value="Refresh"/>';
+    var addButton = '<input type="button" class="btn btn-primary btn-sm chucho-add" value="Add"></input>';
+    var deleteButton = '<input type="button" class="btn btn-primary btn-sm chucho-delete" value="Delete"/>';
+    var editButton = '<input type="button" class="btn btn-primary btn-sm chucho-edit" value="Edit"/>';
+    var refreshButton = '<input type="button" class="btn btn-primary btn-sm chucho-refresh" value="Refresh"/>';
     var messageSpan = '<span id="server_messages" style="padding-left:1em"></span>';
 
     function option_element(value, text, is_selected) {
