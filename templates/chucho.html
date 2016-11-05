@@ -1,7 +1,9 @@
 
+
+
 <input type="hidden" id="model_name" value="{{model_name}}">
 <input type="hidden" id="app_name" value="{{app_name}}">
-<div>
+<div style="margin:30px">
     <div id="filter-div">
         <div class="row">
             <div class="col-md-1">
@@ -15,29 +17,12 @@
         <div class="row">
             <div class="col-md-1">
                 Filters:
-                <span id="chucho-add-filter" class="ui-icon ui-icon-circle-plus" onclick="myGrid.add_filter_row();"></span>
+                <span id="chucho-add-filter" class="glyphicon glyphicon-plus" onclick="myGrid.add_filter_row();"></span>
             </div>
-            <div class="col-md-11" id ="filter-table">
-
-
-            </div>
+            <div class="col-md-11" id ="filter-table"></div>
         </div>
-        <br>
-
-<!--
-        <table id="filter-table">
-            <tr>
-                <td colspan="1">Filter:</td>
-                <td colspan="3">
-                    <input type="text" id="chucho-omni-filter" style="width: 40em;" onchange="myGrid.refresh();">
-                </td>
-                <td>
-                    <span id="chucho-add-filter" class="ui-icon ui-icon-circle-plus" onclick="myGrid.add_filter_row();"></span>
-                </td>
-            </tr>
-        </table> -->
-
     </div>
+    <br>
     <div id="{{model_name}}_grid" class="grid">
         <div class="btnPanel"> </div>
         <div class="gridContainer" data-bind='chuchoGrid: gridViewModel'> </div>
@@ -81,15 +66,3 @@
         <p>Do you still want to proceed?</p>
     </div>
 </div>
-
-
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-
-<!-- Latest compiled and minified CSS -->
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-
-<!-- Optional theme -->
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
-
-<!-- Latest compiled and minified JavaScript -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
