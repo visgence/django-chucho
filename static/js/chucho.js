@@ -451,7 +451,7 @@
 
         /** This will append a filter to the filter table.*/
         this.add_filter_row = function() {
-            var row = $('<tr>');
+            var row = $('<div class="row">');
             var remove = $('<span>');
             var self = this;
             remove.attr('onclick', 'remove_filter_row(this);')
@@ -466,8 +466,8 @@
                     //after this one and quite early.
                     if($(event.target).val() === '') {
                         $(event.target).nextAll('select.grid-filter-columns').remove();
-                        $(event.target).parent('td').siblings('td.operator-td').remove();
-                        $(event.target).parent('td').siblings('td.comparison-td').remove();
+                        $(event.target).parent('div class="col-md-3"').siblings('td.operator-td').remove();
+                        $(event.target).parent('div class="col-md-3"').siblings('td.comparison-td').remove();
 
                         return;
                     }
@@ -478,8 +478,8 @@
                 .addClass('grid-filter-columns')
                 .append(option_element('', 'Select '+self.toTitleCase(self.modelName)+' Column', true));
 
-            $(row).append($('<td>').append($(remove)))
-                  .append($('<td>').append(column))
+            $(row).append($('<div class="col-md-3">').append($(remove))
+                  .append(column))
                   .addClass('grid-filter')
                   .appendTo($('#filter-table'));
 
@@ -490,13 +490,13 @@
 
                 $(option).on('select', function(event) {
                     if(filter_column.related.length > 0) {
-                        $(event.target).parent('select').parent('td').siblings('td.operator-td').remove();
-                        $(event.target).parent('select').parent('td').siblings('td.comparison-td').remove();
+                        $(event.target).parent('select').parent('div').siblings('td.operator-td').remove();
+                        $(event.target).parent('select').parent('div').siblings('td.comparison-td').remove();
                         self.add_related_options(filter_column.related, event.target);
                     }
                     else {
                         $(event.target).parent('select').nextAll('select.grid-filter-columns').remove();
-                        self.add_filter_row_options(event, self, c)
+                        self.add_filter_row_options(event, self, c);
                     }
                 });
                 option.appendTo($(column));
@@ -550,7 +550,7 @@
 
         /** This will append the operators and input box to the filter table */
         this.add_filter_row_options = function(event, context, col_data) {
-            var row = $(event.target).parents('tr.grid-filter');
+            var row = $(event.target).parents('div.grid-filter');
             var operator = $('<select>', {name:'operator'});
             var comparison;
             var col_name = $(event.target).val();
@@ -558,12 +558,12 @@
             row.find('select[name="operator"]').parent().remove();
             row.find('input[name="comparison-value"]').parent().remove();
 
-            row.append($('<td>').addClass('operator-td').append(operator));
+            row.append($('<div class="col-md-4">').addClass('operator-td').append(operator));
 
             if (col_data._type == 'timestamp') {
                 comparison = $('<input>', {type:'hidden', name:'comparison-value'});
                 var picker = $('<input>', {type:'text', name:'comparison-picker'});
-                var td = $('<td>').addClass('comparison-td');
+                var td = $('<div>').addClass('comparison-td');
                 td.append(picker);
                 td.append(comparison);
                 row.append(td);
@@ -582,7 +582,7 @@
             }
             else {
                 comparison = $('<input>', {type:'text', name:'comparison-value'});
-                row.append($('<td>').addClass('comparison-td').append(comparison));
+                row.append($('<div class="col-md-4">').addClass('comparison-td').append(comparison));
             }
 
             $(operator).append(option_element('', 'Select Operator', true));
@@ -1478,7 +1478,7 @@
 
     /** This will remove a filter from the filter table */
     function remove_filter_row(e) {
-        $(e).parents('tr.grid-filter').remove();
+        $(e).parents('div.grid-filter').remove();
         myGrid.refresh();
     }
 

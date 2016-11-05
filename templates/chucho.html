@@ -3,7 +3,28 @@
 <input type="hidden" id="app_name" value="{{app_name}}">
 <div>
     <div id="filter-div">
+        <div class="row">
+            <div class="col-md-1">
+                Search:
+            </div>
+            <div class="col-md-3">
+                <input type="text" id="chucho-omni-filter" style="width: 100%;" onchange="myGrid.refresh();">
+            </div>
+        </div>
+        <br>
+        <div class="row">
+            <div class="col-md-1">
+                Filters:
+                <span id="chucho-add-filter" class="ui-icon ui-icon-circle-plus" onclick="myGrid.add_filter_row();"></span>
+            </div>
+            <div class="col-md-11" id ="filter-table">
 
+
+            </div>
+        </div>
+        <br>
+
+<!--
         <table id="filter-table">
             <tr>
                 <td colspan="1">Filter:</td>
@@ -14,7 +35,7 @@
                     <span id="chucho-add-filter" class="ui-icon ui-icon-circle-plus" onclick="myGrid.add_filter_row();"></span>
                 </td>
             </tr>
-        </table>
+        </table> -->
 
     </div>
     <div id="{{model_name}}_grid" class="grid">
@@ -60,3 +81,15 @@
         <p>Do you still want to proceed?</p>
     </div>
 </div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
