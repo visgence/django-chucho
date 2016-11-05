@@ -17,7 +17,7 @@
 (function(window,document,navigator,$,ko,Spinner,undefined){
 !function(factory) {
     if (typeof define === 'function' && define.amd) {
-        define(['exports','jquery','knockout','spin.min','jquery-ui','chucho.grid'],factory);
+        define(['exports', 'jquery', 'knockout', 'spin.min', 'chucho.grid'], factory);
     }
     else {
         factory(window['DataGrid'] = {},$,ko,Spinner);
