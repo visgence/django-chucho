@@ -22,7 +22,7 @@
     // Templates used to render the grid
     var templateEngine = new ko.jqueryTmplTemplateEngine();
     templateEngine.addTemplate("ko_chuchoGrid_grid", "\
-                    <table class=\"chucho-grid table table-borded\" cellspacing=\"0\">\
+                    <table class=\"chucho-grid table table-hover\" cellspacing=\"0\">\
                         <thead>\
                             <tr>\
                                 {{each(i, columnDefinition) columns}}\
