@@ -175,7 +175,14 @@ def read_source(request, app_name, model_name, user):
             sign = "-"
 
         # Foreign Key relations get ordered normally. They throw an exception otherwise...
-        f, model, direct, m2m = cls._meta.get_field_by_name(sort_arg)
+        # the update to django 1.10 ment we couldn't use: f, mode, direct, m2m = cls._meta.get_field_by_name(sort_arg)
+        # and so instead we now use:
+        f = cls._meta.get_field(sort_arg)
+        # these are probably unnessisary:
+        # model = cls
+        # direct = not f.auto_created or f.concrete
+        # m2m = f.many_to_many
+
         if isinstance(f, models.CharField) or isinstance(f, models.TextField):
             objs = objs.extra(select={'lower_'+sort_arg: 'lower('+sort_arg+')'}).order_by(sign+'lower_'+sort_arg)
         else:
