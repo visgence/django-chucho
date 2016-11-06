@@ -910,55 +910,55 @@
      */
     function confirm_dialog(id, action, action_func, cancel, cancel_func, destroy)
     {
-        if (!cancel)
-            cancel = 'Cancel';
+        // if (!cancel)
+        //     cancel = 'Cancel';
 
-        buttons = [{
-            text: cancel,
-            click: function() {
-                if ( cancel_func )
-                    cancel_func();
-                $(this).dialog('destroy');
-                if(destroy)
-                    $('#'+id).remove();
-            }
-        }];
+        // buttons = [{
+        //     text: cancel,
+        //     click: function() {
+        //         if ( cancel_func )
+        //             cancel_func();
+        //         $(this).dialog('destroy');
+        //         if(destroy)
+        //             $('#'+id).remove();
+        //     }
+        // }];
 
-        if ( action ) {
-            buttons.push({
-                text: action,
-                click: function() {
-                    if ( action_func )
-                        action_func();
-                    /*$(this).dialog('destroy');
-                    if(destroy)
-                        $('#'+id).remove();*/
-                }
-            });
-        }
+        // if ( action ) {
+        //     buttons.push({
+        //         text: action,
+        //         click: function() {
+        //             if ( action_func )
+        //                 action_func();
+        //             /*$(this).dialog('destroy');
+        //             if(destroy)
+        //                 $('#'+id).remove();*/
+        //         }
+        //     });
+        // }
 
-        $('#' + id).dialog({
-            autoOpen: true,
-            resizable: true,
-            hide: "fade",
-            show: "fade",
-            modal: true,
-            minWidth: 250,
-            maxWidth: 1000,
-            minHeight: 200,
-            maxHeight: 1000,
-            height: 600,
-            width: 600,
-            dialogClass: "confirmation dialogue",
-            close: function() {
-                if ( cancel_func )
-                    cancel_func();
-                $(this).dialog('destroy');
-                if(destroy)
-                    $('#' + id).remove();
-            },
-            buttons: buttons
-        });
+        // $('#' + id).dialog({
+        //     autoOpen: true,
+        //     resizable: true,
+        //     hide: "fade",
+        //     show: "fade",
+        //     modal: true,
+        //     minWidth: 250,
+        //     maxWidth: 1000,
+        //     minHeight: 200,
+        //     maxHeight: 1000,
+        //     height: 600,
+        //     width: 600,
+        //     dialogClass: "confirmation dialogue",
+        //     close: function() {
+        //         if ( cancel_func )
+        //             cancel_func();
+        //         $(this).dialog('destroy');
+        //         if(destroy)
+        //             $('#' + id).remove();
+        //     },
+        //     buttons: buttons
+        // });
     }
 
 
@@ -977,17 +977,18 @@
      * */
     function get_grid_form(id, columns, record, title)
     {
-
+        $('#myModal').modal('toggle');
         var div_id = myGrid.modelName+"_add";
         var div = $("<div></div>")
                    .attr("id", myGrid.modelName+'_add')
                    .attr('title', title);
+
         var table = $("<table></table>");
 
         var msg_div = $('<div></div>').attr('id',  'dialogue_message');
         $(div).append(msg_div);
 
-        $('#'+id).append(div);
+        $('#modal-body').append(div);
         div.append(table);
 
         //If we cycle through all columns and none are editable we'll return null
@@ -1045,7 +1046,7 @@
                     if(col._editable) {
                         input = get_input('add_form_input', 'text', value);
                         td2.append(input);
-                        $(input).spinner();
+                        // $(input).spinner();
                     }
                     else {
                         input = $("<span></span>").append(value);
