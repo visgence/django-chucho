@@ -317,9 +317,8 @@
                 if ('errors' in resp) {
                     self.error(resp.errors);
                     return;
-                }
-                else {
-                    $('#'+self.modelName + '_add').dialog('close');
+                } else {
+                    // $('#'+self.modelName + '_add').dialog('close');
                     //Either add new row to beginning or update one.
                     if (update)
                         self.grid.setRow(i, resp.data[0]);
@@ -919,11 +918,6 @@
                 if ( cancel_func ){
                     cancel_func();
                 }
-                $(this).dialog('destroy');
-                if(destroy)
-                    $('#'+id).remove();
-            },
-            myFunction: function(){
                 $('#myModal').modal('toggle');
             }
         }];
@@ -935,17 +929,16 @@
                     if ( action_func )
                         action_func();
                 },
-                myFunction: action_func
             });
         }
 
         var div = $("<div></div>");
-        console.log(action_func);
         for(var i in buttons){
-            console.log(buttons[i]);
-            div.append('<button type="button" class="btn btn-defualt" onclick="' + buttons[i].myFunction + '">' + buttons[i].text + '</button>');
+            var btn = $('<button type="button" class="btn btn-defualt">' + buttons[i].text + '</button>');
+            btn.click(buttons[i].click);
+            div.append(btn);
         }
-        $('#modal-footer').empty();
+        $('#modal-footer').empty()  ;
         $('#modal-footer').append(div);
     }
 
