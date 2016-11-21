@@ -62,7 +62,6 @@ table.chucho-grid tbody tr {
 }
 
 table.chucho-grid thead th {
-    font-weight: bold;
     color: #1874CD;
     background: linear-gradient(to bottom, #F0F8FF 0%, #F0F8FF   50%, #E5F3FF 51%, #E5F3FF 100%);
 }
@@ -115,7 +114,17 @@ div.grid
     margin-left: 10px;
 }
 
+.row-buffer {
+    margin-top:10px;
+}
 
+.filter-table{
+    border-color: #80c4ff;
+    border-width: 2px;
+    border-style: solid;
+    border-radius: 8px;
+    padding: 7px;
+}
 
 
 

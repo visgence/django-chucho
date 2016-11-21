@@ -6,20 +6,15 @@
 <div style="margin:30px">
     <div id="filter-div">
         <div class="row">
-            <div class="col-md-1">
-                Search:
-            </div>
             <div class="col-md-3">
+                Search:
                 <input type="text" id="chucho-omni-filter" style="width: 100%;" onchange="myGrid.refresh();">
             </div>
         </div>
         <br>
-        <div class="row">
-            <div class="col-md-1">
-                Filters:
-                <span id="chucho-add-filter" class="glyphicon glyphicon-plus" onclick="myGrid.add_filter_row();"></span>
-            </div>
-            <div class="col-md-11" id ="filter-table"></div>
+        <div class="table" id="filter-container">
+            <button type="button" class="btn btn-primary" onclick="myGrid.add_filter_table();">Add Filters</button>
+
         </div>
     </div>
     <br>
@@ -85,9 +80,6 @@
     </div>
   </div>
 </div>
-
-
-
 
 
 
