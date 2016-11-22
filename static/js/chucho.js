@@ -937,6 +937,7 @@
                 if ( cancel_func ){
                     cancel_func();
                 }
+                $('#modal-body').empty();
                 $('#myModal').modal('toggle');
             }
         }];
@@ -977,9 +978,9 @@
      *
      *  Return: Div id or null if no columns are editable.
      * */
-    function get_grid_form(id, columns, record, title)
-    {
+    function get_grid_form(id, columns, record, title){
         $('#myModal').modal('toggle');
+        $('#modal-body').empty();
         var div_id = myGrid.modelName+"_add";
         var div = $("<div></div>")
                    .attr("id", myGrid.modelName+'_add')
