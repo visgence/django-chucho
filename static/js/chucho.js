@@ -29,7 +29,7 @@
     var deleteButton = '<input type="button" class="btn btn-primary btn-sm chucho-delete" value="Delete"/>';
     var editButton = '<input type="button" class="btn btn-primary btn-sm chucho-edit" value="Edit"/>';
     var refreshButton = '<input type="button" class="btn btn-primary btn-sm chucho-refresh" value="Refresh"/>';
-    var messageSpan = '<span id="server_messages" style="padding-left:1em"></span>';
+    var messageSpan = '<span id="server_messages" style="padding-left:1em; opacity: 100"></span>';
 
     function option_element(value, text, is_selected) {
         var option = $('<option>', {
@@ -225,12 +225,14 @@
                         self.error(resp.errors);
                         $(window).trigger('chucho-refreshed', cust_data);
                         return;
-                    }
-                    else {
-                        $('#server_messages').html('');
+                    } else {
+                        $("#server_messages").css('opacity', 1);
+                        setTimeout(function() {
+                            FadeMessage(1);
+                         }, 2000);
                     }
 
-                    self.grid.items(resp.data)
+                    self.grid.items(resp.data);
                     self.setReadOnly(resp.read_only);
                     if ( 'page_list' in resp ) {
                         $('#chucho_page_list').html(resp.page_list);
@@ -246,6 +248,13 @@
                     return;
             });
         };
+
+        function FadeMessage(cur){
+            setTimeout(function() {
+                $("#server_messages").css('opacity', cur);
+                if (cur > 0) FadeMessage(cur-0.03);
+            }, 50);
+        }
 
 
         /** Method to add a record */
@@ -315,7 +324,6 @@
                 $('#server_messages').html('');
 
                 if ('errors' in resp) {
-                    console.log("here")
                     self.error(resp.errors);
                     return;
                 } else {
@@ -329,7 +337,7 @@
                     self.refresh();
                     self.success('Updated row ' + i);
                 }
-                self.clearRowSelection();
+                // self.clearRowSelection();
             };
         };
 
@@ -398,7 +406,7 @@
                                 $('#myModal').modal('toggle');
                                 self.grid.removeRowAtIndex(selected);
                                 self.success(resp.success);
-                                self.clearRowSelection();
+                                // self.clearRowSelection();
                             }
                             else
                                 self.error('Unknown error has occurred on delete.');
@@ -428,10 +436,12 @@
             var dlg_msg = $('#dialogue_message');
             if ( dlg_msg.length >= 1) {
                 var msg_html = $(dlg_msg).html(error_div);
-                $('#error_dialogue_message #error_msg').text(msg);
-                $('#error_dialogue_message').css('display', 'inline');
-                $('#dialogue_message').parent().animate({scrollTop: 0}, 'fast');
-                 console.log("there");
+                $('#server_messages').html(msg).css('color','red');
+                $('#server_messages').html(msg);
+                $("#server_messages").css('opacity', 1);
+                setTimeout(function() {
+                    FadeMessage(1);
+                 }, 2000);
             } else {
 
                 $('#error_msg').text(msg);
