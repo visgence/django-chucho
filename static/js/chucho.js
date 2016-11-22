@@ -366,6 +366,7 @@
 
         /** Deletes a selected row from the grid and removes that object from the database. */
         this.deleteRow = function() {
+
             // get the selected row, right now assume only one.
             var selected = this.getSelectedRow();
             if (selected === null)
@@ -376,6 +377,7 @@
             // If there is an id, send an ajax request to delete from server, otherwise, just
             // remove it from the grid.
             if ('pk' in row) {
+                console.log("here");
                 self = this;
                 var delete_func = function() {
 
@@ -393,7 +395,7 @@
                                 return;
                             }
                             else if ('success' in resp) {
-                                $('#delete_confirm').dialog('close');
+                                $('#myModal').modal('toggle');
                                 self.grid.removeRowAtIndex(selected);
                                 self.success(resp.success);
                                 self.clearRowSelection();
@@ -403,9 +405,11 @@
                         }
                     });
                 };
-                confirm_dialog('delete_confirm', 'Delete', delete_func);
-            }
-            else {
+
+                var form_id = get_grid_form(this.modelName+'_grid', this.columns, null, 'Add Record');
+
+                confirm_dialog('delete_confirm', 'Delete', delete_func, 'Cancel', null, true);
+            }else {
                 this.grid.removeRowAtIndex(selected);
                 this.success('Locally removed row: ' + selected + '.');
             }
@@ -463,7 +467,7 @@
             var remove = $('<span>');
             var self = this;
             remove.attr('onclick', 'remove_filter_row(this);')
-                  .addClass('glyphicon').addClass('glyphicon-minus')
+                  .addClass('glyphicon').addClass('glyphicon-remove')
                   .addClass('chucho-remove-button')
                   .button();
 
@@ -946,6 +950,7 @@
                 },
             });
         }
+
 
         var div = $("<div></div>");
         for(var i in buttons){
@@ -1478,7 +1483,7 @@
 
     /** This will remove a filter from the filter table */
     function remove_filter_row(e) {
-        $(e).parents('div.grid-filter').remove();
+        $(e).parents('tr.grid-filter').remove();
         myGrid.refresh();
     }
 
