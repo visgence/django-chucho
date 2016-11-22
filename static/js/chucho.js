@@ -315,6 +315,7 @@
                 $('#server_messages').html('');
 
                 if ('errors' in resp) {
+                    console.log("here")
                     self.error(resp.errors);
                     return;
                 } else {
@@ -346,22 +347,22 @@
             var type = 'POST';
 
             if(row.hasOwnProperty('pk')) {
-                url += row['pk']+'/';
+                url += row.pk+'/';
                 type = 'PUT';
             }
-
             $.ajax({
-                 url: url
-                ,beforeSend: function(xhr) {
+                url: url,
+                beforeSend: function(xhr) {
                     xhr.setRequestHeader("X-CSRFToken", csrftoken);
-                 }
-                ,type: type
-                ,contentType: 'application/json'
-                ,processData: false
-                ,data: JSON.stringify(row)
-                ,success: this.save_callback(i, update)
+                },
+                type: type,
+                contentType: 'application/json',
+                processData: false,
+                data: JSON.stringify(row),
+                success: this.save_callback(i, update)
             });
-        }
+            $('#myModal').modal('toggle');
+        };
 
 
         /** Deletes a selected row from the grid and removes that object from the database. */
@@ -383,13 +384,12 @@
 
                     var csrftoken = self.getCookie('csrftoken');
                     $.ajax({
-                         url: '/chucho/'+self.appName+'/'+self.modelName+'/'+row['pk']+'/'
-                        ,beforeSend: function(xhr) {
+                        url: '/chucho/'+self.appName+'/'+self.modelName+'/'+row.pk+'/',
+                        beforeSend: function(xhr) {
                             xhr.setRequestHeader("X-CSRFToken", csrftoken);
-                         }
-                        ,type: 'DELETE'
-                        ,success: function(resp) {
-
+                        },
+                        type: 'DELETE',
+                        success: function(resp) {
                             if ('errors' in resp) {
                                 self.error(resp.errors);
                                 return;
@@ -431,8 +431,9 @@
                 $('#error_dialogue_message #error_msg').text(msg);
                 $('#error_dialogue_message').css('display', 'inline');
                 $('#dialogue_message').parent().animate({scrollTop: 0}, 'fast');
-            }
-            else {
+                 console.log("there");
+            } else {
+
                 $('#error_msg').text(msg);
                 confirm_dialog('error_dialog', null, null, "Ok", function() {
                     $('#error_msg').text('');
@@ -835,19 +836,18 @@
 
                             $(element).click(function() {
                                 var colData = valueAccessor();
-                                if (colData.hasOwnProperty('sortable') === false || colData['sortable'] === false)
+                                if (colData.hasOwnProperty('sortable') === false || colData.sortable === false)
                                     return;
 
                                 var currentSorted = self.grid.sortedCol();
-                                if (currentSorted['column'] === null ||
-                                    currentSorted['column'] !== colData['id'] ||
-                                    currentSorted['asc'] === true)
-                                    self.grid.setSortedCol(colData['id'], false);
-                                else if (currentSorted['asc'] === false)
-                                    self.grid.setSortedCol(colData['id'], true);
+                                if (currentSorted.column === null ||
+                                    currentSorted.column !== colData.id || currentSorted.asc === true)
+                                    self.grid.setSortedCol(colData.id, false);
+                                else if (currentSorted.asc === false)
+                                    self.grid.setSortedCol(colData.id, true);
                                 else {
                                     console.error('Un unexpected sorting condition occured!'+
-                                                  'Col: '+currentSorted['column']+'  Asc: '+currentSorted['asc']);
+                                                  'Col: '+currentSorted.column+'  Asc: '+currentSorted.asc);
                                     return;
                                 }
                                 self.refresh();
@@ -906,9 +906,9 @@
             });
 
             $.ajax({
-                 url: '/chucho/filters/'
-                ,type: 'GET'
-                ,success: function(resp) {
+                 url: '/chucho/filters/',
+                type: 'GET',
+                success: function(resp) {
                     if ('errors' in resp) {
                         self.error(resp.errors);
                         return;
