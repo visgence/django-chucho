@@ -522,6 +522,7 @@
                     }
                     else {
                         $(event.target).parent('select').nextAll('select.grid-filter-columns').remove();
+                        row.find('td.grid-filter-columns').remove();
                         self.add_filter_row_options(event, self, c);
                     }
                 });
@@ -549,7 +550,6 @@
                 .addClass('grid-filter-columns')
                 .append(option_element('', 'Select '+self.toTitleCase($(newevent.target).val())+' Column', true));
 
-
             $.each(newOptions, function(i, c) {
                 var option = (option_element(c.id, c.name));
                 var related_columns = [];
@@ -569,18 +569,15 @@
                 });
                 option.appendTo($(column));
             });
-
             var row = $(event.target).parents('tr.grid-filter');
-
-            // var parentSelect = $(selectedOption).parent('select').parent();
-            var data = $('<td>');
+            var data = $('<td class="grid-filter-columns">');
             data.append(column);
             row.append(data);
-            // $(parentSelect).after(column);
         };
 
         /** This will append the operators and input box to the filter table */
         this.add_filter_row_options = function(event, context, col_data) {
+
             var row = $(event.target).parents('tr.grid-filter');
             var operator = $('<select>', {name:'operator'});
             var comparison;
@@ -588,6 +585,16 @@
 
             row.find('select[name="operator"]').parent().remove();
             row.find('input[name="comparison-value"]').parent().remove();
+
+            // var cur = row.find('td.grid-filter-columns');
+            // console.log(cur.prevObject.context);
+            // console.log(col_data);
+            // var str = ""+cur.prevObject.context.value;
+
+            // if(str != col_data.field){
+            //     console.log("here")
+            //     cur.remove()
+            // }
 
             row.append($('<td>').addClass('operator-td').append(operator));
 
@@ -610,8 +617,7 @@
                     dateFormat: 'mm/dd/yy',
                     timeFormat: 'hh:mm:ss'
                 });
-            }
-            else {
+            } else {
                 comparison = $('<input>', {type:'text', name:'comparison-value'});
                 row.append($('<td>').addClass('comparison-td').append(comparison));
             }
