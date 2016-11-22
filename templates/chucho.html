@@ -6,20 +6,15 @@
 <div style="margin:30px">
     <div id="filter-div">
         <div class="row">
-            <div class="col-md-1">
-                Search:
-            </div>
             <div class="col-md-3">
+                Search:
                 <input type="text" id="chucho-omni-filter" style="width: 100%;" onchange="myGrid.refresh();">
             </div>
         </div>
         <br>
-        <div class="row">
-            <div class="col-md-1">
-                Filters:
-                <small><span id="chucho-add-filter" class="glyphicon glyphicon-plus" onclick="myGrid.add_filter_row();"></span></small>
-            </div>
-            <div class="col-md-11" id ="filter-table"></div>
+
+        <div class="table" id="filter-container">
+            <button type="button" class="btn btn-primary" onclick="myGrid.add_filter_table();">Add Filters</button>
         </div>
     </div>
     <br>
@@ -66,3 +61,26 @@
         <p>Do you still want to proceed?</p>
     </div>
 </div>
+<div id="myModal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Edit Record</h4>
+      </div>
+      <div id="modal-body" class="modal-body">
+
+      </div>
+      <div class="modal-footer" id="modal-footer">
+        <!-- <button type="button" class="btn btn-default" data-dismiss="modal">Save</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button> -->
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+

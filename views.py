@@ -372,7 +372,9 @@ def update(request, app_name, model_name, user, id=None):
         return HttpResponse(json.dumps({'errors': error}, indent=4), content_type="application/json")
 
     transaction.commit()
-    return HttpResponse(serialized_model, content_type="application/json")
+    response = HttpResponse(serialized_model, content_type="application/json")
+    response.status_code = 201
+    return response
 
 
 # @transaction.commit_manually
@@ -403,7 +405,9 @@ def destroy(request, app_name, model_name, user, id=None):
 
     transaction.commit()
     dump = json.dumps({'success': 'Successfully deleted item with primary key: %s' % id}, indent=4)
-    return HttpResponse(dump, content_type="application/json")
+    response = HttpResponse(dump, content_type="application/json")
+    response.status_code = 201
+    return response
 
 
 def get_columns(request, app_name, model_name):
