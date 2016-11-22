@@ -88,7 +88,7 @@
             if (sortedCol.column === null || sortedCol.asc === null)
                 return null;
 
-            return {'columnId': sortedCol.column, 'sortAsc': sortedColasc};
+            return {'columnId': sortedCol.column, 'sortAsc': sortedCol.asc};
         };
 
         /** Gets cookie so that we may get csrf token from it */
@@ -251,10 +251,11 @@
 
             var form_id = get_grid_form(this.modelName+'_grid', this.columns, null, 'Add Record');
             if (form_id) {
-                var add_callback = function() {record_callback(null, false);};
+                var add_callback = function() {
+                    record_callback(null, false);
+                };
                 confirm_dialog(form_id, 'Add', add_callback, 'Cancel', null, true);
-            }
-            else
+            } else
                 console.log('no editable columns');
         };
 
