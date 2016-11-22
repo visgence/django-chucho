@@ -467,7 +467,7 @@
                 'Filters:'+
                 '<span id="chucho-add-filter" class="glyphicon glyphicon-plus" onclick="myGrid.add_filter_row();"></span><br><br>'+
                 '<table class="table-striped" id ="filter-table" style="width: 100px;"><col width=25px>'+
-                '</table>' +
+                '</table><br>' +
                 '<button class="btn btn-primary" onclick="myGrid.refresh()">Apply Filters.</button>'
             ).addClass( 'filter-table');
         };
@@ -585,16 +585,6 @@
 
             row.find('select[name="operator"]').parent().remove();
             row.find('input[name="comparison-value"]').parent().remove();
-
-            // var cur = row.find('td.grid-filter-columns');
-            // console.log(cur.prevObject.context);
-            // console.log(col_data);
-            // var str = ""+cur.prevObject.context.value;
-
-            // if(str != col_data.field){
-            //     console.log("here")
-            //     cur.remove()
-            // }
 
             row.append($('<td>').addClass('operator-td').append(operator));
 
