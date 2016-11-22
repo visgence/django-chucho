@@ -90,16 +90,16 @@
         /** Returns a dictionary containing the current column that is sorted or to be sorted and null otherwise */
         this.getSortColumns = function() {
             var sortedCol = this.grid.sortedCol();
-            if (sortedCol['column'] === null || sortedCol['asc'] === null)
+            if (sortedCol.column === null || sortedCol.asc === null)
                 return null;
 
-            return {'columnId': sortedCol['column'], 'sortAsc': sortedCol['asc']};
+            return {'columnId': sortedCol.column, 'sortAsc': sortedColasc};
         };
 
         /** Gets cookie so that we may get csrf token from it */
         this.getCookie = function(name) {
             var cookieValue = null;
-            if (document.cookie && document.cookie != '') {
+            if (document.cookie && document.cookie !== '') {
                 var cookies = document.cookie.split(';');
                 for (var i = 0; i < cookies.length; i++) {
                     var cookie = jQuery.trim(cookies[i]);
@@ -111,7 +111,7 @@
                 }
             }
             return cookieValue;
-        }
+        };
 
         /** deselects any selected rows in the table and removes buttons from panel that appear when
          *  any row selection occurs. */
@@ -208,11 +208,11 @@
             result_info.per_page = $('#pageSelect').val();
             result_info.filter_args = get_filter_data();
             result_info.sort_columns = this.getSortColumns();
-            get_editable = true
+            get_editable = true;
 
-            $.get( '/chucho/'+self.appName+'/'+self.modelName+'/'
-                  ,{'jsonData': JSON.stringify({'get_editable': get_editable, 'result_info': result_info})}
-                  ,function(resp) {
+            $.get( '/chucho/'+self.appName+'/'+self.modelName+'/',
+                  {'jsonData': JSON.stringify({'get_editable': get_editable, 'result_info': result_info})},
+                  function(resp) {
 
                     spinner.stop();
                     //In case some additional data gets loaded into the response object from
@@ -554,7 +554,7 @@
                 var option = (option_element(c.id, c.name));
                 var related_columns = [];
                 if(c.hasOwnProperty('filter_column') === true)
-                    var related_columns = c.filter_column.related;
+                    related_columns = c.filter_column.related;
 
                 $(option).on('select', function(event) {
                     if(related_columns.length > 0) {
@@ -679,7 +679,7 @@
         function colorFormatter(row, col, rowIndex, colIndex) {
             var data = row[col];
             return '<span class="badge" style="background-color: '+data+'">&nbsp;</span>';
-        };
+        }
 
         /** Custom formatter for boolean columns in the data grid */
         function booleanFormatter(row, col, rowIndex, colIndex) {
@@ -699,9 +699,9 @@
             self = this;
 
             $.ajax({
-                 url: '/chucho/columns/'+self.appName+'/'+self.modelName+'/'
-                ,type: 'GET'
-                ,success: function(resp) {
+                 url: '/chucho/columns/'+self.appName+'/'+self.modelName+'/',
+                type: 'GET',
+                success: function(resp) {
                     self.columns = resp;
 
                     // Add editors to columns
@@ -731,13 +731,13 @@
 
                         case 'color':
                             self.columns[i].formatter = colorFormatter;
-
+                            break;
                         case 'date':
                         case 'number':
                         case 'char':
                         case 'integer':
                         case 'text':
-
+                            break;
                         default:
                         }
                     }
@@ -782,8 +782,8 @@
                         this.getColumnId = function(text) {
                             var colId = null;
                             $.each(this.getColumns(), function(i, col) {
-                                if (col['name'] === text) {
-                                    colId = col['id'];
+                                if (col.name === text) {
+                                    colId = col.id;
                                     return;
                                 }
                             });
@@ -1092,7 +1092,7 @@
                         if(value.length > 0) {
                             input = $('<ul></ul>');
                             $(value).each(function(i, val) {
-                                var li = $('<li></li>').append(val.__unicode__)
+                                var li = $('<li></li>').append(val.__unicode__);
                                 $(input).append(li);
                             });
                         }
@@ -1263,7 +1263,7 @@
      */
     function get_choices_input (cls, value, choices)
     {
-        var inputCls = "form-control " + cls
+        var inputCls = "form-control " + cls;
         var input = $("<select></select>").attr({'class': inputCls});
 
         $(choices).each(function(i, c) {
@@ -1296,9 +1296,9 @@
         var input = $("<select></select>").attr({'class': cls});
         //Get all objects that the user can select from
 
-        $.get( '/chucho/'+col.app+'/'+col.model_name+'/'
-              ,{'jsonData': JSON.stringify({'get_editable': false})}
-              ,function(resp) {
+        $.get( '/chucho/'+col.app+'/'+col.model_name+'/',
+              {'jsonData': JSON.stringify({'get_editable': false})},
+              function(resp) {
 
                 if (col.blank) {
                     var null_option = $('<option>', {text:'(null)'});
@@ -1338,9 +1338,9 @@
         div.append(ul);
 
         //Get all objects that the user can select from
-        $.get( '/chucho/'+appName+'/'+modelName+'/'
-              ,{'jsonData': JSON.stringify({'get_editable': false})}
-              ,function(resp) {
+        $.get( '/chucho/'+appName+'/'+modelName+'/',
+              {'jsonData': JSON.stringify({'get_editable': false})},
+              function(resp) {
 
                 $(resp.data).each(function(i, obj) {
 
