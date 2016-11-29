@@ -265,6 +265,8 @@
 
             var form_id = get_grid_form(this.modelName+'_grid', this.columns, selected_row, 'Edit Record');
             if (form_id) {
+                console.log("going to edit: " + selected_index);
+
                 var edit_callback = function() {record_callback(selected_index, true);};
                 confirm_dialog(form_id, 'Save', edit_callback, 'Cancel', null, true);
             } else
@@ -351,7 +353,7 @@
                 contentType: 'application/json',
                 processData: false,
                 data: JSON.stringify(row),
-                success: this.save_callback(i, update)
+                success: this.save_callback(i+1, update)
             });
             $('#myModal').modal('toggle');
         };
@@ -427,20 +429,18 @@
             }
         };
 
-        /** capitalize letter **/
-        this.toTitleCase = function(str) {
-            console.log("before: " + str);
-            var temp = str.replace(/\w\S*/g, function(txt){
-                return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-            });
-            console.log("after: " + temp)
-            return temp;
-        };
-
         /** Stuff to do on success. */
         this.success = function(msg) {
             console.log('Success: ' + msg);
             $('#server_messages').html(msg).css('color','green');
+        };
+
+        /** capitalize letter **/
+        this.toTitleCase = function(str) {
+            var temp = str.replace(/\w\S*/g, function(txt){
+                return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+            });
+            return temp;
         };
 
         /** Adds html to create a table where the user can add filters **/
