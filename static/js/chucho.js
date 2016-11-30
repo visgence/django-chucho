@@ -938,6 +938,11 @@
                 self.warning("Disregarding search bar, using filters.");
             return filter_data;
         }
+
+        this.updatePages = function(newVal){
+            $("#pageSelect").val(newVal);
+            this.refresh(1);
+        };
         this.init();
     } // End DataGrid
 
@@ -1447,6 +1452,8 @@
             value = d.valueOf()/1000;
          $(e).nextAll('.add_form_input').val(value);
     }
+
+
 
     function loadModelGrid(app, model) {
         var url = "/chucho/model_editor/"+app+"/"+model+"/";
