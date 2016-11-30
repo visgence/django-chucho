@@ -513,12 +513,14 @@
         /** Adds a column of filters for foreign keys **/
         this.add_related_options = function(newOptions, newevent) {
             var self = this;
+            if(event.target.parentNode.parentElement.nextSibling != null){
+                removeTheRight(event.target.parentNode.parentElement.nextSibling);
+            }
             var column = $('<select>', {name: 'column'})
                 .change({self: self}, function(event) {
                     //If user selectes 'Select Column' options remove all related select fields that come
                     //after this one and quit early.
                     if($(event.target).val() === '') {
-                        $(event.target).nextAll('select.grid-filter-columns').remove();
                         $(event.target).parent('td').siblings('td.operator-td').remove();
                         $(event.target).parent('td').siblings('td.comparison-td').remove();
                         return;
@@ -554,8 +556,18 @@
             row.append(data);
         };
 
+        function removeTheRight(elem){
+            if(elem.nextSibling != null){
+                removeTheRight(elem.nextSibling);
+            }
+            elem.remove();
+        }
+
         /** This will append the operators and input box to the filter table */
         this.add_filter_row_options = function(event, context, col_data) {
+            if(event.target.parentNode.parentElement.nextSibling != null){
+                removeTheRight(event.target.parentNode.parentElement.nextSibling);
+            }
 
             var row = $(event.target).parents('tr.grid-filter');
             var operator = $('<select>', {name:'operator'});
