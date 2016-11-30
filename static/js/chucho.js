@@ -223,7 +223,6 @@
 
                     self.grid.items(resp.data);
                     self.setReadOnly(resp.read_only);
-                    console.log(resp);
                     if ( 'page_list' in resp ) {
                         $('#chucho_page_list').html(resp.page_list);
                         $('.chucho-button').button();
@@ -430,7 +429,13 @@
             }
         };
 
-        /** Stuff to do on success. */
+        /** warning message to display. */
+        this.warning = function(msg) {
+            console.log('Warning: ' + msg);
+            $('#server_messages').html('Warning: ' + msg).css('color','blue');
+        };
+
+        /** message to send on success. */
         this.success = function(msg) {
             console.log('Success: ' + msg);
             $('#server_messages').html(msg).css('color','green');
@@ -898,6 +903,41 @@
                 }
             });
         }; // End init
+
+        /** Formats filters to be sent to the server **/
+        function get_filter_data() {
+            var filter_data = [];
+            var filters = $('.grid-filter');
+            $(filters).each(function(i, e) {
+                var temp_obj = {};
+                var temp = $(e).find('select[name="column"]');
+                if ( !temp )
+                    return;
+                if(temp.length > 1) {
+                    $.each(temp, function(i, val) {
+                        if(i === 0)
+                            temp_obj.col = $(val).val();
+                        else
+                            temp_obj.col += "|" + $(val).val();
+                    });
+                } else
+                    temp_obj.col = $(temp).val();
+                temp = $(e).find('select[name="operator"]').val();
+                if ( !temp )
+                    return;
+                temp_obj.oper = temp;
+                temp = $(e).find('input[name="comparison-value"]').val();
+                if ( !temp )
+                    temp = '';
+                temp_obj.val = temp;
+                filter_data.push(temp_obj);
+            });
+            if (filter_data.length === 0 && $('#chucho-omni-filter').val() )
+                filter_data.push({col: 'chucho-omni', val: $('#chucho-omni-filter').val()});
+            else if($('#chucho-omni-filter').val())
+                self.warning("Disregarding search bar, using filters.");
+            return filter_data;
+        }
         this.init();
     } // End DataGrid
 
@@ -1371,38 +1411,7 @@
         return new Spinner(opts);
     }
 
-    /** Formats filters to be sent to the server **/
-    function get_filter_data() {
-        var filter_data = [];
-        var filters = $('.grid-filter');
-        $(filters).each(function(i, e) {
-            var temp_obj = {};
-            var temp = $(e).find('select[name="column"]');
-            if ( !temp )
-                return;
-            if(temp.length > 1) {
-                $.each(temp, function(i, val) {
-                    if(i === 0)
-                        temp_obj.col = $(val).val();
-                    else
-                        temp_obj.col += "|" + $(val).val();
-                });
-            } else
-                temp_obj.col = $(temp).val();
-            temp = $(e).find('select[name="operator"]').val();
-            if ( !temp )
-                return;
-            temp_obj.oper = temp;
-            temp = $(e).find('input[name="comparison-value"]').val();
-            if ( !temp )
-                temp = '';
-            temp_obj.val = temp;
-            filter_data.push(temp_obj);
-        });
-        if ( filter_data.length === 0 && $('#chucho-omni-filter').val() )
-            filter_data.push({col: 'chucho-omni', val: $('#chucho-omni-filter').val()});
-        return filter_data;
-    }
+
 
     /** This will remove a filter from the filter table */
     function remove_filter_row(e) {
