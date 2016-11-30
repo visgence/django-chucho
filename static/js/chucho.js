@@ -223,6 +223,7 @@
 
                     self.grid.items(resp.data);
                     self.setReadOnly(resp.read_only);
+                    console.log(resp);
                     if ( 'page_list' in resp ) {
                         $('#chucho_page_list').html(resp.page_list);
                         $('.chucho-button').button();
