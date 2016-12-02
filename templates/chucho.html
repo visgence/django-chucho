@@ -23,21 +23,20 @@
         <div class="gridContainer" data-bind='chuchoGrid: gridViewModel'> </div>
     </div>
     <div id="chucho_page_list"></div>
-
-
-<div class="btn-group">
-    <i class="dropdown-arrow dropdown-arrow-inverse"></i>
-    <button class="btn btn-primary entryCount">25</button>
-    <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown"> <span class="caret"></span>
-    </button>
-    <ul class="dropdown-menu dropdown-inverse">
-        <li><a onclick="myGrid.updatePages(25)">25</a></li>
-        <li><a onclick="myGrid.updatePages(50)">50</a></li>
-        <li><a onclick="myGrid.updatePages(100)">100</a></li>
-    </ul>
+    <div class="btn-group" style="margin-bottom: 160px;">
+        <i class="dropdown-arrow dropdown-arrow-inverse"></i>
+        <button class="btn btn-primary entryCount dropdown-toggle">25</button>
+        <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown"> <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu dropdown-inverse">
+            <li><a onclick="myGrid.updatePages(25)">25</a></li>
+            <li><a onclick="myGrid.updatePages(50)">50</a></li>
+            <li><a onclick="myGrid.updatePages(100)">100</a></li>
+            <li><a onclick="myGrid.updatePages(200)">200</a></li>
+            <li><a onclick="myGrid.updatePages(500)">500</a></li>
+        </ul>
+    </div>
 </div>
-
-
 
 <div id="error_dialog" style="display:none" title="An Error has Occurred">
     <div class="ui-state-error ui-conrner-all">

@@ -940,12 +940,8 @@
         }
 
         this.updatePages = function(newVal){
-            // $("#pageSelect").val(newVal);
-
-
-                $('.entryCount').text(newVal);
-                this.refresh(1);
-
+            $('.entryCount').text(newVal);
+            this.refresh(1);
         };
         this.init();
     } // End DataGrid
