@@ -24,28 +24,17 @@
     </div>
     <div id="chucho_page_list"></div>
 
-<div id="pageSelectDiv" style="padding-top: .5em;">
-        <label for="pageSelect">Results/Page:</label>
-    <div class="dropdown">
-  <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">25
-  <span class="caret"></span></button>
-  <ul class="dropdown-menu">
-    <li><a onclick="myGrid.updatePages(25)">25</a></li>
-    <li><a onclick="myGrid.updatePages(50)">50</a></li>
-    <li><a onclick="myGrid.updatePages(100)">100</a></li>
-    <li><a onclick="myGrid.updatePages(100)">150</a></li>
-    <li><a onclick="myGrid.updatePages(100)">200</a></li>
-    <li><a onclick="myGrid.updatePages(100)">500</a></li>
-  </ul>
-</div>
-        <select id="pageSelect" onchange="myGrid.refresh(1);">
-            <option value="25" selected="selected"></option>
-            <option value="50"></option>
-            <option value="100"></option>
-            <option value="150"></option>
-            <option value="200"></option>
-            <option value="500"></option>
-        </select>
+
+<div class="btn-group">
+    <i class="dropdown-arrow dropdown-arrow-inverse"></i>
+    <button class="btn btn-primary entryCount">25</button>
+    <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown"> <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu dropdown-inverse">
+        <li><a onclick="myGrid.updatePages(25)">25</a></li>
+        <li><a onclick="myGrid.updatePages(50)">50</a></li>
+        <li><a onclick="myGrid.updatePages(100)">100</a></li>
+    </ul>
 </div>
 
 

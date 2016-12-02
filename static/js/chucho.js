@@ -194,7 +194,7 @@
             else
                 result_info.page = 1;
 
-            result_info.per_page = $('#pageSelect').val();
+            result_info.per_page = $('.entryCount').text(this.innerHTML)[0].innerHTML;
             result_info.filter_args = get_filter_data();
             result_info.sort_columns = this.getSortColumns();
             get_editable = true;
@@ -940,8 +940,12 @@
         }
 
         this.updatePages = function(newVal){
-            $("#pageSelect").val(newVal);
-            this.refresh(1);
+            // $("#pageSelect").val(newVal);
+
+
+                $('.entryCount').text(newVal);
+                this.refresh(1);
+
         };
         this.init();
     } // End DataGrid
