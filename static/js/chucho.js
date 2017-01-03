@@ -521,8 +521,8 @@
         /** Adds a column of filters for foreign keys **/
         this.add_related_options = function(newOptions, newevent) {
             var self = this;
-            if(event.target.parentNode.parentElement.nextSibling != null){
-                removeTheRight(event.target.parentNode.parentElement.nextSibling);
+            if(newevent.target.parentNode.parentElement.nextSibling != null){
+                removeTheRight(newevent.target.parentNode.parentElement.nextSibling);
             }
             var column = $('<select>', {name: 'column'})
                 .change({self: self}, function(event) {
@@ -550,7 +550,7 @@
                         $(event.target).parent('select').parent('td').siblings('td.operator-td').remove();
                         $(event.target).parent('select').parent('td').siblings('td.comparison-td').remove();
                         $(event.target).parent('select').nextAll('select.grid-filter-columns').remove();
-                        self.add_related_options(related_columns, event.target);
+                        self.add_related_options(related_columns, event);
                     }else {
                         $(event.target).parent('select').nextAll('select.grid-filter-columns').remove();
                         self.add_filter_row_options(event, self, c);
