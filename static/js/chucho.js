@@ -453,7 +453,7 @@
         this.add_filter_table = function(){
             $('#filter-container').html(
                 'Filters:'+
-                '<span id="chucho-add-filter" class="glyphicon glyphicon-plus" onclick="myGrid.add_filter_row();"></span><br><br>'+
+                '<span id="chucho-add-filter" class="glyphicon glyphicon-plus " onclick="myGrid.add_filter_row();"></span><br><br>'+
                 '<table class="table-striped" id ="filter-table" style="width: 100px;"><col width=25px>'+
                 '</table><br>' +
                 '<button class="btn btn-primary" onclick="myGrid.refresh()">Apply Filters.</button>'
@@ -466,9 +466,11 @@
             var remove = $('<span>');
             var self = this;
             remove.attr('onclick', 'remove_filter_row(this);')
-                  .addClass('glyphicon').addClass('glyphicon-remove')
+                  .addClass('glyphicon')
+                  .addClass('glyphicon-remove')
                   .addClass('chucho-remove-button')
-                  .button();
+                  .addClass('btn-primary')
+                  .addClass('btn');
 
             var column = $('<select>', {name: 'column'})
                 .change(function(event) {
