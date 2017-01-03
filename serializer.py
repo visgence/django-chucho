@@ -18,7 +18,7 @@ try:
 except ImportError:
     import json
 
-AuthUser = settings.GET_PERMISSION_OBJ() 
+AuthUser = settings.GET_PERMISSION_OBJ()
 
 
 def serialize_model_objs(objs, extras):
@@ -89,7 +89,7 @@ def serialize_model_objs(objs, extras):
                         obj_dict[f.name] = timegm(dt_obj.utctimetuple())
                     else:
                         error = "There is a datetime that is aware while USE_TZ is false! or vice-versa"
-                        return json.dumps({"errors": error}) 
+                        return json.dumps({"errors": error})
 
             elif isinstance(f, models.fields.DateField):
                 d_obj = f.value_from_object(obj)
