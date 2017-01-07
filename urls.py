@@ -10,5 +10,5 @@ urlpatterns = [
     url(r'(?P<app_name>.+)/(?P<model_name>.+)/(?P<id>.+)/$', views.api_view, name="chucho-api"),
     url(r'(?P<app_name>.+)/(?P<model_name>.+)/$', views.api_view, name="chucho-api"),
 
-    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
+    # url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]
