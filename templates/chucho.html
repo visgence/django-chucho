@@ -1,37 +1,46 @@
 
+
+
 <input type="hidden" id="model_name" value="{{model_name}}">
 <input type="hidden" id="app_name" value="{{app_name}}">
-<div>
+<div style="margin:30px">
     <div id="filter-div">
-        <span id="chucho-add-filter" class="ui-icon ui-icon-circle-plus" onclick="myGrid.add_filter_row();"
-              style="float: right">
-        </span>
-        <table id="filter-table">
-            <tr>
-                <td colspan="1">Filter:</td>
-                <td colspan="3">
-                    <input type="text" id="chucho-omni-filter" style="width: 40em;" onchange="myGrid.refresh();">
-                </td>
-            </tr>
-        </table>
+        <div class="row">
+            <div class="col-md-3">
+                Search:
+                <input type="text" id="chucho-omni-filter" style="width: 100%;" onchange="myGrid.refresh();">
+            </div>
+        </div>
+        <br>
+
+        <div class="table" id="filter-container">
+            <button type="button" class="btn btn-primary" onclick="myGrid.add_filter_table();">Add Filters</button>
+        </div>
     </div>
+    <br>
     <div id="{{model_name}}_grid" class="grid">
         <div class="btnPanel"> </div>
-        <div class="gridContainer" data-bind='chuchoGrid: gridViewModel'> </div> 
+        <div class="gridContainer" data-bind='chuchoGrid: gridViewModel'> </div>
     </div>
     <div id="chucho_page_list"></div>
-    <div id="pageSelectDiv" style="padding-top: .5em;">
-        <label for="pageSelect">Results/Page:</label>
-        <select id="pageSelect" onchange="myGrid.refresh(1);">
-            <option value="25" selected="selected">25</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-            <option value="150">150</option>
-            <option value="200">200</option>
-            <option value="500">500</option>
-        </select>
+    <div class="btn-group" style="margin-bottom: 160px;">
+        <i class="dropdown-arrow dropdown-arrow-inverse"></i>
+
+        <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+            <div class="entryCount col-md-2">25</div>
+            <span class="caret" style="border-top-color: #1974cd"></span>
+        </button>
+
+        <ul class="dropdown-menu dropdown-inverse">
+            <li><a onclick="myGrid.updatePages(25)">25</a></li>
+            <li><a onclick="myGrid.updatePages(50)">50</a></li>
+            <li><a onclick="myGrid.updatePages(100)">100</a></li>
+            <li><a onclick="myGrid.updatePages(200)">200</a></li>
+            <li><a onclick="myGrid.updatePages(500)">500</a></li>
+        </ul>
     </div>
 </div>
+
 <div id="error_dialog" style="display:none" title="An Error has Occurred">
     <div class="ui-state-error ui-conrner-all">
         <span class="ui-icon ui-icon-alert">&nbsp;</span>
@@ -58,3 +67,26 @@
         <p>Do you still want to proceed?</p>
     </div>
 </div>
+<div id="myModal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Edit Record</h4>
+      </div>
+      <div id="modal-body" class="modal-body">
+
+      </div>
+      <div class="modal-footer" id="modal-footer">
+        <!-- <button type="button" class="btn btn-default" data-dismiss="modal">Save</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button> -->
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
