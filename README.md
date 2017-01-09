@@ -10,7 +10,6 @@ An Ajax CRUD system for Django models based on Knockout and JQuery UI
 - Jquery-ui 1.10.1  
 - jquery-ui-timepicker-addon  
 - Knockout 2.2.1  
-- Django-Dajaxice  
 - spin.js  
 
 
@@ -37,12 +36,8 @@ http://twitter.github.io/bootstrap/index.html
 
     git submodule add git://github.com/visgence/django-chucho.git <your project root>/chucho
 
-2) Configure settings file to use with Chucho and Dajaxice.
+2) Configure settings file to use with Chucho.
   
-First follow the instructions for installing Dajaxice into your projects which can be found here:  
-http://django-dajaxice.readthedocs.org/en/latest/installation.html#installing-dajaxice
-
-
 Add the following to settings.
     
 ```python
@@ -61,14 +56,12 @@ def GET_PERMISSION_OBJ():
 INSTALLED_APPS = (
     ...
     'chucho',
-    'dajaxice'
+    ...
 )
 
 ...
 
 ```
-
-**NOTE:** The 'chucho' and 'dajaxice' in `INSTALLED_APPS` should be put last and need to be in the order shown.
 
 3) Add Chucho url to root urls.py
 

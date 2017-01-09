@@ -28,9 +28,9 @@
                                 {{each(i, columnDefinition) columns}}\
                                     <th data-bind=\"sortHandler: columnDefinition\">\
                                         {{if sortedCol()['column'] === columnDefinition.id && sortedCol()['asc'] === true}}\
-                                            ${ columnDefinition.name } <i class=\"icon-chevron-up\"></i>\
+                                            ${ columnDefinition.name } <span class=\"glyphicon glyphicon-chevron-up\"></span>\
                                         {{else sortedCol()['column'] === columnDefinition.id && sortedCol()['asc'] === false}}\
-                                            ${ columnDefinition.name } <i class=\"icon-chevron-down\"></i>\
+                                            ${ columnDefinition.name } <span class=\"glyphicon glyphicon-chevron-down\"></span>\
                                         {{else}}\
                                             ${ columnDefinition.name }\
                                         {{/if}}\
