@@ -58,7 +58,7 @@ def gen_columns(modelObj, search_filtering=False, fk_filter_depth=None):
                 'related': []
             }
         }
-        
+
         if hasattr(modelObj, 'search_fields') and f.name not in modelObj.search_fields:
             del field['filter_column']
 
@@ -76,14 +76,11 @@ def gen_columns(modelObj, search_filtering=False, fk_filter_depth=None):
 
         #Figure out what each field is and store that type
         if isinstance(f, models.ForeignKey):
-            
             if 'filter_column' in field:
                 if fk_filter_depth is None or fk_filter_depth > 0:
-                
                     if fk_filter_depth is not None:
                         fk_filter_depth -= 1
-                    field['filter_column']['related'] = gen_columns(f.related.parent_model, True, fk_filter_depth)
-                
+                    field['filter_column']['related'] = gen_columns(f.remote_field.model, True, fk_filter_depth)
                 elif fk_filter_depth <= 0:
                     continue
 
@@ -128,7 +125,7 @@ def gen_columns(modelObj, search_filtering=False, fk_filter_depth=None):
             field.update(column_options[f.name])
 
         columns.append(field)
-    
+
     for m in get_meta_m2m(modelObj):
         field = {
             'field': m.name,
@@ -140,12 +137,12 @@ def gen_columns(modelObj, search_filtering=False, fk_filter_depth=None):
             '_editable': True,
             'grid_column': True
         }
-        
+
         if not m.editable:
             field['_editable'] = False
         print field
         columns.append(field)
-    
+
     return columns
 
 
