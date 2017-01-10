@@ -1272,9 +1272,7 @@
      * Return: The newly created select field
      */
     function get_pk_input (cls, value, col){
-        var input = $("<ul class = 'dropdown-menu' role = 'menu'>");
-        var button = $("<button type = 'button' class = 'btn btn-default dropdown-toggle' data-toggle = 'dropdown'>");
-        button.text("Null");
+        var input = $("<select class='form-control'></select>")
         //Get all objects that the user can select from
         $.get( '/chucho/'+col.app+'/'+col.model_name+'/', {
             'jsonData': JSON.stringify({
@@ -1282,31 +1280,25 @@
             })
         }, function(resp) {
             if (col.blank) {
-                var null_option = $("<li><a href = '#'>Null</a></li>");
+                var null_option = $('<option>', {text:'(null)'});
                 null_option.val('null');
                 input.append(null_option);
             }
             $(resp.data).each(function(i, obj) {
-                var option = $("<li>  </li>")
+                var option = $("<option>", {text: obj.__unicode__})
                     .val(obj.pk);
-
-                var inside = $("<a href='#'> </a>")
-                    .text(obj.__unicode__);
-                option.append(inside);
-                if(value !== '' && obj.pk == value.pk){
+                if(value !== '' && obj.pk == value.pk)
                     option.attr('selected', 'selected');
-                    button.text(obj.__unicode__);
-                }
                 input.append(option);
             });
         });
-        wrapper = $("<div class = 'btn-group'>");
-        button.append($("<span class = 'caret'></span>"));
-        wrapper.append(button);
-        wrapper.append(input);
-        return wrapper;
+        return input;
     }
 
+document.dropdownmenuclick = function(obj){
+        console.log("here");
+        console.log($(obj.parent));
+    };
 
     /** Creates and returns a basic select multiple input field.
      *
@@ -1486,3 +1478,5 @@
 });
 })(window,document,navigator,window.$,window.ko,window.Spinner);
 })();
+
+
