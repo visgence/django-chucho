@@ -1009,7 +1009,7 @@
                    .attr("id", myGrid.modelName+'_add')
                    .attr('title', title);
 
-        var table = $("<table class='table'></table>");
+        var table = $("<table class='table borderless'></table>");
 
         var msg_div = $('<div></div>').attr('id',  'dialogue_message');
         $(div).append(msg_div);
@@ -1272,7 +1272,9 @@
      * Return: The newly created select field
      */
     function get_pk_input (cls, value, col){
-        var input = $("<select></select>").attr({'class': cls});
+        var input = $("<ul class = 'dropdown-menu' role = 'menu'>");
+        var button = $("<button type = 'button' class = 'btn btn-default dropdown-toggle' data-toggle = 'dropdown'>");
+        button.text("Null");
         //Get all objects that the user can select from
         $.get( '/chucho/'+col.app+'/'+col.model_name+'/', {
             'jsonData': JSON.stringify({
@@ -1280,19 +1282,29 @@
             })
         }, function(resp) {
             if (col.blank) {
-                var null_option = $('<option>', {text:'(null)'});
+                var null_option = $("<li><a href = '#'>Null</a></li>");
                 null_option.val('null');
                 input.append(null_option);
             }
             $(resp.data).each(function(i, obj) {
-                var option = $("<option>", {text: obj.__unicode__})
+                var option = $("<li>  </li>")
                     .val(obj.pk);
-                if(value !== '' && obj.pk == value.pk)
+
+                var inside = $("<a href='#'> </a>")
+                    .text(obj.__unicode__);
+                option.append(inside);
+                if(value !== '' && obj.pk == value.pk){
                     option.attr('selected', 'selected');
+                    button.text(obj.__unicode__);
+                }
                 input.append(option);
             });
         });
-        return input;
+        wrapper = $("<div class = 'btn-group'>");
+        button.append($("<span class = 'caret'></span>"));
+        wrapper.append(button);
+        wrapper.append(input);
+        return wrapper;
     }
 
 
