@@ -126,7 +126,9 @@ div.grid
     padding: 7px;
 }
 
-
+.borderless td, .borderless th {
+    border: none !important;
+}
 
 
 

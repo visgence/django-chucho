@@ -1009,7 +1009,7 @@
                    .attr("id", myGrid.modelName+'_add')
                    .attr('title', title);
 
-        var table = $("<table class='table'></table>");
+        var table = $("<table class='table borderless'></table>");
 
         var msg_div = $('<div></div>').attr('id',  'dialogue_message');
         $(div).append(msg_div);
@@ -1272,7 +1272,7 @@
      * Return: The newly created select field
      */
     function get_pk_input (cls, value, col){
-        var input = $("<select></select>").attr({'class': cls});
+        var input = $("<select class='form-control'></select>")
         //Get all objects that the user can select from
         $.get( '/chucho/'+col.app+'/'+col.model_name+'/', {
             'jsonData': JSON.stringify({
@@ -1295,6 +1295,10 @@
         return input;
     }
 
+document.dropdownmenuclick = function(obj){
+        console.log("here");
+        console.log($(obj.parent));
+    };
 
     /** Creates and returns a basic select multiple input field.
      *
@@ -1474,3 +1478,5 @@
 });
 })(window,document,navigator,window.$,window.ko,window.Spinner);
 })();
+
+
