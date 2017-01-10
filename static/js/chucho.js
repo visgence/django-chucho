@@ -12,24 +12,24 @@
  * be instantiated for each different type of grid that is created.
  */
 
-//This is to use AMD if we are running require.js 
+//This is to use AMD if we are running require.js
 (function (factory){
 (function(window,document,navigator,$,ko,Spinner,undefined){
-!function(factory) {    
+!function(factory) {
     if (typeof define === 'function' && define.amd) {
-        define(['exports','jquery','knockout','spin.min','jquery-ui','chucho.grid','dajaxice.core'],factory);
+        define(['exports', 'jquery', 'knockout', 'spin.min', 'chucho.grid'], factory);
     }
     else {
-        factory(window['DataGrid'] = {},$,ko,Spinner);   
+        factory(window.DataGrid = {},$,ko,Spinner);
     }
 }(function(exports,$,ko,Spinner) {
 
     /* Extra html for grids  */
-    var addButton = '<input type="button" class="chucho-add" value="Add"/>';
-    var deleteButton = '<input type="button" class="chucho-delete" value="Delete"/>';
-    var editButton = '<input type="button" class="chucho-edit" value="Edit"/>';
-    var refreshButton = '<input type="button" class="chucho-refresh" value="Refresh"/>';
-    var messageSpan = '<span id="server_messages" style="padding-left:1em"></span>';
+    var addButton = '<input type="button" class="btn btn-primary btn-sm chucho-add" value="Add"></input>';
+    var deleteButton = '<input type="button" class="btn btn-primary btn-sm chucho-delete" value="Delete"/>';
+    var editButton = '<input type="button" class="btn btn-primary btn-sm chucho-edit" value="Edit"/>';
+    var refreshButton = '<input type="button" class="btn btn-primary btn-sm chucho-refresh" value="Refresh"/>';
+    var messageSpan = '<span id="server_messages" style="padding-left:1em; opacity: 100"></span>';
 
     function option_element(value, text, is_selected) {
         var option = $('<option>', {
@@ -45,7 +45,6 @@
 
     /* Grid configuration */
     function DataGrid() {
-
         /** This is the name of the django model to we are creating the grid for. */
         this.modelName = '';
 
@@ -54,28 +53,24 @@
 
         /** The column definition for the grid.  This is loaded via ajax. */
         this.columns = null;
-        
+
         /** Holds an instance of the ko grid */
         this.grid = null;
-
 
         /** Returns the button panel div element for the grid */
         this.getBtnPanel = function() {
             return $('#'+this.modelName+'_grid div.btnPanel');
         };
 
-
         /** Returns the grid container div element */
         this.getGridContainer = function() {
             return $('#'+this.modelName+'_grid div.gridContainer');
         };
 
-
         /** Returns the table element for the grid */
         this.getTable = function() {
             return $('#'+this.modelName+'_grid table.chucho-grid');
         };
-
 
         /** Returns the index of the currently selected row in the grid */
         this.getSelectedRow = function() {
@@ -87,28 +82,42 @@
             return $($(selectedRow).get(0)).data('row');
         };
 
-
         /** Returns a dictionary containing the current column that is sorted or to be sorted and null otherwise */
         this.getSortColumns = function() {
             var sortedCol = this.grid.sortedCol();
-            if (sortedCol['column'] === null || sortedCol['asc'] === null)
+            if (sortedCol.column === null || sortedCol.asc === null)
                 return null;
 
-            return {'columnId': sortedCol['column'], 'sortAsc': sortedCol['asc']};
+            return {'columnId': sortedCol.column, 'sortAsc': sortedCol.asc};
         };
 
+        /** Gets cookie so that we may get csrf token from it */
+        this.getCookie = function(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        };
 
         /** deselects any selected rows in the table and removes buttons from panel that appear when
          *  any row selection occurs. */
         this.clearRowSelection = function() {
             var panel = this.getBtnPanel();
-            (panel).find('input[value="Delete"]').remove(); 
-            $(panel).find('input[value="Edit"]').remove(); 
+            (panel).find('input[value="Delete"]').remove();
+            $(panel).find('input[value="Edit"]').remove();
             $(this.getTable()).find('tr.selected').removeClass('selected');
-        };        
+        };
 
-
-        /** Return the columns to be displayed by slickgrid */
+        /** Return the columns to be displayed by the grid */
         this.grid_columns = function() {
             var columns = $.map(this.columns, function(c, i) {
                 if ( c.grid_column)
@@ -118,7 +127,6 @@
             });
             return columns;
         };
-
 
         /** Return the column object by the given column id */
         this.get_column_by_id = function(id) {
@@ -134,15 +142,13 @@
             return result[0];
         };
 
-
         /** Return the columns allowed to filter by. */
         this.filter_columns = function() {
             var columns = $.map(this.columns, function(c, i) {
-                if ( c.filter_column === false )
+                if (c.hasOwnProperty('filter_column') === false)
                     return undefined;
-                else if ( c.filter_column || c.grid_column )
-                    return c;
-                return undefined;
+
+                return c;
             });
             return columns;
         };
@@ -158,8 +164,7 @@
             if(this.grid.readOnly) {
                 if($(add).length > 0)
                     $(add).remove();
-            }
-            else {
+            } else {
                 if($(add).length <= 0)
                     $(addButton).prependTo(panel);
             }
@@ -169,35 +174,37 @@
         this.refresh = function(page) {
             self = this;
             this.clearRowSelection();
-            
+
             var spinner = get_spinner();
             spinner.spin();
-            var styles = { 
+            var styles = {
                 'display': 'inline',
                 'bottom':  '6px'
-            };  
+            };
             $(spinner.el).css(styles);
-            
+
             var panel = self.getBtnPanel();
             $(panel).append(spinner.el);
 
             var result_info = {};
             if ( page )
                 result_info.page = page;
-            else if ( $('#chucho_current-page').length > 0 ) {
+            else if ( $('#chucho_current-page').length > 0 )
                 result_info.page = $('#chucho_current-page').val();
-            }
             else
                 result_info.page = 1;
 
-            result_info.per_page = $('#pageSelect').val();
+            result_info.per_page = $('.entryCount').text(this.innerHTML)[0].innerHTML;
             result_info.filter_args = get_filter_data();
             result_info.sort_columns = this.getSortColumns();
+            get_editable = true;
 
-            Dajaxice.chucho.read_source(
-                function(resp) {
+            $.get( '/chucho/'+self.appName+'/'+self.modelName+'/',
+                  {'jsonData': JSON.stringify({'get_editable': get_editable, 'result_info': result_info})},
+                  function(resp) {
+
                     spinner.stop();
-                    //In case some additional data gets loaded into the response object from 
+                    //In case some additional data gets loaded into the response object from
                     //outside of chucho, grab it to be sent off.
                     var cust_data = null;
                     if('cust_data' in resp)
@@ -207,12 +214,14 @@
                         self.error(resp.errors);
                         $(window).trigger('chucho-refreshed', cust_data);
                         return;
-                    }
-                    else {
-                        $('#server_messages').html('');
+                    } else {
+                        $("#server_messages").css('opacity', 1);
+                        setTimeout(function() {
+                            FadeMessage(1);
+                         }, 2000);
                     }
 
-                    self.grid.items(resp.data)
+                    self.grid.items(resp.data);
                     self.setReadOnly(resp.read_only);
                     if ( 'page_list' in resp ) {
                         $('#chucho_page_list').html(resp.page_list);
@@ -221,12 +230,20 @@
                     }
 
                     $(window).trigger('chucho-refreshed', cust_data);
-                },{'app_name': self.appName,
-                   'model_name': self.modelName,
-                   'get_editable': true,
-                   'result_info': JSON.stringify(result_info)
-                  });
+            }).fail(function() {
+                    spinner.stop();
+                    self.error("Something unexpected occured!");
+                    return;
+            });
         };
+
+        /** Fades a message recursivly **/
+        function FadeMessage(cur){
+            setTimeout(function() {
+                $("#server_messages").css('opacity', cur);
+                if (cur > 0) FadeMessage(cur-0.03);
+            }, 50);
+        }
 
         /** Method to add a record */
         this.addRecord = function() {
@@ -234,23 +251,25 @@
 
             var form_id = get_grid_form(this.modelName+'_grid', this.columns, null, 'Add Record');
             if (form_id) {
-                var add_callback = function() {record_callback(null, false);};
+                var add_callback = function() {
+                    record_callback(null, false);
+                };
                 confirm_dialog(form_id, 'Add', add_callback, 'Cancel', null, true);
-            }
-            else
+            } else
                 console.log('no editable columns');
         };
 
         /** Method to edit a selected record in the grid. */
         this.editRecord = function(selected_index) {
-            var selected_row = this.grid.getRow(selected_index); 
+            var selected_row = this.grid.getRow(selected_index);
 
             var form_id = get_grid_form(this.modelName+'_grid', this.columns, selected_row, 'Edit Record');
             if (form_id) {
+                console.log("going to edit: " + selected_index);
+
                 var edit_callback = function() {record_callback(selected_index, true);};
                 confirm_dialog(form_id, 'Save', edit_callback, 'Cancel', null, true);
-            }
-            else
+            } else
                 this.error('This grid is not editable.');
         };
 
@@ -268,13 +287,13 @@
          */
         this.add_row = function(row, index, updating) {
             self = this;
-          
+
             //Need pk if updating to know which object to update
             if(updating)
                 row.pk = self.grid.getPk(index);
 
             self.save_row(index, row, updating);
-        }; 
+        };
 
         /** Callback method for save_row when a server response has been recieved.
          *
@@ -294,19 +313,18 @@
                 if ('errors' in resp) {
                     self.error(resp.errors);
                     return;
-                }
-                else {
-                    $('#'+self.modelName + '_add').dialog('close');
+                } else {
+                    // $('#'+self.modelName + '_add').dialog('close');
                     //Either add new row to beginning or update one.
                     if (update)
                         self.grid.setRow(i, resp.data[0]);
                     else
                         self.grid.addRow(resp.data[0]);
-                    
-                    self.refresh(); 
+
+                    self.refresh();
                     self.success('Updated row ' + i);
                 }
-                self.clearRowSelection();
+                // self.clearRowSelection();
             };
         };
 
@@ -318,17 +336,31 @@
          *    update - Boolean for if this is an update or a new row.
          */
         this.save_row = function(i, row, update) {
-             
-            Dajaxice.chucho.update(this.save_callback(i, update), {
-                'app_name': this.appName,
-                'model_name': this.modelName, 
-                'data': row
-            });
-        };
+            var csrftoken = this.getCookie('csrftoken');
+            var url = '/chucho/'+this.appName+'/'+this.modelName+'/';
+            var type = 'POST';
 
+            if(row.hasOwnProperty('pk')) {
+                url += row.pk+'/';
+                type = 'PUT';
+            }
+            $.ajax({
+                url: url,
+                beforeSend: function(xhr) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                },
+                type: type,
+                contentType: 'application/json',
+                processData: false,
+                data: JSON.stringify(row),
+                success: this.save_callback(i+1, update)
+            });
+            $('#myModal').modal('toggle');
+        };
 
         /** Deletes a selected row from the grid and removes that object from the database. */
         this.deleteRow = function() {
+
             // get the selected row, right now assume only one.
             var selected = this.getSelectedRow();
             if (selected === null)
@@ -341,36 +373,36 @@
             if ('pk' in row) {
                 self = this;
                 var delete_func = function() {
-                    Dajaxice.chucho.destroy(
-                        function(resp) {
+                    var csrftoken = self.getCookie('csrftoken');
+                    $.ajax({
+                        url: '/chucho/'+self.appName+'/'+self.modelName+'/'+row.pk+'/',
+                        beforeSend: function(xhr) {
+                            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                        },
+                        type: 'DELETE',
+                        success: function(resp) {
                             if ('errors' in resp) {
                                 self.error(resp.errors);
                                 return;
-                            }
-                            else if ('success' in resp) {
-                                $('#delete_confirm').dialog('close');
+                            } else if ('success' in resp) {
+                                $('#myModal').modal('toggle');
                                 self.grid.removeRowAtIndex(selected);
                                 self.success(resp.success);
-                                self.clearRowSelection();
-                            }
-                            else
+                                // self.clearRowSelection();
+                            } else
                                 self.error('Unknown error has occurred on delete.');
-                        },
-                        {
-                            'app_name': self.appName,
-                            'model_name': self.modelName,
-                            'data': self.grid.getRow(selected)
                         }
-                    );
+                    });
                 };
-                confirm_dialog('delete_confirm', 'Delete', delete_func);
-            }
-            else {
+
+                var form_id = get_grid_form(this.modelName+'_grid', this.columns, null, 'Add Record');
+                confirm_dialog('delete_confirm', 'Delete', delete_func, 'Cancel', null, true);
+            } else {
                 this.grid.removeRowAtIndex(selected);
                 this.success('Locally removed row: ' + selected + '.');
             }
         };
-       
+
         /** Shows a dialog to the user for the given error message.
          *
          * Keyword Args
@@ -383,11 +415,13 @@
             var dlg_msg = $('#dialogue_message');
             if ( dlg_msg.length >= 1) {
                 var msg_html = $(dlg_msg).html(error_div);
-                $('#error_dialogue_message #error_msg').text(msg);
-                $('#error_dialogue_message').css('display', 'inline');
-                $('#dialogue_message').parent().animate({scrollTop: 0}, 'fast');
-            }
-            else {
+                $('#server_messages').html(msg).css('color','red');
+                $('#server_messages').html(msg);
+                $("#server_messages").css('opacity', 1);
+                setTimeout(function() {
+                    FadeMessage(1);
+                 }, 2000);
+            } else {
                 $('#error_msg').text(msg);
                 confirm_dialog('error_dialog', null, null, "Ok", function() {
                     $('#error_msg').text('');
@@ -395,38 +429,154 @@
             }
         };
 
-        /** Stuff to do on success. */
+        /** warning message to display. */
+        this.warning = function(msg) {
+            console.log('Warning: ' + msg);
+            $('#server_messages').html('Warning: ' + msg).css('color','blue');
+        };
+
+        /** message to send on success. */
         this.success = function(msg) {
             console.log('Success: ' + msg);
             $('#server_messages').html(msg).css('color','green');
         };
 
+        /** capitalize letter **/
+        this.toTitleCase = function(str) {
+            var temp = str.replace(/\w\S*/g, function(txt){
+                return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+            });
+            return temp;
+        };
+
+        /** Adds html to create a table where the user can add filters **/
+        this.add_filter_table = function(){
+            $('#filter-container').html(
+                'Filters:'+
+                '<span id="chucho-add-filter" class="glyphicon glyphicon-plus " onclick="myGrid.add_filter_row();"></span><br><br>'+
+                '<table class="table-striped" id ="filter-table" style="width: 100px;"><col width=25px>'+
+                '</table><br>' +
+                '<button class="btn btn-primary" onclick="myGrid.refresh()">Apply Filters.</button>'
+            ).addClass( 'filter-table');
+        };
+
         /** This will append a filter to the filter table.*/
         this.add_filter_row = function() {
-            var row = $('<tr>');
+            var row = $('<tr class="row-buffer">');
             var remove = $('<span>');
             var self = this;
             remove.attr('onclick', 'remove_filter_row(this);')
-                .addClass('ui-icon').addClass('ui-icon-circle-close')
-                .addClass('chucho-remove-button')
-                .button();
-            var column = $('<select>', {name: 'column'})
-                .change({self: self}, self.add_filter_row_options)
-                .append(option_element('', 'Select Column', true));
+                  .addClass('glyphicon')
+                  .addClass('glyphicon-remove')
+                  .addClass('chucho-remove-button')
+                  .addClass('btn-primary')
+                  .addClass('btn');
 
-            $(row).append($('<td>').append($(remove)))
-                .append($('<td>').append(column))
-                .addClass('grid-filter')
-                .appendTo($('#filter-table'));
+            var column = $('<select>', {name: 'column'})
+                .change(function(event) {
+
+                    //If user selectes 'Select Column' options remove all related select fields that come
+                    //after this one and quite early.
+                    if($(event.target).val() === '') {
+                        $(event.target).nextAll('select.grid-filter-columns').remove();
+                        $(event.target).parent('td').siblings('td.operator-td').remove();
+                        $(event.target).parent('td').siblings('td2.comparison-td').remove();
+
+                        return;
+                    }
+
+                    $(event.target).find(':selected').trigger('select');
+                    //self.add_filter_row_options(event)
+                })
+                .addClass('grid-filter-columns')
+                .append(option_element('', 'Select '+self.toTitleCase(self.modelName)+' Column', true));
+
+            $(row).append($('<td>').append($(remove)));
+            $(row).append($('<td>')
+                  .append(column))
+                  .addClass('grid-filter')
+                  .appendTo($('#filter-table'));
 
             $.each(this.filter_columns(), function(i, c) {
                 var option = (option_element(c.id, c.name));
+                var filter_column = c.filter_column;
+
+                $(option).on('select', function(event) {
+                    if(filter_column.related.length > 0) {
+                        $(event.target).parent('select').parent('td').siblings('td.operator-td').remove();
+                        $(event.target).parent('select').parent('td').siblings('td.comparison-td').remove();
+                        $(event.target).parent('select').nextAll('select.grid-filter-columns').remove();
+                        self.add_related_options(filter_column.related, event);
+                    }else {
+                        $(event.target).parent('select').nextAll('select.grid-filter-columns').remove();
+
+                        row.find('td.grid-filter-columns').remove();
+                        self.add_filter_row_options(event, self, c);
+                    }
+                });
                 option.appendTo($(column));
             });
         };
 
+        /** Adds a column of filters for foreign keys **/
+        this.add_related_options = function(newOptions, newevent) {
+            var self = this;
+            if(newevent.target.parentNode.parentElement.nextSibling != null){
+                removeTheRight(newevent.target.parentNode.parentElement.nextSibling);
+            }
+            var column = $('<select>', {name: 'column'})
+                .change({self: self}, function(event) {
+                    //If user selectes 'Select Column' options remove all related select fields that come
+                    //after this one and quit early.
+                    if($(event.target).val() === '') {
+                        $(event.target).parent('td').siblings('td.operator-td').remove();
+                        $(event.target).parent('td').siblings('td.comparison-td').remove();
+                        return;
+                    }
+                    $(event.target).find(':selected').trigger('select');
+                })
+                .addClass('grid-filter-columns');
+            if(newevent.target){
+                column.append(option_element('', 'Select '+self.toTitleCase($(newevent.target).val())+' Column', true));
+            }
+            $.each(newOptions, function(i, c) {
+                var option = (option_element(c.id, c.name));
+                var related_columns = [];
+                if(c.hasOwnProperty('filter_column') === true)
+                    related_columns = c.filter_column.related;
+
+                $(option).on('select', function(event) {
+                    if(related_columns.length > 0) {
+                        $(event.target).parent('select').parent('td').siblings('td.operator-td').remove();
+                        $(event.target).parent('select').parent('td').siblings('td.comparison-td').remove();
+                        $(event.target).parent('select').nextAll('select.grid-filter-columns').remove();
+                        self.add_related_options(related_columns, event);
+                    }else {
+                        $(event.target).parent('select').nextAll('select.grid-filter-columns').remove();
+                        self.add_filter_row_options(event, self, c);
+                    }
+                });
+                option.appendTo($(column));
+            });
+            var row = $(event.target).parents('tr.grid-filter');
+            var data = $('<td class="grid-filter-columns">');
+            data.append(column);
+            row.append(data);
+        };
+
+        function removeTheRight(elem){
+            if(elem.nextSibling != null){
+                removeTheRight(elem.nextSibling);
+            }
+            elem.remove();
+        }
+
         /** This will append the operators and input box to the filter table */
-        this.add_filter_row_options = function(event) {
+        this.add_filter_row_options = function(event, context, col_data) {
+            if(event.target.parentNode.parentElement.nextSibling != null){
+                removeTheRight(event.target.parentNode.parentElement.nextSibling);
+            }
+
             var row = $(event.target).parents('tr.grid-filter');
             var operator = $('<select>', {name:'operator'});
             var comparison;
@@ -435,13 +585,12 @@
             row.find('select[name="operator"]').parent().remove();
             row.find('input[name="comparison-value"]').parent().remove();
 
-            row.append($('<td>').append(operator));
+            row.append($('<td>').addClass('operator-td').append(operator));
 
-
-            if (event.data.self.get_column_by_id(col_name)._type == 'timestamp') {
+            if (col_data._type == 'timestamp') {
                 comparison = $('<input>', {type:'hidden', name:'comparison-value'});
                 var picker = $('<input>', {type:'text', name:'comparison-picker'});
-                var td = $('<td>');
+                var td = $('<td>').addClass('comparison-td');
                 td.append(picker);
                 td.append(comparison);
                 row.append(td);
@@ -457,58 +606,52 @@
                     dateFormat: 'mm/dd/yy',
                     timeFormat: 'hh:mm:ss'
                 });
-            }
-            else {
+            } else {
                 comparison = $('<input>', {type:'text', name:'comparison-value'});
-                row.append($('<td>').append(comparison));
+                row.append($('<td>').addClass('comparison-td').append(comparison));
             }
 
             $(operator).append(option_element('', 'Select Operator', true));
 
-            $.each(event.data.self.filter_operators, function(i, name) {
+            $.each(context.filter_operators, function(i, name) {
                 var option = (option_element(name, name));
                 option.appendTo($(operator));
             });
         };
-
 
         /** Custom formatter for Foreign Key columns in the data grid */
         function foreignKeyFormatter(row, col, rowIndex, colIndex) {
             return row[col].__unicode__;
         }
 
-
         /** Custom formatter for Many to Many columns in the data grid */
         function m2mFormatter(row, col, rowIndex, colIndex) {
             var data = row[col];
-            
-            var m_input = ""; 
+
+            var m_input = "";
             if(data.length > 0) {
                 //Create div used for dialog when viewing m2m data
                 var div = "<div id='m2m_"+rowIndex+"_"+colIndex+"' style='display:none'>";
-                
+
                 var ul = "<ul>";
                 for (var i = 0; i < data.length; i++) {
                     var li = "<li>"+data[i].__unicode__+"</li>";
                     ul += li;
                 }
                 ul += "</ul>";
-                div += ul + "</div>"; 
-                
+                div += ul + "</div>";
+
                 //Make button that triggers dialog
                 var onclick = "confirm_dialog('m2m_" + rowIndex + "_" + colIndex + "', null, null, 'Ok');";
                 m_input = '<span onclick="' + onclick + '" class="chucho-clickable">View</span>' + div;
             }
-
             return m_input;
         }
 
-        
         /** Custom formatter for columns that have a list of choices to choose from. */
         function choicesFormatter (row, col, rowIndex, colIndex) {
             return row[col].__unicode__;
         }
-
 
         /** Custom formatter for epoch timestamp columns to display in human readable. */
         function timestampFormatter(row, col, rowIndex, colIndex) {
@@ -518,70 +661,71 @@
                 time =  new Date(data*1000);
                 return dateToString(time);
             }
-            
             return time;
-        } 
+        }
 
-        
+        function colorFormatter(row, col, rowIndex, colIndex) {
+            var data = row[col];
+            return '<span class="badge" style="background-color: '+data+'">&nbsp;</span>';
+        }
+
         /** Custom formatter for boolean columns in the data grid */
         function booleanFormatter(row, col, rowIndex, colIndex) {
             if (row[col] === true)
-                return '<i class="icon-ok"></i>';
+                return '<span class="glyphicon glyphicon-ok"></span>';
             else if(row[col] === false)
-                return '<i class="icon-remove"></i>';
+                return '<span class="glyphicon glyphicon-remove"></span>';
             else
-                return '<i class="icon-question-sign"></i>';
-        } 
-
+                return '<span class="glyphicon glyphicon-question-sign"></span>';
+        }
 
         /** Here we initialize our object. */
         this.init = function() {
             this.modelName = $('#model_name').val();
             this.appName = $('#app_name').val();
             self = this;
-            
-            Dajaxice.chucho.get_columns(
-                function(resp) { 
+
+            $.ajax({
+                 url: '/chucho/columns/'+self.appName+'/'+self.modelName+'/',
+                type: 'GET',
+                success: function(resp) {
                     self.columns = resp;
 
                     // Add editors to columns
                     for ( var i = 0; i < self.columns.length; i++) {
                         switch (self.columns[i]._type) {
-                            
                         case 'boolean':
                             self.columns[i].formatter = booleanFormatter;
                             break;
-                            
                         case 'foreignkey':
                             self.columns[i].formatter = foreignKeyFormatter;
                             break;
-                            
                         case 'm2m':
                             self.columns[i].formatter = m2mFormatter;
                             break;
-
                         case 'choice':
                             self.columns[i].formatter = choicesFormatter;
                             break;
-
                         case 'datetime':
                         case 'timestamp':
                             self.columns[i].formatter = timestampFormatter;
                             break;
-
+                        case 'color':
+                            self.columns[i].formatter = colorFormatter;
+                            break;
                         case 'date':
                         case 'number':
                         case 'char':
                         case 'integer':
                         case 'text':
-
+                            break;
                         default:
                         }
                     }
-                   
+
                     this.PagedGridModel = function(items, columns) {
                         this.items = ko.observableArray(items);
-        
+
                         /** Determines whether or not we want to allow the user to only view data or edit it. */
                         this.readOnly = true;
 
@@ -601,13 +745,13 @@
                         };
 
                         this.addRow = function(item) {
-                            this.items.unshift(item); 
+                            this.items.unshift(item);
                         };
 
                         this.removeRowAtIndex = function(i) {
                             this.items.splice(i, 1);
                         };
-            
+
                         this.getPk = function(i) {
                             return this.items()[i].pk;
                         };
@@ -619,8 +763,8 @@
                         this.getColumnId = function(text) {
                             var colId = null;
                             $.each(this.getColumns(), function(i, col) {
-                                if (col['name'] === text) {
-                                    colId = col['id'];
+                                if (col.name === text) {
+                                    colId = col.id;
                                     return;
                                 }
                             });
@@ -631,22 +775,22 @@
                             'column': null,
                             'asc': null
                         });
-                        
+
                         this.gridViewModel = new ko.chuchoGrid.viewModel({
                             data: this.items,
                             columns: columns,
                             sortedCol: this.sortedCol
                         });
-                    };
+                    }; // End PagedGridModel
 
-                    self.grid = new PagedGridModel([], self.columns);
-                    
+                    var gridCols = self.grid_columns();
+                    self.grid = new this.PagedGridModel([], gridCols);
+
                     //Handle single and double clicks for rows
                     ko.bindingHandlers.clickHandler = {
                         init: function(element, valueAccessor) {
                             var delay = 200,
                                 clickTimeout = false;
-
                             $(element).click(function() {
                                 //Double click
                                 if(clickTimeout !== false) {
@@ -659,42 +803,40 @@
                                     }
                                     clearTimeout(clickTimeout);
                                     clickTimeout = false;
-                                    
-                                    $(this).trigger('rowSelectionChange');
-                                } 
-                                //Single click
-                                else {
+
+                                    $(self).trigger('rowSelectionChange');
+                                } else {
+                                    //Single click
                                     clickTimeout = setTimeout(function() {
                                         $('#'+self.modelName+'_grid table.chucho-grid tr.selected').removeClass('selected');
                                         $(element).addClass('selected');
                                         clickTimeout = false;
-                                        
-                                        $(this).trigger('rowSelectionChange');
+
+                                        $(self).trigger('rowSelectionChange');
                                     }, delay);
                                 }
-                            });    
+                            });
                         }
                     };
-                  
+
                     //Handle clicks to column headers and determine if it can be sorted or not.
                     ko.bindingHandlers.sortHandler = {
                         init: function(element, valueAccessor) {
-                            
+
                             $(element).click(function() {
                                 var colData = valueAccessor();
-                                if (colData.hasOwnProperty('sortable') === false || colData['sortable'] === false)
+                                if (colData.hasOwnProperty('sortable') === false || colData.sortable === false)
                                     return;
-                                
+
                                 var currentSorted = self.grid.sortedCol();
-                                if (currentSorted['column'] === null || 
-                                    currentSorted['column'] !== colData['id'] ||
-                                    currentSorted['asc'] === true)
-                                    self.grid.setSortedCol(colData['id'], false);
-                                else if (currentSorted['asc'] === false)
-                                    self.grid.setSortedCol(colData['id'], true);
+                                if (currentSorted.column === null ||
+                                    currentSorted.column !== colData.id || currentSorted.asc === true)
+                                    self.grid.setSortedCol(colData.id, false);
+                                else if (currentSorted.asc === false)
+                                    self.grid.setSortedCol(colData.id, true);
                                 else {
                                     console.error('Un unexpected sorting condition occured!'+
-                                                  'Col: '+currentSorted['column']+'  Asc: '+currentSorted['asc']);
+                                                  'Col: '+currentSorted.column+'  Asc: '+currentSorted.asc);
                                     return;
                                 }
                                 self.refresh();
@@ -703,22 +845,21 @@
                     };
 
                     ko.applyBindings(self.grid, $('#'+self.modelName+'_grid div.gridContainer')[0]);
-                   
+
                     $(addButton).appendTo(self.getBtnPanel());
                     $(refreshButton).appendTo(self.getBtnPanel());
                     $(messageSpan).appendTo(self.getBtnPanel());
-                  
 
-                    $(this).on('rowSelectionChange', function() {
+                    $(self).on('rowSelectionChange', function() {
                         var panel = self.getBtnPanel();
-                        var serv_msg = $('#server_messages'); 
+                        var serv_msg = $('#server_messages');
                         //Only add these if user is allowed to edit the content
                         if(!self.grid.readOnly) {
-                            //Add delete button if it's not in panel            
+                            //Add delete button if it's not in panel
                             if($(panel).has('input[value="Delete"]').length <= 0)
                                 $(serv_msg).before(deleteButton);
-                        
-                            //Add edit button if it's not in panel            
+
+                            //Add edit button if it's not in panel
                             if($(panel).has('input[value="Edit"]').length <= 0)
                                 $(serv_msg).before(editButton);
                         }
@@ -734,7 +875,7 @@
 
                         self.editRecord(selectedRow);
                     });
- 
+
                     $(self.getBtnPanel()).on('click', 'input.chucho-add', function() {
                         self.addRecord();
                     });
@@ -746,46 +887,83 @@
                     $(self.getBtnPanel()).on('click', 'input.chucho-refresh', function() {
                         self.refresh();
                     });
-                    
+
                     //Refresh will get the first wave of data
                     self.refresh();
-                },
-                {'app_name': self.appName, 'model_name': self.modelName}
-            );
+                } // End Success Callback
+            });
 
-            // Populate the filter options.
-            Dajaxice.chucho.get_filter_operators(
-                function(resp) {
+            $.ajax({
+                 url: '/chucho/filters/',
+                type: 'GET',
+                success: function(resp) {
                     if ('errors' in resp) {
                         self.error(resp.errors);
                         return;
                     }
                     self.filter_operators = resp;
                 }
-            );
+            });
+        }; // End init
+
+        /** Formats filters to be sent to the server **/
+        function get_filter_data() {
+            var filter_data = [];
+            var filters = $('.grid-filter');
+            $(filters).each(function(i, e) {
+                var temp_obj = {};
+                var temp = $(e).find('select[name="column"]');
+                if ( !temp )
+                    return;
+                if(temp.length > 1) {
+                    $.each(temp, function(i, val) {
+                        if(i === 0)
+                            temp_obj.col = $(val).val();
+                        else
+                            temp_obj.col += "|" + $(val).val();
+                    });
+                } else
+                    temp_obj.col = $(temp).val();
+                temp = $(e).find('select[name="operator"]').val();
+                if ( !temp )
+                    return;
+                temp_obj.oper = temp;
+                temp = $(e).find('input[name="comparison-value"]').val();
+                if ( !temp )
+                    temp = '';
+                temp_obj.val = temp;
+                filter_data.push(temp_obj);
+            });
+            if (filter_data.length === 0 && $('#chucho-omni-filter').val() )
+                filter_data.push({col: 'chucho-omni', val: $('#chucho-omni-filter').val()});
+            else if($('#chucho-omni-filter').val())
+                self.warning("Disregarding search bar, using filters.");
+            return filter_data;
+        }
+
+        this.updatePages = function(newVal){
+            $('.entryCount').text(newVal);
+            this.refresh(1);
         };
-
         this.init();
-
     } // End DataGrid
 
 
     /** Use this function to pop up a modal dialog asking for user input.
      * Argurments action, action_func, cancel_func are optional.
      */
-    function confirm_dialog(id, action, action_func, cancel, cancel_func, destroy)
-    {
+    function confirm_dialog(id, action, action_func, cancel, cancel_func, destroy){
         if (!cancel)
             cancel = 'Cancel';
 
         buttons = [{
             text: cancel,
             click: function() {
-                if ( cancel_func )
+                if ( cancel_func ){
                     cancel_func();
-                $(this).dialog('destroy');
-                if(destroy)
-                    $('#'+id).remove();
+                }
+                $('#modal-body').empty();
+                $('#myModal').modal('toggle');
             }
         }];
 
@@ -795,40 +973,23 @@
                 click: function() {
                     if ( action_func )
                         action_func();
-                    /*$(this).dialog('destroy');
-                    if(destroy)
-                        $('#'+id).remove();*/
-                }
+                },
             });
         }
 
-        $('#' + id).dialog({
-            autoOpen: true,
-            resizable: true,
-            hide: "fade",
-            show: "fade",
-            modal: true,
-            minWidth: 250,
-            maxWidth: 1000,
-            minHeight: 200,
-            maxHeight: 1000,
-            height: 600,
-            width: 600,
-            dialogClass: "confirmation dialogue",
-            close: function() {
-                if ( cancel_func )
-                    cancel_func();
-                $(this).dialog('destroy');
-                if(destroy)
-                    $('#' + id).remove();
-            },  
-            buttons: buttons
-        });
+        var div = $("<div></div>");
+        for(var i in buttons){
+            var btn = $('<button type="button" class="btn btn-defualt">' + buttons[i].text + '</button>');
+            btn.click(buttons[i].click);
+            div.append(btn);
+        }
+        $('#modal-footer').empty()  ;
+        $('#modal-footer').append(div);
     }
 
 
     /** Creates a hidden div structure filled with various input fields to be shown by a dialog.
-     * 
+     *
      *  The divs inputs are determined by the columns that are passed in.  These columns should be
      *  the chuchos current columns so that the div can be built dynamically.
      *
@@ -840,33 +1001,33 @@
      *
      *  Return: Div id or null if no columns are editable.
      * */
-    function get_grid_form(id, columns, record, title) 
-    {
-
+    function get_grid_form(id, columns, record, title){
+        $('#myModal').modal('toggle');
+        $('#modal-body').empty();
         var div_id = myGrid.modelName+"_add";
         var div = $("<div></div>")
-            .attr("id", myGrid.modelName+'_add')
-            .attr('title', title);
-        var table = $("<table></table>");
+                   .attr("id", myGrid.modelName+'_add')
+                   .attr('title', title);
+
+        var table = $("<table class='table borderless'></table>");
 
         var msg_div = $('<div></div>').attr('id',  'dialogue_message');
         $(div).append(msg_div);
-       
-        $('#'+id).append(div);
+
+        $('#modal-body').append(div);
         div.append(table);
 
         //If we cycle through all columns and none are editable we'll return null
         var model_editable = false;
         $.each(columns, function(i, col) {
-            
-            model_editable = true;     
-   
+            model_editable = true;
+
             //Set up html containers for the input
             var tr = $("<tr></tr>");
             table.append(tr);
             td1 = $("<td></td>");
             td2 = $("<td></td>");
-            
+
             tr.append(td1);
             tr.append(td2);
 
@@ -882,135 +1043,174 @@
             //If updateing then we'll set the field with the current value
             if (record)
                 value = record[col.field];
-            
+
             switch(col._type) {
-            case 'password':
-                input = get_input('add_form_input', 'text', '');
-                td1.append(label);
-                td2.append(input);
-                break;
-
-            case 'integer':
-                if(col._editable) {
-                    input = get_input('add_form_input', 'text', value); 
+                case 'password':
+                    if(col._editable)
+                        input = get_input('add_form_input', 'text', '');
+                    else
+                        input = $("<span>***************</span>");
+                    td1.append(label);
                     td2.append(input);
-                    //$(input).spinner();
-                }
-                else {
-                    input = $("<span></span>").append(value);
+                    break;
+                case 'integer':
+                    if(col._editable)
+                        input = get_input('add_form_input', 'text', value);
+                    else {
+                        input = $("<span></span>").append(value);
+                        if(value === '' || value === null)
+                            input = $("<span><i>None</i></span>");
+                    }
                     td2.append(input);
-                }
-                td1.append(label);
-                break;
-
-            case 'decimal':
-                input = get_input('add_form_input', 'text', value); 
-                td2.append(input);
-                td1.append(label);
-                $(input).spinner();
-                break;
-
-            case 'foreignkey': 
-                input = get_pk_input('add_form_input foreignkey', value, col); 
-                td2.append(input);
-                td1.append(label);
-                break;
-                
-            case 'm2m':
-                input = get_m2m_input('add_form_input m2m', value, col.model_name, col.app); 
-                td2.append(input);
-                td1.append(label);
-                break;
-
-            case 'boolean':
-                input = get_input('add_form_input', 'checkbox', '');
-                if(value)
-                    input.prop('checked', true);
-                td2.append(input);
-                td1.append(label);
-                break;
-
-            case 'date':
-                input = get_input('add_form_input', 'text', value);
-                td2.append(input);
-                td1.append(label);
-
-                $(input).datepicker({
-                    dateFormat: 'mm/dd/yy'
-                });
-                $(input).datepicker('setDate', value); 
-                break;
- 
-            case 'datetime':
-            case 'timestamp':
-                var timestampval = '';
-                var timestampstr = '';
-                var timestamp = new Date(value*1000);
-                if(value !== null && value !== "" && !isNaN(timestamp.valueOf())) {
-                    timestampstr = dateToString(timestamp);
-                    timestampval = timestamp.valueOf()/1000;
-                }
-
-                if(col._editable) {
-                    input_user = get_input('', 'text', '');
-                   
-                    input = get_input('add_form_input', 'hidden', timestampval);
-                    $(input_user).attr('onchange', 'updateTimestampInput(this);');
-                    td2.append(input_user);
+                    td1.append(label);
+                    break;
+                case 'decimal':
+                    if(col._editable) {
+                        input = get_input('add_form_input', 'text', value);
+                        td2.append(input);
+                        // $(input).spinner();
+                    } else {
+                        input = $("<span></span>").append(value);
+                        if(value === "" || value === null)
+                            input = $("<span></span>").append('<i>None</i>');
+                        td2.append(input);
+                    }
+                    td1.append(label);
+                    break;
+                case 'foreignkey':
+                    if(col._editable)
+                        input = get_pk_input('add_form_input foreignkey', value, col);
+                    else {
+                        input = $("<span></span>").append(value.__unicode__);
+                        if(value.__unicode__ === '')
+                            input = $("<span></span>").append('<i>None</i>');
+                    }
                     td2.append(input);
-                    
-                    $(input_user).datetimepicker({
-                        showSecond: true,
-                        dateFormat: 'mm/dd/yy',
-                        timeFormat: 'hh:mm:ss'
+                    td1.append(label);
+                    break;
+                case 'm2m':
+                    if(col._editable)
+                        input = get_m2m_input('add_form_input m2m', value, col.model_name, col.app);
+                    else {
+                        if(value.length > 0) {
+                            input = $('<ul></ul>');
+                            $(value).each(function(i, val) {
+                                var li = $('<li></li>').append(val.__unicode__);
+                                $(input).append(li);
+                            });
+                        } else
+                            input = $('<span><i>None</i></span>');
+                    }
+                    td2.append(input);
+                    td1.append(label);
+                    break;
+                case 'boolean':
+                    if(col._editable) {
+                        input = get_input('add_form_input', 'checkbox', '');
+                        if(value === true)
+                            input.prop('checked', true);
+                    } else {
+                        input = $('<span></span>');
+                        if(value === false)
+                            input = $('<span class="glyphicon glyphicon-remove"></span>');
+                        else if(value === true)
+                            input = $('<span class="glyphicon glyphicon-ok"></span>');
+                    }
+                    td2.append(input);
+                    td1.append(label);
+                    break;
+                case 'date':
+                    if(col._editable) {
+                        input = get_input('add_form_input', 'text', value);
+                        td2.append(input);
+                        $(input).datepicker({
+                            dateFormat: 'mm/dd/yy'
+                        });
+                        $(input).datepicker('setDate', value);
+                    } else {
+                        input = $('<span></span>').append(value);
+                        if(value === '' || value === null)
+                            input = $('<span><i>None</i></span>');
+                    }
+                    td1.append(label);
+                    break;
+                case 'datetime':
+                case 'timestamp':
+                    var timestampval = '';
+                    var timestampstr = '';
+                    var timestamp = new Date(value*1000);
+                    if(value !== null && value !== "" && !isNaN(timestamp.valueOf())) {
+                        timestampstr = dateToString(timestamp);
+                        timestampval = timestamp.valueOf()/1000;
+                    }
+                    if(col._editable) {
+                        input_user = get_input('', 'text', '');
+                        input = get_input('add_form_input', 'hidden', timestampval);
+                        $(input_user).attr('onchange', 'updateTimestampInput(this);');
+                        td2.append(input_user);
+                        td2.append(input);
+                        $(input_user).datetimepicker({
+                            showSecond: true,
+                            dateFormat: 'mm/dd/yy',
+                            timeFormat: 'hh:mm:ss'
+                        });
+                        if(timestampstr !== '')
+                            $(input_user).datetimepicker('setDate', timestampstr);
+                    } else {
+                        input = $('<span>').text(timestampstr);
+                        if(timestampstr === '')
+                            input = $('<span><i>None</i></span>');
+                        td2.append(input);
+                    }
+                    td1.append(label);
+                    break;
+                case 'color':
+                    var div = $('<div class="minicolors minicolors-theme-bootstrap"></div>');
+                    input = get_input('add_form_input minicolors-input', 'text', value);
+
+                    if(!col._editable)
+                        $(input).attr('disabled', '');
+
+                    td2.append(div);
+                    div.append(input);
+                    $(input).minicolors({
+                        control: 'wheel',
+                        defaultValue: value,
+                        position: 'top',
+                        theme: 'none'
                     });
-                   
-                    if(timestampstr !== '')
-                        $(input_user).datetimepicker('setDate', timestampstr);
-                }
-                else {
-                    input = $('<span>').text(timestampstr);
+                    td1.append(label);
+                    break;
+                case 'choice':
+                    if(col._editable)
+                        input = get_choices_input('add_form_input', value, col.choices);
+                    else {
+                        input = $('<span></span>').append(value.__unicode__);
+                        if(value.__unicode__ === '' || value === '')
+                            input = $('<span><i>None</i></span>');
+                    }
                     td2.append(input);
-                }
-                td1.append(label);
-                break;
-                
-            case 'color':
-                input = get_input('add_form_input', 'text', value);
-                td2.append(input);
-                td1.append(label);
-                $(input).minicolors({
-                    control: 'wheel',
-                    defaultValue: value,
-                    position: 'top',
-                    theme: 'none'     
-                });
-                break;
-
-            case 'choice':
-                input = get_choices_input('add_form_input', value, col.choices);
-                td2.append(input);
-                td1.append(label);
-                break;
-
-            default:
-                if(col._editable) {
-                    input = get_input('add_form_input', 'text', value);
-                }
-                else {
-                    input = $("<span></span>").append(value);
-                }
-                td2.append(input);
-                td1.append(label);
+                    td1.append(label);
+                    break;
+                default:
+                    if(col._editable)
+                        input = get_input('add_form_input', 'text', value);
+                    else {
+                        input = $("<span></span>").append(value);
+                        if(value === '' || value === null)
+                            input = $('<span><i>None</i></span>');
+                    }
+                    td2.append(input);
+                    td1.append(label);
             }
-
             input.before(span);
         });
- 
+
         if (!model_editable)
             return null;
         return div_id;
     }
+
 
     /** Creates and returns a basic input field.
      *
@@ -1019,22 +1219,22 @@
      *    type  - The type of input to create.
      *    value - The value to give to the input field to start with if any.
      *
-     * Return: The newly created input field 
+     * Return: The newly created input field
      */
-    function get_input(cls, type, value) 
-    {
+    function get_input(cls, type, value){
+        var inputCls = type === "checkbox" ? cls : "form-control " + cls;
         var input = $("<input/>").val(value)
-                                 .attr({ 
-                                     'class': cls,
-                                     'type' : type 
-                                 });
-
+            .attr({
+                'class': inputCls,
+                'type' : type
+            });
         return input;
     }
 
+
     /** Creates and returns a basic select input field.
      *
-     * This will preload the select field with results from the data stored in a choices column. 
+     * This will preload the select field with results from the data stored in a choices column.
      *
      * Keyword Args
      *    cls     - The class to give the input field.
@@ -1043,22 +1243,21 @@
      *
      * Return: The newly created select field
      */
-    function get_choices_input (cls, value, choices) 
-    {
-        var input = $("<select></select>").attr({'class': cls});
-       
+    function get_choices_input (cls, value, choices){
+        var inputCls = "form-control " + cls;
+        var input = $("<select></select>").attr({'class': inputCls});
+
         $(choices).each(function(i, c) {
             var option = $("<option></option>")
                 .attr('value', (c.value))
                 .text(c.__unicode__);
-           
-            if(value !== '' && value.value == c.value) 
+            if(value !== '' && value.value == c.value)
                 option.attr('selected', 'selected');
             input.append(option);
         });
-
         return input;
     }
+
 
     /** Creates and returns a basic select input field.
      *
@@ -1072,11 +1271,14 @@
      *
      * Return: The newly created select field
      */
-    function get_pk_input (cls, value, col) 
-    {
-        var input = $("<select></select>").attr({'class': cls});
+    function get_pk_input (cls, value, col){
+        var input = $("<select class='form-control'></select>")
         //Get all objects that the user can select from
-        Dajaxice.chucho.read_source( function(resp) {
+        $.get( '/chucho/'+col.app+'/'+col.model_name+'/', {
+            'jsonData': JSON.stringify({
+                'get_editable': false
+            })
+        }, function(resp) {
             if (col.blank) {
                 var null_option = $('<option>', {text:'(null)'});
                 null_option.val('null');
@@ -1085,17 +1287,18 @@
             $(resp.data).each(function(i, obj) {
                 var option = $("<option>", {text: obj.__unicode__})
                     .val(obj.pk);
-
-                if(value !== '' && obj.pk == value.pk) 
+                if(value !== '' && obj.pk == value.pk)
                     option.attr('selected', 'selected');
                 input.append(option);
-
             });
-        }, 
-        {'app_name': col.app, 'model_name': col.model_name, 'get_editable': false});
-
+        });
         return input;
     }
+
+document.dropdownmenuclick = function(obj){
+        console.log("here");
+        console.log($(obj.parent));
+    };
 
     /** Creates and returns a basic select multiple input field.
      *
@@ -1109,35 +1312,33 @@
      *
      * Return: The newly created select multiple field
      */
-    function get_m2m_input (cls, value, modelName, appName) 
-    {
+    function get_m2m_input (cls, value, modelName, appName){
         var div = $('<div></div>').attr({'class': cls});
-        var ul = $('<ul></ul>').css('list-style', 'none');                   
+        var ul = $('<ul></ul>').css('list-style', 'none');
         div.append(ul);
-
         //Get all objects that the user can select from
-        Dajaxice.chucho.read_source( function(resp) {
-
-            $(resp.data).each(function(i, obj) { 
-                
+        $.get( '/chucho/'+appName+'/'+modelName+'/', {
+            'jsonData': JSON.stringify({
+                'get_editable': false
+            })
+        }, function(resp) {
+            $(resp.data).each(function(i, obj) {
                 var li = $('<li></li>');
                 var checkbox = get_input('', 'checkbox', obj.pk);
                 var label = $('<label></label>').text(" "+obj.__unicode__);
-
                  //Pre-select appropriate objects
                 $(value).each(function(i, val) {
-                    if(val !== '' && obj.pk == val.pk) 
+                    if(val !== '' && obj.pk == val.pk)
                         checkbox.prop('checked', true);
                 });
-
                 ul.append(li);
                 li.append(label);
                 label.prepend(checkbox);
             });
-        }, {'app_name': appName, 'model_name': modelName, 'get_editable': false});
-
+        });
         return div;
     }
+
 
     /** Callback method for when a user adds or updates a record
      *
@@ -1145,18 +1346,16 @@
      *    index    - The index where the record will be added/edited.
      *    updating - Boolean, true if updating a record and false if adding one.
      */
-    function record_callback(index, updating) 
-    {
+    function record_callback(index, updating){
         //Collect data for new/updated row from dialog fields
         var row = {};
         $('.add_form_input').each(function(i, input) {
-
             var field = $(input).prev('span.field').text();
-            row[field] = field_value(input);      
+            row[field] = field_value(input);
         });
-
         myGrid.add_row(row, index, updating);
     }
+
 
     /** Get's a field input from the add/edit dialog and returns it's value.
      *
@@ -1165,32 +1364,28 @@
      *
      * Return: Value of input field
      */
-    function field_value (input) 
-    {
+    function field_value (input){
         if($(input).hasClass('foreignkey')) {
             var value = $(input).val();
             if (value === 'null')
                 value = null;
-            
             return {'pk': value};
-        }
-        else if($(input).hasClass('m2m')) {
+        } else if($(input).hasClass('m2m')) {
             var array = [];
             $(':checked', input).each(function(i, sel) {
                 array.push({'pk': $(sel).val()});
             });
             return array;
-        }
-        else if($(input).hasClass('ui-spinner-input'))
+        } else if($(input).hasClass('ui-spinner-input'))
             return $(input).spinner('value');
         else if($(input).attr('type') == "checkbox")
-            return $(input).prop('checked'); 
+            return $(input).prop('checked');
         else
             return $(input).val();
     }
 
-    
-    /** Creates and returns a spinner object.  
+
+    /** Creates and returns a spinner object.
      *
      *  Spinner options can be specified by providing a Object with Spinner options.
      *  If provided these options will completly override the default ones given.
@@ -1200,9 +1395,8 @@
      *
      * Return: Initialized Spinner object.
      */
-    function get_spinner (opts) 
-    {
-        var default_opts = { 
+    function get_spinner (opts){
+        var default_opts = {
             lines: 11,            // The number of lines to draw
             length: 8,           // The length of each line
             width: 2,            // The line thickness
@@ -1219,42 +1413,16 @@
             zIndex: 2e9,          // The z-index (defaults to 2000000000)
             top: 'auto',          // Top position relative to parent in px
             left: 'auto'          // Left position relative to parent in px
-        };  
+        };
 
         //Use defaults if none were given to us.
         if(!opts)
             opts = default_opts;
-                                                                                                                                           
+
         return new Spinner(opts);
-    } 
-
-    function get_filter_data() {
-        var filter_data = [];
-        var filters = $('.grid-filter');
-        $(filters).each(function(i, e) {
-            var temp_obj = {};
-
-            var temp = $(e).find('select[name="column"]').val();
-            if ( !temp )
-                return;
-            temp_obj.col = temp;
-
-            temp = $(e).find('select[name="operator"]').val();
-            if ( !temp )
-                return;
-            temp_obj.oper = temp;
-
-            temp = $(e).find('input[name="comparison-value"]').val();
-            if ( !temp )
-                temp = '';
-            temp_obj.val = temp;
-
-            filter_data.push(temp_obj);
-        });
-        if ( filter_data.length === 0 && $('#chucho-omni-filter').val() )
-            filter_data.push({col: 'chucho-omni', val: $('#chucho-omni-filter').val()});
-        return filter_data;
     }
+
+
 
     /** This will remove a filter from the filter table */
     function remove_filter_row(e) {
@@ -1265,13 +1433,21 @@
     /** Take a Date object and return a string formatted as:
      * mm/dd/yyyy HH:MM:SS
      */
-    function dateToString(date)
-    {
-        dStr = String(date.getMonth() + 1) + '/' + String(date.getDate()) + '/' + String(date.getFullYear());
-        dStr += ' ' + String(date.getHours()) + ':' + String(date.getMinutes()) + ':';
-        if (date.getSeconds() < 10)
-            dStr += '0';
-        dStr += String(date.getSeconds());
+    function dateToString(date){
+        var newDate = date.getMonth()+1 + "/" + date.getDate() + "/" + date.getFullYear();
+        var hours = date.getHours();
+        var minutes = date.getMinutes();
+        var seconds = date.getSeconds();
+
+        if(hours < 10)
+            hours = '0' + hours;
+        if(minutes < 10)
+            minutes = '0' + minutes;
+        if(seconds < 10)
+            seconds = '0' + seconds;
+
+        var newTime = hours + ":" + minutes + ":" + seconds;
+        var dStr = newDate + " " + newTime;
         return dStr;
     }
 
@@ -1283,10 +1459,12 @@
          $(e).nextAll('.add_form_input').val(value);
     }
 
+
+
     function loadModelGrid(app, model) {
         var url = "/chucho/model_editor/"+app+"/"+model+"/";
         $.get(url, {}, function(data) {
-            $('#chuchoGridContainer').html(data);  
+            $('#chuchoGridContainer').html(data);
         });
     }
 
@@ -1298,5 +1476,7 @@
         'updateTimestampInput': updateTimestampInput
     });
 });
-})(window,document,navigator,window["$"],window["ko"],window["Spinner"]);
+})(window,document,navigator,window.$,window.ko,window.Spinner);
 })();
+
+
