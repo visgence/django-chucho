@@ -267,7 +267,6 @@ def update(request, app_name, model_name, user, id=None):
     try:
         for field in fields:
             if field['_editable']:
-
                 # save inportant m2m stuff for after object save
                 if field['_type'] == 'm2m':
                     m2m.append({
@@ -278,7 +277,7 @@ def update(request, app_name, model_name, user, id=None):
                     continue
 
                 # Handle empy data
-                elif data[field['field']] in [None, ''] and field['_type'] != 'password':
+                elif field['field'] in data and data[field['field']] in [None, ''] and field['_type'] != 'password':
                     if field['_type'] in ['text', 'char', 'color']:
                         setattr(obj, field['field'], '')
                     else:
@@ -286,7 +285,7 @@ def update(request, app_name, model_name, user, id=None):
 
                 elif field['_type'] == 'foreignkey':
                     rel_cls = apps.get_model(field['app'], field['model_name'])
-                    if data[field['field']]['pk'] is None:
+                    if field['field'] not in data or data[field['field']]['pk'] is None:
                         rel_obj = None
                     else:
                         rel_obj = rel_cls.objects.get(pk=data[field['field']]['pk'])
@@ -315,11 +314,9 @@ def update(request, app_name, model_name, user, id=None):
                 elif field['_type'] == 'password':
                     if data[field['field']] not in [None, '']:
                         obj.set_password(data[field['field']])
-
                 else:
                     setattr(obj, field['field'], data[field['field']])
         obj.save()
-
         try:
             # Get all respective objects for many to many fields and add them in.
             for m in m2m:
@@ -366,6 +363,7 @@ def update(request, app_name, model_name, user, id=None):
         serialized_model = serialize_model_objs([obj.__class__.objects.get(pk=obj.pk)], {'read_only': True})
     except Exception as e:
         transaction.rollback()
+
         error = 'In ajax update exception: %s: %s\n' % (type(e), e.message)
         stderr.write(error)
         stderr.flush()
@@ -374,6 +372,7 @@ def update(request, app_name, model_name, user, id=None):
     transaction.commit()
     response = HttpResponse(serialized_model, content_type="application/json")
     response.status_code = 201
+
     return response
 
 
