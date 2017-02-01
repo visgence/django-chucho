@@ -147,7 +147,6 @@
             var columns = $.map(this.columns, function(c, i) {
                 if (c.hasOwnProperty('filter_column') === false)
                     return undefined;
-
                 return c;
             });
             return columns;
