@@ -290,7 +290,6 @@
             //Need pk if updating to know which object to update
             if(updating)
                 row.pk = self.grid.getPk(index);
-
             self.save_row(index, row, updating);
         };
 
@@ -308,7 +307,6 @@
             return function(resp) {
                 //Reset server message
                 $('#server_messages').html('');
-
                 if ('errors' in resp) {
                     self.error(resp.errors);
                     return;
@@ -1042,7 +1040,6 @@
             //If updateing then we'll set the field with the current value
             if (record)
                 value = record[col.field];
-
             switch(col._type) {
                 case 'password':
                     if(col._editable)
@@ -1271,7 +1268,7 @@
      * Return: The newly created select field
      */
     function get_pk_input (cls, value, col){
-        var input = $("<select class='form-control'></select>")
+        var input = $("<select class='form-control'></select>").attr({'class': cls});
         //Get all objects that the user can select from
         $.get( '/chucho/'+col.app+'/'+col.model_name+'/', {
             'jsonData': JSON.stringify({
@@ -1295,7 +1292,6 @@
     }
 
 document.dropdownmenuclick = function(obj){
-        console.log("here");
         console.log($(obj.parent));
     };
 
