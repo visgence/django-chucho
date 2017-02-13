@@ -417,9 +417,6 @@
                 $('#server_messages').html(msg).css('color','red');
                 $('#server_messages').html(msg);
                 $("#server_messages").css('opacity', 1);
-                setTimeout(function() {
-                    FadeMessage(1);
-                 }, 2000);
             } else {
                 $('#error_msg').text(msg);
                 confirm_dialog('error_dialog', null, null, "Ok", function() {
@@ -1003,7 +1000,6 @@
      *  Return: Div id or null if no columns are editable.
      * */
     function get_grid_form(id, columns, record, title){
-        console.log(id)
         $('#myModal').modal('toggle');
         $('#modal-body').empty();
         var div_id = myGrid.modelName+"_add";
@@ -1019,7 +1015,6 @@
 
         //If we cycle through all columns and none are editable we'll return null
         var model_editable = false;
-        console.log(title)
         if(title === 'Delete Record'){
             $('#modal-body').append($('<div>Are you sure you would like to delete this record?</div>'));
             return;
