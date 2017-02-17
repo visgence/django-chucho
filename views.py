@@ -266,8 +266,9 @@ def update(request, app_name, model_name, user, id=None):
     m2m = []
     try:
         for field in cls._meta.get_fields():
-            if field.null:
+            if field.null or field.blank:
                 continue
+
             for curfield in data:
                 if curfield == field.name and data[curfield] == "":
                     error = "You must fill out the '{}' part of the form ".format(field.name)
