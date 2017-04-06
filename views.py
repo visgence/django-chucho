@@ -270,10 +270,11 @@ def update(request, app_name, model_name, user, id=None):
                 continue
 
             for curfield in data:
+                if curfield == "password":
+                    continue
                 if curfield == field.name and data[curfield] == "":
                     error = "You must fill out the '{}' part of the form ".format(field.name)
                     return HttpResponse(json.dumps({'errors': error}, indent=4), content_type="application/json")
-
         for field in fields:
             if field['_editable']:
 
