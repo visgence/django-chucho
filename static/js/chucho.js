@@ -1286,6 +1286,8 @@
                 null_option.val('null');
                 input.append(null_option);
             }
+            resp.data.sort(compare)
+            console.log(resp.data)
             $(resp.data).each(function(i, obj) {
                 var option = $("<option>", {text: obj.__unicode__})
                     .val(obj.pk);
@@ -1295,6 +1297,14 @@
             });
         });
         return input;
+    }
+
+    function compare(nameA, nameB){
+        if (nameA.__unicode__ < nameB.__unicode__)
+            return -1;
+          if (nameA.__unicode__ > nameB.__unicode__)
+            return 1;
+          return 0;
     }
 
 document.dropdownmenuclick = function(obj){
