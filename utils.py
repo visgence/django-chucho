@@ -11,6 +11,7 @@
 #System Imports
 from django.db import models
 import re
+import json
 
 
 
@@ -42,8 +43,7 @@ def gen_columns(modelObj, search_filtering=False, fk_filter_depth=None):
     columns = []
     column_options = get_column_options(modelObj)
     for f in get_meta_fields(modelObj):
-
-        #We don't care about these fields
+        # We don't care about these fields
         if f.name.endswith('_ptr'):
             continue
 
@@ -64,7 +64,6 @@ def gen_columns(modelObj, search_filtering=False, fk_filter_depth=None):
 
             if search_filtering:
                 continue
-
 
         #if f.name in ['name', 'id']:
         #    field['sortable'] = True
@@ -140,9 +139,7 @@ def gen_columns(modelObj, search_filtering=False, fk_filter_depth=None):
 
         if not m.editable:
             field['_editable'] = False
-        print field
         columns.append(field)
-
     return columns
 
 

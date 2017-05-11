@@ -147,7 +147,6 @@
             var columns = $.map(this.columns, function(c, i) {
                 if (c.hasOwnProperty('filter_column') === false)
                     return undefined;
-
                 return c;
             });
             return columns;
@@ -291,7 +290,6 @@
             //Need pk if updating to know which object to update
             if(updating)
                 row.pk = self.grid.getPk(index);
-
             self.save_row(index, row, updating);
         };
 
@@ -309,7 +307,6 @@
             return function(resp) {
                 //Reset server message
                 $('#server_messages').html('');
-
                 if ('errors' in resp) {
                     self.error(resp.errors);
                     return;
@@ -371,6 +368,7 @@
             // If there is an id, send an ajax request to delete from server, otherwise, just
             // remove it from the grid.
             if ('pk' in row) {
+
                 self = this;
                 var delete_func = function() {
                     var csrftoken = self.getCookie('csrftoken');
@@ -381,6 +379,7 @@
                         },
                         type: 'DELETE',
                         success: function(resp) {
+                            console.log("deleteing")
                             if ('errors' in resp) {
                                 self.error(resp.errors);
                                 return;
@@ -395,7 +394,7 @@
                     });
                 };
 
-                var form_id = get_grid_form(this.modelName+'_grid', this.columns, null, 'Add Record');
+                var form_id = get_grid_form(this.modelName+'_grid', this.columns, null, 'Delete Record');
                 confirm_dialog('delete_confirm', 'Delete', delete_func, 'Cancel', null, true);
             } else {
                 this.grid.removeRowAtIndex(selected);
@@ -418,9 +417,6 @@
                 $('#server_messages').html(msg).css('color','red');
                 $('#server_messages').html(msg);
                 $("#server_messages").css('opacity', 1);
-                setTimeout(function() {
-                    FadeMessage(1);
-                 }, 2000);
             } else {
                 $('#error_msg').text(msg);
                 confirm_dialog('error_dialog', null, null, "Ok", function() {
@@ -953,6 +949,7 @@
      * Argurments action, action_func, cancel_func are optional.
      */
     function confirm_dialog(id, action, action_func, cancel, cancel_func, destroy){
+
         if (!cancel)
             cancel = 'Cancel';
 
@@ -985,6 +982,7 @@
         }
         $('#modal-footer').empty()  ;
         $('#modal-footer').append(div);
+
     }
 
 
@@ -1009,17 +1007,22 @@
                    .attr("id", myGrid.modelName+'_add')
                    .attr('title', title);
 
-        var table = $("<table class='table borderless'></table>");
-
         var msg_div = $('<div></div>').attr('id',  'dialogue_message');
         $(div).append(msg_div);
 
         $('#modal-body').append(div);
-        div.append(table);
+
 
         //If we cycle through all columns and none are editable we'll return null
         var model_editable = false;
+        if(title === 'Delete Record'){
+            $('#modal-body').append($('<div>Are you sure you would like to delete this record?</div>'));
+            return;
+        }
+        var table = $("<table class='table borderless'></table>");
+        div.append(table);
         $.each(columns, function(i, col) {
+
             model_editable = true;
 
             //Set up html containers for the input
@@ -1043,7 +1046,6 @@
             //If updateing then we'll set the field with the current value
             if (record)
                 value = record[col.field];
-
             switch(col._type) {
                 case 'password':
                     if(col._editable)
@@ -1272,7 +1274,7 @@
      * Return: The newly created select field
      */
     function get_pk_input (cls, value, col){
-        var input = $("<select class='form-control'></select>")
+        var input = $("<select class='form-control'></select>").attr({'class': cls});
         //Get all objects that the user can select from
         $.get( '/chucho/'+col.app+'/'+col.model_name+'/', {
             'jsonData': JSON.stringify({
@@ -1296,7 +1298,6 @@
     }
 
 document.dropdownmenuclick = function(obj){
-        console.log("here");
         console.log($(obj.parent));
     };
 

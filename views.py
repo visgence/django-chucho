@@ -265,8 +265,18 @@ def update(request, app_name, model_name, user, id=None):
 
     m2m = []
     try:
+        for field in cls._meta.get_fields():
+            if field.null or field.blank:
+                continue
+
+            for curfield in data:
+                if curfield == field.name and data[curfield] == "":
+                    error = "You must fill out the '{}' part of the form ".format(field.name)
+                    return HttpResponse(json.dumps({'errors': error}, indent=4), content_type="application/json")
+
         for field in fields:
             if field['_editable']:
+
                 # save inportant m2m stuff for after object save
                 if field['_type'] == 'm2m':
                     m2m.append({
@@ -353,7 +363,7 @@ def update(request, app_name, model_name, user, id=None):
         obj.full_clean()
     except ValidationError as e:
         transaction.rollback()
-        errors = 'ValiationError '
+        errors = 'ValidationError '
         for field_name, error_messages in e.message_dict.items():
             errors += ' ::Field: %s: Errors: %s ' % (field_name, ','.join(error_messages))
 
