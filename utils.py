@@ -8,33 +8,26 @@
 " (c) 2013 Visgence, Inc.
 """
 
-#System Imports
+# System Imports
 from django.db import models
 import re
 
 
-
 def get_meta_fields(cls):
-    '''
-    ' Use a model class to get the _meta fields.
-    '''
+    """Use a model class to get the _meta fields."""
     return cls._meta.fields
 
 
 def get_meta_m2m(cls):
-    '''
-    ' Use a model class to get the _meta ManyToMany fields
-    '''
+    """Use a model class to get the _meta ManyToMany fields."""
     return cls._meta.many_to_many
 
 
 def get_column_options(cls):
-    '''
-    ' Use a model class to get the _meta.column_options, if they exist.
-    '''
+    """Use a model class to get the _meta.column_options, if they exist."""
     try:
         return cls.column_options
-    except:
+    except Exception:
         return {}
 
 
@@ -43,7 +36,7 @@ def gen_columns(modelObj, search_filtering=False, fk_filter_depth=None):
     column_options = get_column_options(modelObj)
     for f in get_meta_fields(modelObj):
 
-        #We don't care about these fields
+        # We don't care about these fields
         if f.name.endswith('_ptr'):
             continue
 
@@ -65,8 +58,7 @@ def gen_columns(modelObj, search_filtering=False, fk_filter_depth=None):
             if search_filtering:
                 continue
 
-
-        #if f.name in ['name', 'id']:
+        # if f.name in ['name', 'id']:
         #    field['sortable'] = True
         # Make sure to give the type and other meta data for the columns.
         if f.primary_key or not f.editable:
@@ -74,7 +66,7 @@ def gen_columns(modelObj, search_filtering=False, fk_filter_depth=None):
         else:
             field['_editable'] = True
 
-        #Figure out what each field is and store that type
+        # Figure out what each field is and store that type
         if isinstance(f, models.ForeignKey):
             if 'filter_column' in field:
                 if fk_filter_depth is None or fk_filter_depth > 0:
@@ -111,7 +103,7 @@ def gen_columns(modelObj, search_filtering=False, fk_filter_depth=None):
         elif isinstance(f, models.TextField):
             field['_type'] = 'text'
         elif isinstance(f, models.CharField):
-            #Try and see if this field was meant to hold colors
+            # Try and see if this field was meant to hold colors
             if re.match('color$', f.name.lower()):
                 field['_type'] = 'color'
             else:
@@ -144,6 +136,3 @@ def gen_columns(modelObj, search_filtering=False, fk_filter_depth=None):
         columns.append(field)
 
     return columns
-
-
-

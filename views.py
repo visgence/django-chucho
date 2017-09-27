@@ -15,7 +15,7 @@ from django.core.exceptions import ValidationError
 from django.conf import settings
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils.timezone import utc, make_naive,  make_aware, get_current_timezone
-from django.template import RequestContext, loader, Context
+from django.template import loader, Context
 from django.http import HttpResponse
 from django.db import models, transaction
 from django.apps import apps
@@ -55,17 +55,16 @@ filter_operators = {
 
 
 def model_grid(request, app_name, model_name):
-    '''
-    ' View to return the html that will hold a models chucho.
-    '''
+    """View to return the html that will hold a models chucho."""
     if check_access(request) is None:
         return HttpResponse('User not authenticated.')
     return render(request, 'chucho.html', {'model_name': model_name, 'app_name': app_name})
 
 
 def api_view(request, app_name, model_name, id=None):
-    '''
-    ' Router view for the RESTful api portion of Chucho.  All RESTFull requests come through here
+    """
+    ' Router view for the RESTful api portion of Chucho.
+    ' All RESTFull requests come through here
     ' and gets routed to the appropriate functions when requests are for managing the data of the models.
     '
     ' Keyword Args:
@@ -74,7 +73,7 @@ def api_view(request, app_name, model_name, id=None):
     '   id         - (string) The id of an object to delete/update for DELETE/PUSH
     '
     ' Returns: HttpResponse with serialized json data
-    '''
+    """
 
     user = check_access(request)
     if user is None:
@@ -94,7 +93,7 @@ def api_view(request, app_name, model_name, id=None):
 
 
 def read_source(request, app_name, model_name, user):
-    '''
+    """
     ' Returns - Dictionary serialized as json:
     '           'data' - paged data from a given model
     '           'page_list' - page buttons html
@@ -104,13 +103,13 @@ def read_source(request, app_name, model_name, user):
     '    app_name     - (string) The application the desired model resides in
     '    model_name   - (string) The model name to get serialized data from
     '    user         - (AuthUser) The authenticated AuthUser object making the request
-    '''
+    """
 
     result_info = {}
     get_editable = False
     try:
         jsonData = json.loads(request.GET.get('jsonData'))
-    except:
+    except Exception:
         print "No valid json data found"
     else:
         if 'result_info' in jsonData:
@@ -218,9 +217,8 @@ def read_source(request, app_name, model_name, user):
 
 # @transaction.commit_manually
 def update(request, app_name, model_name, user, id=None):
-    '''
-    ' Modifies a model object with the given data, saves it to the db and
-    ' returns it as serialized json.
+    """
+    ' Modifies a model object with the given data, saves it to the db and returns it as serialized json.
     '
     ' Keyword Args:
     '    model_name  - The name of the model object to modify.
@@ -228,11 +226,11 @@ def update(request, app_name, model_name, user, id=None):
     '
     ' Returns:
     '    The modified object serialized as json.
-    '''
+    """
 
     try:
         data = json.loads(request.body)
-    except:
+    except Exception:
         transaction.rollback()
         dump = json.dumps({'errors': 'Error loading json'}, indent=4)
         return HttpResponse(dump, content_type="application/json")
@@ -379,10 +377,10 @@ def update(request, app_name, model_name, user, id=None):
 
 # @transaction.commit_manually
 def destroy(request, app_name, model_name, user, id=None):
-    '''
-    ' Receive a model_name and data object via ajax, and remove that item,
-    ' returning either a success or error message.
-    '''
+    """
+    ' Receive a model_name and data object via ajax, and remove that item.
+    ' returns either a success or error message.
+    """
 
     cls = apps.get_model(app_name, model_name)
     try:
@@ -411,14 +409,13 @@ def destroy(request, app_name, model_name, user, id=None):
 
 
 def get_columns(request, app_name, model_name):
-    '''
-    ' Return a HttpResponse with JSON serialized column list for rendering a grid representing a
-    ' model.
+    """
+    ' Return a HttpResponse with JSON serialized column list for rendering a grid representing a model.
     '
     ' Keyword args:
     '   app_name   - The application the desired model resides in.
     '   model_name - The name of the model to represent.
-    '''
+    """
 
     user = check_access(request)
     if user is None:
@@ -435,10 +432,10 @@ def get_columns(request, app_name, model_name):
 
 
 def get_filter_operators(request):
-    '''
+    """
     ' Return HttpResponse with JSON dump of dict of list of select option elements.
     ' This is used by the filter tool in the ui.
-    '''
+    """
 
     user = check_access(request)
     if user is None:
