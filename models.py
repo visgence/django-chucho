@@ -1,11 +1,11 @@
-'''
+"""
 ' chucho/models.py
 ' Contributing Authors:
 '    Jeremiah Davis (Visgence, Inc.)
 '    Bretton Murphy (Visgence, Inc.)
 '
 ' (c) 2013 Visgence, Inc.
-'''
+"""
 
 from django.db import models
 from django.db.models import Q
@@ -14,26 +14,27 @@ from django.conf import settings
 from decimal import Decimal
 import re
 
+
 class ChuchoManager(models.Manager):
-    '''
-    ' Custom manager for chucho.  This manager is meant to be inherited by model managers
+    """
+    ' Custom manager for chucho.
+    '   This manager is meant to be inherited by model managers
     '   in user apps.  It provides a search method that can be used by chucho omni filter.
     '   In the future, this may be expanded to include default methods for all necessary
     '   chucho manager methods.
-    '''
+    """
+
     def search(self, search_str, operator=None, column=None):
         q_list = []
         q_list += self.search_all(search_str, operator, column)
-    
+
         q_all = None
         for q in q_list:
             if q_all is None:
                 q_all = q
             else:
                 q_all |= q
-        
         return self.filter(q_all)
-
 
     def search_all(self, search_str, operator, column):
         # get an object of type to get the search fields
@@ -48,9 +49,9 @@ class ChuchoManager(models.Manager):
 
         for f in fields:
             f_attr = getattr(o, f)
-            
+
             if isinstance(f_attr, bool):
-                #Ignore booleans
+                # Ignore booleans
                 pass
             elif isinstance(f_attr, models.Model):
                 # Is a foreign key
@@ -67,7 +68,6 @@ class ChuchoManager(models.Manager):
 
         return q_list
 
-
     def advanced_search(self, **filter_args):
         o = self.all()[0]
 
@@ -75,7 +75,7 @@ class ChuchoManager(models.Manager):
         for filter_arg, filter_str in filter_args.iteritems():
             name = filter_arg.split('__')[0]
             f_attr = getattr(o, name)
-            
+
             if isinstance(f_attr, models.Model):
                 print "Found FK field %s" % name
                 foreign_objs = f_attr.__class__.objects.advanced_search(**filter_args[filter_arg])
@@ -93,9 +93,8 @@ class ChuchoManager(models.Manager):
 
         return self.filter(q_all)
 
-
     def can_edit(self, user):
-        '''
+        """
         ' Checks if some user instance is allowed to edit or add instances of this model.
         ' User should be an instance of the auth user model.
         '
@@ -103,11 +102,11 @@ class ChuchoManager(models.Manager):
         '   user - AuthUser to check permission for.
         '
         ' Return:  True if user is allowed to edit objects of this model and False otherwise
-        '''
+        """
 
         if not isinstance(user, settings.GET_PERMISSION_OBJ()):
             raise TypeError('%s is not an auth user' % str(user))
-        
+
         for f in user._meta.fields:
             if f.name == "is_superuser" and user.is_superuser:
                 return True
@@ -115,12 +114,12 @@ class ChuchoManager(models.Manager):
         return False
 
     def get_viewable(self, user, filter_args=None, omni=None):
-        '''
+        """
         ' Gets all instances of a model that can be viewed or assigned by a specific AuthUser.
         ' Optional search options can be given to filter down the instances returned.  filter_args takes
-        ' precedence over omni for filtering. 
+        ' precedence over omni for filtering.
         '
-        ' Only if the AuthUser has is_superuser and is set to True will a QuerySet of possible instances 
+        ' Only if the AuthUser has is_superuser and is set to True will a QuerySet of possible instances
         ' be returned.
         '
         ' Keyword Arguments:
@@ -129,8 +128,8 @@ class ChuchoManager(models.Manager):
         '   omni - String to filter various fields by. (Optional)
         '
         ' Return: QuerySet of viewable instances for a specified user.
-        '''
-                
+        """
+
         if not isinstance(user, settings.GET_PERMISSION_OBJ()):
             raise TypeError("%s is not an Auth User" % str(user))
 
@@ -146,12 +145,12 @@ class ChuchoManager(models.Manager):
         return self.none()
 
     def get_editable(self, user, filter_args=None, omni=None):
-        '''
+        """
         ' Gets all instances of a model that can be edited by a specific AuthUser.
         ' Optional search options can be given to filter down the instances returned.  filter_args takes
-        ' precedence over omni for filtering. 
+        ' precedence over omni for filtering.
         '
-        ' Only if the AuthUser has is_superuser and is set to True will a QuerySet of possible instances 
+        ' Only if the AuthUser has is_superuser and is set to True will a QuerySet of possible instances
         ' be returned.
         '
         ' Keyword Arguments:
@@ -160,7 +159,7 @@ class ChuchoManager(models.Manager):
         '   omni - String to filter various fields by. (Optional)
         '
         ' Return: QuerySet of editable instances for a specified user.
-        '''
+        """
 
         if not isinstance(user, settings.GET_PERMISSION_OBJ()):
             raise TypeError("%s is not an Auth User" % str(user))
@@ -178,17 +177,16 @@ class ChuchoManager(models.Manager):
         return self.none()
 
     def get_editable_by_pk(self, user, pk):
-        '''
-        ' Get's an instance specified by a pk if the given AuthUser is allowed to edit it and
-        ' if an instance with the given pk exists. If it does exist and the AuthUser has is_superuser 
-        ' and is True then the instance is returned otherwise None is returned.
+        """
+        ' Get's an instance specified by a pk if the given AuthUser is allowed to edit it and if an instance with the given pk exists.
+        ' If it does exist and the AuthUser has is_superuser and is True then the instance is returned otherwise None is returned.
         '
         ' Keyword Arguments:
         '   user - AuthUser to check if the user can be edited by them.
         '   pk   - Primary key of instance to get.
         '
         ' Return: Model instance identified by pk if user can edit it, otherwise None.
-        '''
+        """
         if not isinstance(user, settings.GET_PERMISSION_OBJ()):
             raise TypeError('%s is not an Auth User' % str(user))
 
@@ -203,21 +201,21 @@ class ChuchoManager(models.Manager):
 
 
 class ChuchoUserManager(ChuchoManager):
-    '''
-    ' Custom manager for chucho.  This manager is meant to be inherited by model managers
+    """
+    ' Custom manager for chucho.
+    '   This manager is meant to be inherited by model managers
     '   in user apps.  It provides a search method that can be used by chucho omni filter.
     '   In the future, this may be expanded to include default methods for all necessary
     '   chucho manager methods.
-    '''
-    
+    """
+
     def search(self, search_str, operator=None, column=None):
- 
         # Regexes to trigger different kinds of searches.
         pattern_name1 = r'^\s*([a-z]+)\s+([a-z]+)\s*$'
         pattern_name2 = r'^\s*([a-z]+),\s*([a-z]+)\s*$'
         pattern_username = r'^\s*(\w+)\s*$'
-        #TODO: implement email searching
-        #pattern_email = r'^\s*(\w+@\w+\.\w+)\s*$'
+        # TODO: implement email searching
+        # pattern_email = r'^\s*(\w+@\w+\.\w+)\s*$'
 
         q_list = []
         m = re.match(pattern_name1, search_str, re.I)
@@ -239,21 +237,20 @@ class ChuchoUserManager(ChuchoManager):
                 q_all = q
             else:
                 q_all |= q
-        
+
         if q_all is not None:
             return self.filter(q_all)
-        
+
         return self.none()
 
-    
     def advanced_search(self, **filter_args):
         o = self.all()[0]
-        
+
         q_list = []
         for filter_arg, filter_str in filter_args.iteritems():
             name = filter_arg.split('__')[0]
             f_attr = getattr(o, name)
-            
+
             if isinstance(f_attr, models.Model):
                 print "Found FK field %s" % name
                 foreign_objs = f_attr.__class__.objects.advanced_search(**filter_args[filter_arg])
@@ -261,7 +258,7 @@ class ChuchoUserManager(ChuchoManager):
             else:
                 print "Found field %s" % name
                 q_list.append(Q(**{filter_arg: filter_str}))
-      
+
         q_all = None
         for q in q_list:
             if q_all is None:
@@ -271,12 +268,11 @@ class ChuchoUserManager(ChuchoManager):
 
         return self.filter(q_all)
 
-
     def search_name(self, first, last, op):
         filter_args = {
-            name_fields['first']  + op: first,
+            name_fields['first'] + op: first,
             name_fields['last'] + op: last
-            }
+        }
         return [Q(**filter_args)]
 
     def search_username(self, s):
@@ -292,13 +288,13 @@ class ChuchoUserManager(ChuchoManager):
         except AttributeError:
             print 'No USERNAME_FIELD defined, trying to use "username".'
             try:
-                #TODO: Use this or delete it
-                #u = o.username
+                # TODO: Use this or delete it
+                # u = o.username
                 username = 'username'
             except Exception:
                 print 'Do not know what username field to use, not searching on username.'
                 return q_list
-        
+
         q_list.append(Q(**{username + op: s}))
         return q_list
 
@@ -309,9 +305,10 @@ class ChuchoUserManager(ChuchoManager):
         q_list.append(Q(**{name_fields['last'] + op: s}))
 
         return q_list
-        
+
+
 # TODO: Make this more general, and overwriteable.
 name_fields = {
     'first': 'first_name',
     'last': 'last_name'
-    }
+}
