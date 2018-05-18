@@ -187,8 +187,7 @@ def read_source(request, app_name, model_name, user):
             objs = objs.extra(select={'lower_'+sort_arg: 'lower('+sort_arg+')'}).order_by(sign+'lower_'+sort_arg)
         else:
             objs = objs.order_by(sign+sort_arg)
-    else :
-        objs = objs.order_by('pk')
+
 
     # Break the data into pages
     if 'page' in result_info and 'per_page' in result_info:
