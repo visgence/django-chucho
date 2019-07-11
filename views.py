@@ -210,7 +210,7 @@ def read_source(request, app_name, model_name, user):
                 pages.append(i)
 
         t_pages = loader.get_template('page_list.html')
-        c_pages = Context({'curr_page': objs, 'pages': pages})
+        c_pages = {'curr_page': objs, 'pages': pages}
         extras['page_list'] = t_pages.render(c_pages)
 
     return HttpResponse(serialize_model_objs(objs, extras), content_type="application/json")

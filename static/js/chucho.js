@@ -1016,7 +1016,7 @@
         //If we cycle through all columns and none are editable we'll return null
         var model_editable = false;
         if(title === 'Delete Record'){
-            $('#modal-body').append($('<div>Are you sure you would like to delete this record?</div>'));
+            $('#modal-body').append($("<div>This is an extremely dangerous operation and could affect data other than the record you're deleting.</div>"));
             return;
         }
         var table = $("<table class='table borderless'></table>");
