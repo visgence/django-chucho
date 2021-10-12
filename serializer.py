@@ -22,12 +22,12 @@ AuthUser = settings.GET_PERMISSION_OBJ()
 
 
 def serialize_model_objs(objs, extras):
-    '''
+    """
     ' Takes a list of model objects and returns the serialization of them.
     '
     ' Keyword Args:
     '    objs - The objects to serialize
-    '''
+    """
     new_objs = []
     for obj in objs:
         fields = obj._meta.fields
@@ -35,7 +35,7 @@ def serialize_model_objs(objs, extras):
         obj_dict = {}
         for f in fields:
 
-            #Set value of field for the object.
+            # Set value of field for the object.
             obj_dict[f.name] = f.value_from_object(obj)
 
             # What to do when we have a choice field.
@@ -47,8 +47,8 @@ def serialize_model_objs(objs, extras):
                         '__unicode__': c[1]
                     }
 
-                    #See if we can find a choice that is set to this object or
-                    #use a default value if not.
+                    # See if we can find a choice that is set to this object or
+                    # use a default value if not.
                     if c[0] == f.value_from_object(obj) or default == choice['value']:
                         obj_dict[f.name] = choice
                         break
@@ -62,8 +62,7 @@ def serialize_model_objs(objs, extras):
                     obj_dict[f.name] = 'Invalid'
 
             # Relations
-            elif isinstance(f, models.fields.related.ForeignKey) or \
-               isinstance(f, models.fields.related.OneToOneField):
+            elif isinstance(f, models.fields.related.ForeignKey) or isinstance(f, models.fields.related.OneToOneField):
 
                 objFromName = getattr(obj, f.name)
                 if objFromName is None:
