@@ -1,5 +1,5 @@
 from django.conf.urls import url
-import views
+from chucho import views
 
 urlpatterns = [
     url(r'(?i)model_editor/(?P<app_name>.+)/(?P<model_name>.+)/$',

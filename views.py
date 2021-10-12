@@ -27,9 +27,9 @@ except ImportError:
 
 
 # Local Imports
-from serializer import serialize_model_objs
-from check_access import check_access
-from utils import gen_columns
+from chucho.serializer import serialize_model_objs
+from chucho.check_access import check_access
+from chucho.utils import gen_columns
 
 
 AuthUser = settings.GET_PERMISSION_OBJ()
@@ -80,8 +80,8 @@ def api_view(request, app_name, model_name, id=None):
         errors = 'Sorry, but you must be logged in.'
         return HttpResponse(json.dumps({'errors': errors}, indent=4), content_type="application/json")
 
-    print "app_name = {}".format(app_name)
-    print "model_name = {}".format(model_name)
+    print("app_name = {}".format(app_name))
+    print("model_name = {}".format(model_name))
     if request.method == "GET":
         return read_source(request, app_name, model_name, user)
     if request.method == "POST":
@@ -110,7 +110,7 @@ def read_source(request, app_name, model_name, user):
     try:
         jsonData = json.loads(request.GET.get('jsonData'))
     except Exception:
-        print "No valid json data found"
+        print("No valid json data found")
     else:
         if 'result_info' in jsonData:
             result_info = jsonData['result_info']
@@ -308,9 +308,9 @@ def update(request, app_name, model_name, user, id=None):
 
                 elif field['_type'] == 'datetime':
                     dt_obj = None
-                    if settings.USE_TZ and data[field['field']] not in (None, u""):
+                    if settings.USE_TZ and data[field['field']] not in (None, ""):
                         dt_obj = make_aware(datetime.utcfromtimestamp(float(data[field['field']])), utc)
-                    elif not settings.USE_TZ and data[field['field']] not in (None, u""):
+                    elif not settings.USE_TZ and data[field['field']] not in (None, ""):
                         aware_dt_obj = make_aware(datetime.utcfromtimestamp(float(data[field['field']])), utc)
                         dt_obj = make_naive(aware_dt_obj, get_current_timezone())
 
@@ -363,7 +363,7 @@ def update(request, app_name, model_name, user, id=None):
     except ValidationError as e:
         transaction.rollback()
         errors = 'ValidationError '
-        for field_name, error_messages in e.message_dict.items():
+        for field_name, error_messages in list(e.message_dict.items()):
             errors += ' ::Field: %s: Errors: %s ' % (field_name, ','.join(error_messages))
 
         return HttpResponse(json.dumps({'errors': errors}, indent=4), content_type="application/json")
@@ -452,6 +452,6 @@ def get_filter_operators(request):
         errors = 'User is not logged in properly.'
         return HttpResponse(json.dumps({'errors': errors}, indent=4), content_type="application/json")
 
-    operators = filter_operators.keys()
+    operators = list(filter_operators.keys())
     operators.sort()
     return HttpResponse(json.dumps(operators, indent=4), content_type="application/json")

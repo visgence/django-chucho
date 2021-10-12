@@ -72,16 +72,16 @@ class ChuchoManager(models.Manager):
         o = self.all()[0]
 
         q_list = []
-        for filter_arg, filter_str in filter_args.iteritems():
+        for filter_arg, filter_str in filter_args.items():
             name = filter_arg.split('__')[0]
             f_attr = getattr(o, name)
 
             if isinstance(f_attr, models.Model):
-                print "Found FK field %s" % name
+                print("Found FK field %s" % name)
                 foreign_objs = f_attr.__class__.objects.advanced_search(**filter_args[filter_arg])
                 q_list.append(Q(**{name + '__in': foreign_objs}))
             else:
-                print "Found field %s" % name
+                print("Found field %s" % name)
                 q_list.append(Q(**{filter_arg: filter_str}))
 
         q_all = None
@@ -167,7 +167,7 @@ class ChuchoManager(models.Manager):
         for f in user._meta.fields:
             if f.name == "is_superuser" and user.is_superuser:
                 if filter_args is not None and len(filter_args) > 0:
-                    print filter_args
+                    print(filter_args)
                     return self.advanced_search(**filter_args)
                 elif omni is not None:
                     return self.search(omni)
@@ -247,16 +247,16 @@ class ChuchoUserManager(ChuchoManager):
         o = self.all()[0]
 
         q_list = []
-        for filter_arg, filter_str in filter_args.iteritems():
+        for filter_arg, filter_str in filter_args.items():
             name = filter_arg.split('__')[0]
             f_attr = getattr(o, name)
 
             if isinstance(f_attr, models.Model):
-                print "Found FK field %s" % name
+                print("Found FK field %s" % name)
                 foreign_objs = f_attr.__class__.objects.advanced_search(**filter_args[filter_arg])
                 q_list.append(Q(**{name + '__in': foreign_objs}))
             else:
-                print "Found field %s" % name
+                print("Found field %s" % name)
                 q_list.append(Q(**{filter_arg: filter_str}))
 
         q_all = None
@@ -281,18 +281,18 @@ class ChuchoUserManager(ChuchoManager):
         try:
             o = self.all()[0]
         except Exception:
-            print 'No objects exist for this model'
+            print('No objects exist for this model')
             return q_list
         try:
             username = o.USERNAME_FIELD
         except AttributeError:
-            print 'No USERNAME_FIELD defined, trying to use "username".'
+            print('No USERNAME_FIELD defined, trying to use "username".')
             try:
                 # TODO: Use this or delete it
                 # u = o.username
                 username = 'username'
             except Exception:
-                print 'Do not know what username field to use, not searching on username.'
+                print('Do not know what username field to use, not searching on username.')
                 return q_list
 
         q_list.append(Q(**{username + op: s}))
