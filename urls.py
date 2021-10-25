@@ -2,7 +2,7 @@ from django.conf.urls import url
 from chucho import views
 
 urlpatterns = [
-    url(r'(?i)model_editor/(?P<app_name>.+)/(?P<model_name>.+)/$',
+    url(r'model_editor/(?P<app_name>.+)/(?P<model_name>.+)/$',
         views.model_grid, name='chucho-model-editor'),
 
     url(r'filters/$', views.get_filter_operators, name="chucho-filter-operators"),

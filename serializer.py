@@ -39,7 +39,7 @@ def serialize_model_objs(objs, extras):
             obj_dict[f.name] = f.value_from_object(obj)
 
             # What to do when we have a choice field.
-            if len(f.choices) > 0:
+            if f.choices is not None and len(f.choices) > 0:
                 default = f.default
                 for c in f.choices:
                     choice = {
@@ -68,7 +68,7 @@ def serialize_model_objs(objs, extras):
                 if objFromName is None:
                     unicodeStr = u''
                 else:
-                    unicodeStr = unicode(objFromName)
+                    unicodeStr = str(objFromName)
 
                 obj_dict[f.name] = {
                     '__unicode__': unicodeStr,
@@ -96,11 +96,11 @@ def serialize_model_objs(objs, extras):
                     obj_dict[f.name] = d_obj.strftime(settings.D_FORMAT)
 
             # Types that need to be returned as strings
-            elif type(obj_dict[f.name]) not in [dict, list, unicode, int, long, float, bool, type(None)]:
+            elif type(obj_dict[f.name]) not in [dict, list, str, int, float, bool, type(None)]:
                 obj_dict[f.name] = f.value_to_string(obj)
 
         if '__unicode__' not in obj_dict:
-            obj_dict['__unicode__'] = unicode(obj)
+            obj_dict['__unicode__'] = str(obj)
 
         for m in m2m_fields:
             m_objs = getattr(obj, m.name).all()

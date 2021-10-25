@@ -72,7 +72,8 @@ def gen_columns(modelObj, search_filtering=False, fk_filter_depth=None):
                 if fk_filter_depth is None or fk_filter_depth > 0:
                     if fk_filter_depth is not None:
                         fk_filter_depth -= 1
-                    field['filter_column']['related'] = gen_columns(f.remote_field.model, True, fk_filter_depth)
+                    field['filter_column']['related'] = gen_columns(
+                        f.remote_field.model, True, fk_filter_depth)
                 elif fk_filter_depth <= 0:
                     continue
 
@@ -80,7 +81,7 @@ def gen_columns(modelObj, search_filtering=False, fk_filter_depth=None):
             field['app'] = f.rel.to._meta.app_label
             field['_type'] = 'foreignkey'
             field['blank'] = f.blank
-        elif len(f.choices) > 0:
+        elif f.choices is not None and len(f.choices) > 0:
             field['_type'] = 'choice'
             field['choices'] = []
 
@@ -110,7 +111,8 @@ def gen_columns(modelObj, search_filtering=False, fk_filter_depth=None):
                 field['_type'] = 'char'
 
         elif f.name not in column_options:
-            raise Exception("In gen_columns: The field type %s is not handled." % type(f))
+            raise Exception(
+                "In gen_columns: The field type %s is not handled." % type(f))
 
         # Apply any custom options for the field.
         if f.name in column_options:
