@@ -107,7 +107,7 @@ def serialize_model_objs(objs, extras):
             obj_dict[m.name] = []
             for m_obj in m_objs:
                 obj_dict[m.name].append({
-                    '__unicode__': unicode(m_obj),
+                    '__unicode__': str(m_obj),
                     'pk': m_obj.pk,
                     'model_name': m.rel.to.__name__
                 })
