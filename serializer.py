@@ -73,7 +73,7 @@ def serialize_model_objs(objs, extras):
                 obj_dict[f.name] = {
                     '__unicode__': unicodeStr,
                     'pk': f.value_from_object(obj),
-                    'model_name': f.rel.to.__name__
+                    'model_name': f.remote_field.model.__name__
                 }
 
             # Datetime Field
@@ -109,7 +109,7 @@ def serialize_model_objs(objs, extras):
                 obj_dict[m.name].append({
                     '__unicode__': str(m_obj),
                     'pk': m_obj.pk,
-                    'model_name': m.rel.to.__name__
+                    'model_name': m.remote_field.model.__name__
                 })
 
         if 'pk' not in obj_dict:

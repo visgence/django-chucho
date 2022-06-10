@@ -77,8 +77,8 @@ def gen_columns(modelObj, search_filtering=False, fk_filter_depth=None):
                 elif fk_filter_depth <= 0:
                     continue
 
-            field['model_name'] = f.rel.to.__name__
-            field['app'] = f.rel.to._meta.app_label
+            field['model_name'] = f.remote_field.model.__name__
+            field['app'] = f.remote_field.model._meta.app_label
             field['_type'] = 'foreignkey'
             field['blank'] = f.blank
         elif f.choices is not None and len(f.choices) > 0:
@@ -125,8 +125,8 @@ def gen_columns(modelObj, search_filtering=False, fk_filter_depth=None):
             'field': m.name,
             'name': m.name.title(),
             'id': m.name,
-            'model_name': m.rel.to.__name__,
-            'app': m.rel.to._meta.app_label,
+            'model_name': m.remote_field.model.__name__,
+            'app': m.remote_field.model._meta.app_label,
             '_type': 'm2m',
             '_editable': True,
             'grid_column': True
