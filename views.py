@@ -159,9 +159,9 @@ def read_source(request, app_name, model_name, user):
             objs = cls.objects.get_viewable(user, kwargs, omni)
             read_only = True
     except Exception as e:
-        stderr.write('Unknown error occurred in read_source: %s: %s\n' % (type(e), e.message))
+        stderr.write('Unknown error occurred in read_source: %s: %s\n' % (type(e), e))
         stderr.flush()
-        dump = json.dumps({'errors': 'Unknown error occurred in read_source: %s: %s' % (type(e), e.message)}, indent=4)
+        dump = json.dumps({'errors': 'Unknown error occurred in read_source: %s: %s' % (type(e), e)}, indent=4)
         return HttpResponse(dump, content_type="application/json")
 
     extras = {'read_only': read_only}
@@ -251,14 +251,14 @@ def update(request, app_name, model_name, user, id=None):
                 return HttpResponse(dump, content_type="application/json")
         except Exception as e:
             transaction.rollback()
-            dump = json.dumps({'errors': 'Cannot load object to save: Exception: ' + e.message}, indent=4)
+            dump = json.dumps({'errors': 'Cannot load object to save: Exception: ' + e}, indent=4)
             return HttpResponse(dump, content_type="application/json")
 
     try:
         fields = gen_columns(obj)
     except Exception as e:
         transaction.rollback()
-        dump = json.dumps({'errors': 'Error generating columns: ' + e.message}, indent=4)
+        dump = json.dumps({'errors': 'Error generating columns: ' + e}, indent=4)
         return HttpResponse(dump, content_type="application/json")
 
     m2m = []
@@ -344,7 +344,7 @@ def update(request, app_name, model_name, user, id=None):
 
         except Exception as e:
             transaction.rollback()
-            error = 'Error setting ManyToMany fields: %s: %s' % (type(e), e.message)
+            error = 'Error setting ManyToMany fields: %s: %s' % (type(e), e)
             stderr.write(error)
             stderr.flush()
             transaction.rollback()
@@ -352,7 +352,7 @@ def update(request, app_name, model_name, user, id=None):
 
     except Exception as e:
         transaction.rollback()
-        error = 'In ajax update exception: %s: %s\n' % (type(e), e.message)
+        error = 'In ajax update exception: %s: %s\n' % (type(e), e)
         stderr.write(error)
         stderr.flush()
         return HttpResponse(json.dumps({'errors': error}, indent=4), content_type="application/json")
@@ -373,7 +373,7 @@ def update(request, app_name, model_name, user, id=None):
     except Exception as e:
         transaction.rollback()
 
-        error = 'In ajax update exception: %s: %s\n' % (type(e), e.message)
+        error = 'In ajax update exception: %s: %s\n' % (type(e), e)
         stderr.write(error)
         stderr.flush()
         return HttpResponse(json.dumps({'errors': error}, indent=4), content_type="application/json")
