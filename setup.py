@@ -1,4 +1,5 @@
-from distutils.core import setup, find_packages
+from distutils.core import setup
+from setuptools import find_packages
 setup(name='chucho',
       version='1.0',
       py_modules=['chucho','slickGrid'],
